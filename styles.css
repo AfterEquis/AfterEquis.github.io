@@ -39,8 +39,10 @@ border:1px solid rgba(255,255,255,.16);box-shadow:inset 3px 3px 4px -2px rgba(25
 
 .main{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr)}
 .left{padding:34px 30px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:18px;border-right:1px solid rgba(255,255,255,.12)}
-.avatar{width:128px;height:128px;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle at 30% 25%,rgba(255,255,255,.3),rgba(255,255,255,.06));border:1px solid rgba(255,255,255,.3);box-shadow:0 10px 30px rgba(0,0,0,.4)}
-.avatar svg{width:66px;height:66px}
+.avatar{position:relative;width:128px;height:128px;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle at 30% 25%,rgba(255,255,255,.3),rgba(255,255,255,.06));border:1px solid rgba(255,255,255,.3);box-shadow:0 10px 30px rgba(0,0,0,.4),0 0 16px rgba(47,75,255,.2);overflow:hidden;cursor:pointer;user-select:none;transition:transform .25s ease,box-shadow .25s ease,border-color .25s ease}
+.avatar:hover{transform:scale(1.05);border-color:rgba(255,59,47,.7);box-shadow:0 12px 34px rgba(0,0,0,.6),0 0 20px rgba(255,59,47,.4)}
+.avatar:active{transform:scale(0.96)}
+.avatar:focus-visible{outline:2px solid var(--glow);outline-offset:3px}
 h1{margin:6px 0 0;font-size:clamp(54px,8vw,84px);line-height:1;font-weight:800;letter-spacing:-.02em;position:relative;isolation:isolate;color:#fff;
 background:repeating-linear-gradient(90deg,#ffffff 0 2px,#c8eeff 2px 3px,#e8f7ff 3px 5px);-webkit-background-clip:text;-webkit-text-fill-color:transparent;
 filter:drop-shadow(-3px 3px 0 rgba(255,23,68,.95)) drop-shadow(3px -1px 0 rgba(0,229,255,.9)) drop-shadow(0 6px 4px rgba(255,23,68,.65))}
@@ -89,7 +91,35 @@ a.item:hover{background:rgba(255,255,255,.15)}
 .btns{display:flex;gap:10px;flex-wrap:wrap}
 .tearing .main{filter:url(#tear)}
 .txt{margin:6px 2px 0;font-size:18px;line-height:1.7;color:#e9ecf6;max-width:52ch}
-.avatar{overflow:hidden}.avatar img{width:100%;height:100%;object-fit:cover;display:block;transform:scale(1.14)}
+.avatar::after{content:"";position:absolute;inset:0;border-radius:50%;pointer-events:none;opacity:0;background:repeating-linear-gradient(0deg,rgba(255,255,255,.22) 0 2px,transparent 2px 4px);mix-blend-mode:overlay}
+.avatar.glitching{animation:avatar-shake .44s steps(2)}
+.avatar.glitching::after{opacity:1;animation:avatar-noise .44s steps(2)}
+.avatar img{width:100%;height:100%;object-fit:cover;display:block;border-radius:50%;transform:scale(1.02);transition:filter .15s ease}
+.avatar[data-photo="0"] img{transform:scale(1.14)}
+.avatar.glitching img{animation:avatar-glitch-tear .44s steps(2)}
+
+@keyframes avatar-shake{
+  0%{transform:scale(1) translate(0,0)}
+  20%{transform:scale(1.04) translate(-4px,2px) skewX(-4deg)}
+  40%{transform:scale(0.98) translate(5px,-2px) skewX(3deg)}
+  60%{transform:scale(1.02) translate(-3px,-1px) skewX(-2deg)}
+  80%{transform:scale(1.01) translate(2px,1px)}
+  100%{transform:scale(1) translate(0,0)}
+}
+@keyframes avatar-noise{
+  0%{transform:translateY(-100%)}
+  50%{transform:translateY(0%)}
+  100%{transform:translateY(100%)}
+}
+@keyframes avatar-glitch-tear{
+  0%{transform:scale(1.02) translate(0,0);filter:none}
+  15%{transform:scale(1.08) translate(-6px,2px) skewX(-4deg);filter:drop-shadow(-6px 0 0 #ff1744) drop-shadow(6px 0 0 #00e5ff) contrast(1.6) brightness(1.2);clip-path:polygon(0 0,100% 0,100% 35%,0 35%,0 70%,100% 70%,100% 100%,0 100%)}
+  30%{transform:scale(1.05) translate(7px,-3px) skewX(5deg);filter:drop-shadow(7px 0 0 #ff1744) drop-shadow(-7px 0 0 #00e5ff) contrast(2) invert(.2);clip-path:polygon(0 15%,100% 15%,100% 45%,0 45%,0 80%,100% 80%,100% 100%,0 100%)}
+  50%{transform:scale(1.1) translate(-4px,3px) skewX(-3deg);filter:drop-shadow(-5px 0 0 #ffea00) drop-shadow(5px 0 0 #2979ff) saturate(2);clip-path:polygon(0 0,100% 0,100% 20%,0 20%,0 60%,100% 60%,100% 90%,0 90%)}
+  70%{transform:scale(1.04) translate(3px,-1px);filter:drop-shadow(4px 0 0 #00e5ff) drop-shadow(-4px 0 0 #ff1744) contrast(1.3);clip-path:none}
+  85%{transform:scale(1.02) translate(-2px,1px);filter:drop-shadow(-2px 0 0 #ff1744) drop-shadow(2px 0 0 #00e5ff)}
+  100%{transform:scale(1.02) translate(0,0);filter:none}
+}
 @media(max-width:780px){
   body{padding:12px}
   .card.lens{backdrop-filter:blur(10px) saturate(1.9) brightness(1.12);-webkit-backdrop-filter:blur(10px) saturate(1.9) brightness(1.12)}
