@@ -95,7 +95,6 @@ a.item:hover{background:rgba(255,255,255,.15)}
 .avatar.glitching{animation:avatar-shake .44s steps(2)}
 .avatar.glitching::after{opacity:1;animation:avatar-noise .44s steps(2)}
 .avatar img{width:100%;height:100%;object-fit:cover;display:block;border-radius:50%;transform:scale(1.02);transition:filter .15s ease}
-.avatar[data-photo="0"] img{transform:scale(1.14)}
 .avatar.glitching img{animation:avatar-glitch-tear .44s steps(2)}
 
 @keyframes avatar-shake{

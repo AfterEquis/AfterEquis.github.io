@@ -378,9 +378,9 @@ async function loadYouTubeVideo() {
 
 loadYouTubeVideo();
 
-// --- Avatar Glitch Slideshow ---
+// --- Avatar Glitch Cycle (Exclusivo al hacer clic) ---
 var AVATAR_LIST = [
-  { src: './assets/avatar.jpg', alt: 'Logo de AfterX: cara sonriente con glitch' },
+  { src: './assets/avatar.jpg', alt: 'Smiley AfterX con glitch' },
   { src: './assets/avatar-1.jpg', alt: 'Foto de AfterX con casco Mandalorian' },
   { src: './assets/avatar-2.jpg', alt: 'Foto de AfterX con gafas y sudadera' },
   { src: './assets/avatar-3.jpg', alt: 'Foto de AfterX con pasamontañas Nothing' },
@@ -397,8 +397,6 @@ var avatarBox = document.getElementById('avatar-box');
 var avatarImg = document.getElementById('avatar-img');
 var avatarIndex = 0;
 var avatarGlitching = false;
-var avatarTimer = null;
-var AVATAR_CYCLE_MS = 5000;
 
 function switchAvatar(targetIndex) {
   if (avatarGlitching || !avatarBox || !avatarImg) return;
@@ -408,7 +406,6 @@ function switchAvatar(targetIndex) {
     avatarIndex = targetIndex;
     avatarImg.src = AVATAR_LIST[targetIndex].src;
     avatarImg.alt = AVATAR_LIST[targetIndex].alt;
-    avatarBox.setAttribute('data-photo', targetIndex.toString());
     return;
   }
 
@@ -419,7 +416,6 @@ function switchAvatar(targetIndex) {
     avatarIndex = targetIndex;
     avatarImg.src = AVATAR_LIST[targetIndex].src;
     avatarImg.alt = AVATAR_LIST[targetIndex].alt;
-    avatarBox.setAttribute('data-photo', targetIndex.toString());
   }, 200);
 
   setTimeout(function () {
@@ -433,40 +429,17 @@ function nextAvatar() {
   switchAvatar(nextIdx);
 }
 
-function startAvatarTimer() {
-  stopAvatarTimer();
-  avatarTimer = setInterval(nextAvatar, AVATAR_CYCLE_MS);
-}
-
-function stopAvatarTimer() {
-  if (avatarTimer) {
-    clearInterval(avatarTimer);
-    avatarTimer = null;
-  }
-}
-
 if (avatarBox) {
-  startAvatarTimer();
-
   avatarBox.addEventListener('click', function () {
     nextAvatar();
-    startAvatarTimer();
   });
 
   avatarBox.addEventListener('keydown', function (e) {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
       nextAvatar();
-      startAvatarTimer();
-    }
-  });
-
-  document.addEventListener('visibilitychange', function () {
-    if (document.hidden) {
-      stopAvatarTimer();
-    } else {
-      startAvatarTimer();
     }
   });
 }
+
 
