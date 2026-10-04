@@ -67,7 +67,7 @@ function setBackgroundPaused(paused) {
   if (bgVideo) {
     if (paused) {
       bgVideo.pause();
-    } else {
+    } else if (currentTheme !== 'marathon') {
       bgVideo.play();
     }
   }
@@ -815,14 +815,45 @@ function tear() {
   })(t0);
 }
 
-// --- Retro Web Audio Synthesizer ---
+// --- Retro Web Audio Synthesizer & Procedural Music Engine ---
 var sfxEnabled = localStorage.getItem('afterx_sfx') === 'true';
 var audioCtx = null;
+var musicMasterGain = null;
+var sfxMasterGain = null;
+var vinylSource = null;
+var vinylGain = null;
+var musicSchedulerTimer = null;
+var currentMusicTrack = null; // 'vhs' | 'marathon' | null
+var musicStep = 0;
+var nextStepTime = 0;
+var distortionCurve808 = null;
+
+function makeDistortionCurve(amount) {
+  var k = typeof amount === 'number' ? amount : 22,
+    n_samples = 44100,
+    curve = new Float32Array(n_samples),
+    deg = Math.PI / 180,
+    i = 0,
+    x;
+  for (; i < n_samples; ++i) {
+    x = (i * 2) / n_samples - 1;
+    curve[i] = ((3 + k) * x * 20 * deg) / (Math.PI + k * Math.abs(x));
+  }
+  return curve;
+}
 
 function getAudioContext() {
   if (!audioCtx && (window.AudioContext || window.webkitAudioContext)) {
     var AudioClass = window.AudioContext || window.webkitAudioContext;
     audioCtx = new AudioClass();
+
+    musicMasterGain = audioCtx.createGain();
+    musicMasterGain.gain.setValueAtTime(sfxEnabled && !bgIsPaused ? 0.22 : 0.0001, audioCtx.currentTime);
+    musicMasterGain.connect(audioCtx.destination);
+
+    sfxMasterGain = audioCtx.createGain();
+    sfxMasterGain.gain.setValueAtTime(0.28, audioCtx.currentTime);
+    sfxMasterGain.connect(audioCtx.destination);
   }
   if (audioCtx && audioCtx.state === 'suspended') {
     audioCtx.resume();
@@ -831,9 +862,9 @@ function getAudioContext() {
 }
 
 function playBlip() {
-  if (!sfxEnabled) return;
+  if (!sfxEnabled || bgIsPaused) return;
   var ctx = getAudioContext();
-  if (!ctx) return;
+  if (!ctx || !sfxMasterGain) return;
   var osc = ctx.createOscillator();
   var gain = ctx.createGain();
   osc.type = 'sine';
@@ -842,15 +873,15 @@ function playBlip() {
   gain.gain.setValueAtTime(0.06, ctx.currentTime);
   gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.045);
   osc.connect(gain);
-  gain.connect(ctx.destination);
+  gain.connect(sfxMasterGain);
   osc.start();
   osc.stop(ctx.currentTime + 0.045);
 }
 
 function playGlitchSfx() {
-  if (!sfxEnabled) return;
+  if (!sfxEnabled || bgIsPaused) return;
   var ctx = getAudioContext();
-  if (!ctx) return;
+  if (!ctx || !sfxMasterGain) return;
   var bufferSize = ctx.sampleRate * 0.12;
   var buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
   var data = buffer.getChannelData(0);
@@ -867,14 +898,14 @@ function playGlitchSfx() {
   gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.12);
   noise.connect(filter);
   filter.connect(gain);
-  gain.connect(ctx.destination);
+  gain.connect(sfxMasterGain);
   noise.start();
 }
 
 function playToggleSfx() {
-  if (!sfxEnabled) return;
+  if (!sfxEnabled || bgIsPaused) return;
   var ctx = getAudioContext();
-  if (!ctx) return;
+  if (!ctx || !sfxMasterGain) return;
   var osc = ctx.createOscillator();
   var gain = ctx.createGain();
   osc.type = 'triangle';
@@ -882,9 +913,459 @@ function playToggleSfx() {
   gain.gain.setValueAtTime(0.05, ctx.currentTime);
   gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.035);
   osc.connect(gain);
-  gain.connect(ctx.destination);
+  gain.connect(sfxMasterGain);
   osc.start();
   osc.stop(ctx.currentTime + 0.035);
+}
+
+// --- Vinyl Texture for Lo-Fi ---
+function startVinylCrackle() {
+  if (vinylSource || !audioCtx || !musicMasterGain) return;
+  var bufferSize = audioCtx.sampleRate * 3;
+  var buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+  var data = buffer.getChannelData(0);
+  for (var i = 0; i < bufferSize; i++) {
+    var v = (Math.random() * 2 - 1) * 0.04;
+    if (Math.random() < 0.0006) v += (Math.random() * 2 - 1) * 0.35;
+    data[i] = v;
+  }
+  vinylSource = audioCtx.createBufferSource();
+  vinylSource.buffer = buffer;
+  vinylSource.loop = true;
+
+  var filter = audioCtx.createBiquadFilter();
+  filter.type = 'bandpass';
+  filter.frequency.setValueAtTime(1600, audioCtx.currentTime);
+  filter.Q.value = 0.9;
+
+  vinylGain = audioCtx.createGain();
+  vinylGain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+
+  vinylSource.connect(filter);
+  filter.connect(vinylGain);
+  vinylGain.connect(musicMasterGain);
+  vinylSource.start();
+}
+
+function stopVinylCrackle() {
+  if (vinylSource) {
+    try {
+      vinylSource.stop();
+      vinylSource.disconnect();
+    } catch (e) {}
+    vinylSource = null;
+  }
+}
+
+// --- Lo-Fi Sound Generators (Theme 1 - VHS) ---
+var LOFI_CHORDS = [
+  [146.83, 174.61, 220.00, 261.63, 329.63], // Dm9
+  [98.00, 174.61, 246.94, 293.66, 329.63],  // G13
+  [130.81, 164.81, 196.00, 246.94, 293.66], // Cmaj9
+  [110.00, 174.61, 220.00, 277.18, 329.63]  // A7alt
+];
+
+function playLofiChord(chordFrequencies, time, duration) {
+  if (!audioCtx || !musicMasterGain) return;
+  var filter = audioCtx.createBiquadFilter();
+  filter.type = 'lowpass';
+  filter.frequency.setValueAtTime(1400, time);
+  filter.frequency.linearRampToValueAtTime(850, time + duration);
+
+  var chordGain = audioCtx.createGain();
+  chordGain.gain.setValueAtTime(0.001, time);
+  chordGain.gain.linearRampToValueAtTime(0.07, time + 0.06);
+  chordGain.gain.exponentialRampToValueAtTime(0.001, time + duration);
+
+  chordFrequencies.forEach(function (freq) {
+    var osc1 = audioCtx.createOscillator();
+    var osc2 = audioCtx.createOscillator();
+    osc1.type = 'triangle';
+    osc2.type = 'sine';
+    osc1.frequency.setValueAtTime(freq, time);
+    osc2.frequency.setValueAtTime(freq * 1.002, time);
+    osc1.connect(filter);
+    osc2.connect(filter);
+    osc1.start(time);
+    osc2.start(time);
+    osc1.stop(time + duration);
+    osc2.stop(time + duration);
+  });
+
+  filter.connect(chordGain);
+  chordGain.connect(musicMasterGain);
+}
+
+function playLofiKick(time) {
+  if (!audioCtx || !musicMasterGain) return;
+  var osc = audioCtx.createOscillator();
+  var gain = audioCtx.createGain();
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(125, time);
+  osc.frequency.exponentialRampToValueAtTime(44, time + 0.12);
+  gain.gain.setValueAtTime(0.36, time);
+  gain.gain.exponentialRampToValueAtTime(0.001, time + 0.16);
+  osc.connect(gain);
+  gain.connect(musicMasterGain);
+  osc.start(time);
+  osc.stop(time + 0.16);
+}
+
+function playLofiSnare(time) {
+  if (!audioCtx || !musicMasterGain) return;
+  var bufferSize = audioCtx.sampleRate * 0.12;
+  var buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+  var data = buffer.getChannelData(0);
+  for (var i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+  var noise = audioCtx.createBufferSource();
+  noise.buffer = buffer;
+  var filter = audioCtx.createBiquadFilter();
+  filter.type = 'bandpass';
+  filter.frequency.setValueAtTime(1600, time);
+  filter.Q.value = 1.3;
+  var noiseGain = audioCtx.createGain();
+  noiseGain.gain.setValueAtTime(0.18, time);
+  noiseGain.gain.exponentialRampToValueAtTime(0.001, time + 0.11);
+  noise.connect(filter);
+  filter.connect(noiseGain);
+  noiseGain.connect(musicMasterGain);
+  noise.start(time);
+  noise.stop(time + 0.12);
+
+  var osc = audioCtx.createOscillator();
+  var oscGain = audioCtx.createGain();
+  osc.type = 'triangle';
+  osc.frequency.setValueAtTime(210, time);
+  osc.frequency.exponentialRampToValueAtTime(95, time + 0.08);
+  oscGain.gain.setValueAtTime(0.14, time);
+  oscGain.gain.exponentialRampToValueAtTime(0.001, time + 0.08);
+  osc.connect(oscGain);
+  oscGain.connect(musicMasterGain);
+  osc.start(time);
+  osc.stop(time + 0.08);
+}
+
+function playLofiHat(time, vol) {
+  if (!audioCtx || !musicMasterGain) return;
+  var bufferSize = audioCtx.sampleRate * 0.04;
+  var buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+  var data = buffer.getChannelData(0);
+  for (var i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+  var noise = audioCtx.createBufferSource();
+  noise.buffer = buffer;
+  var filter = audioCtx.createBiquadFilter();
+  filter.type = 'highpass';
+  filter.frequency.setValueAtTime(6800, time);
+  var gain = audioCtx.createGain();
+  gain.gain.setValueAtTime(vol || 0.07, time);
+  gain.gain.exponentialRampToValueAtTime(0.001, time + 0.038);
+  noise.connect(filter);
+  filter.connect(gain);
+  gain.connect(musicMasterGain);
+  noise.start(time);
+  noise.stop(time + 0.04);
+}
+
+function scheduleLofiStep(step, time) {
+  var bar = Math.floor(step / 16);
+  var stepInBar = step % 16;
+
+  // Chords on beat 1 of each bar
+  if (stepInBar === 0) {
+    var chord = LOFI_CHORDS[bar % LOFI_CHORDS.length];
+    playLofiChord(chord, time, 3.1);
+  }
+
+  // Soft kick pattern (step 0, step 6 with swing, step 10)
+  if (stepInBar === 0 || stepInBar === 6 || stepInBar === 10) {
+    var kickSwing = stepInBar === 6 ? 0.025 : 0;
+    playLofiKick(time + kickSwing);
+  }
+
+  // Snare on beat 2 and 4 (step 4 and 12)
+  if (stepInBar === 4 || stepInBar === 12) {
+    playLofiSnare(time);
+  }
+
+  // Laid back hats
+  if (stepInBar % 2 === 0) {
+    var isAccent = stepInBar % 4 === 0;
+    playLofiHat(time, isAccent ? 0.08 : 0.045);
+  } else if (stepInBar === 7 || stepInBar === 15) {
+    playLofiHat(time + 0.02, 0.03);
+  }
+}
+
+// --- Trap Beat Sound Generators (Theme 2 - Marathon Gaming) ---
+function playTrap808(freq, time, duration) {
+  if (!audioCtx || !musicMasterGain) return;
+  if (!distortionCurve808) distortionCurve808 = makeDistortionCurve(22);
+
+  var osc = audioCtx.createOscillator();
+  var gain = audioCtx.createGain();
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(freq * 2.3, time);
+  osc.frequency.exponentialRampToValueAtTime(freq, time + 0.035);
+
+  gain.gain.setValueAtTime(0.42, time);
+  gain.gain.setValueAtTime(0.38, time + 0.05);
+  gain.gain.exponentialRampToValueAtTime(0.001, time + duration);
+
+  var shaper = audioCtx.createWaveShaper();
+  shaper.curve = distortionCurve808;
+  shaper.oversample = '4x';
+
+  osc.connect(shaper);
+  shaper.connect(gain);
+  gain.connect(musicMasterGain);
+  osc.start(time);
+  osc.stop(time + duration);
+}
+
+function playTrapKick(time) {
+  if (!audioCtx || !musicMasterGain) return;
+  var osc = audioCtx.createOscillator();
+  var gain = audioCtx.createGain();
+  osc.type = 'triangle';
+  osc.frequency.setValueAtTime(175, time);
+  osc.frequency.exponentialRampToValueAtTime(45, time + 0.08);
+  gain.gain.setValueAtTime(0.45, time);
+  gain.gain.exponentialRampToValueAtTime(0.001, time + 0.15);
+  osc.connect(gain);
+  gain.connect(musicMasterGain);
+  osc.start(time);
+  osc.stop(time + 0.15);
+}
+
+function playTrapSnare(time) {
+  if (!audioCtx || !musicMasterGain) return;
+  var bufferSize = audioCtx.sampleRate * 0.15;
+  var buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+  var data = buffer.getChannelData(0);
+  for (var i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+  var noise = audioCtx.createBufferSource();
+  noise.buffer = buffer;
+  var filter = audioCtx.createBiquadFilter();
+  filter.type = 'bandpass';
+  filter.frequency.setValueAtTime(2200, time);
+  filter.Q.value = 1.4;
+
+  var gain = audioCtx.createGain();
+  gain.gain.setValueAtTime(0.12, time);
+  gain.gain.setValueAtTime(0.32, time + 0.012);
+  gain.gain.exponentialRampToValueAtTime(0.001, time + 0.15);
+
+  noise.connect(filter);
+  filter.connect(gain);
+  gain.connect(musicMasterGain);
+  noise.start(time);
+  noise.stop(time + 0.15);
+
+  var osc = audioCtx.createOscillator();
+  var oscGain = audioCtx.createGain();
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(235, time);
+  osc.frequency.exponentialRampToValueAtTime(140, time + 0.06);
+  oscGain.gain.setValueAtTime(0.24, time);
+  oscGain.gain.exponentialRampToValueAtTime(0.001, time + 0.06);
+  osc.connect(oscGain);
+  oscGain.connect(musicMasterGain);
+  osc.start(time);
+  osc.stop(time + 0.06);
+}
+
+function playTrapHat(time, vol, pitchMult) {
+  if (!audioCtx || !musicMasterGain) return;
+  var bufferSize = audioCtx.sampleRate * 0.035;
+  var buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+  var data = buffer.getChannelData(0);
+  for (var i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+  var noise = audioCtx.createBufferSource();
+  noise.buffer = buffer;
+  var filter = audioCtx.createBiquadFilter();
+  filter.type = 'highpass';
+  filter.frequency.setValueAtTime(8500 * (pitchMult || 1), time);
+  var gain = audioCtx.createGain();
+  gain.gain.setValueAtTime(vol || 0.11, time);
+  gain.gain.exponentialRampToValueAtTime(0.001, time + 0.032);
+  noise.connect(filter);
+  filter.connect(gain);
+  gain.connect(musicMasterGain);
+  noise.start(time);
+  noise.stop(time + 0.035);
+}
+
+function playTrapSynth(freq, time, duration) {
+  if (!audioCtx || !musicMasterGain) return;
+  var osc = audioCtx.createOscillator();
+  var filter = audioCtx.createBiquadFilter();
+  var gain = audioCtx.createGain();
+  osc.type = 'sawtooth';
+  osc.frequency.setValueAtTime(freq, time);
+
+  filter.type = 'lowpass';
+  filter.frequency.setValueAtTime(1750, time);
+  filter.frequency.exponentialRampToValueAtTime(450, time + duration);
+  filter.Q.value = 3.5;
+
+  gain.gain.setValueAtTime(0.07, time);
+  gain.gain.exponentialRampToValueAtTime(0.001, time + duration);
+
+  osc.connect(filter);
+  filter.connect(gain);
+  gain.connect(musicMasterGain);
+  osc.start(time);
+  osc.stop(time + duration);
+}
+
+var TRAP_SYNTH_NOTES = [174.61, 207.65, 261.63, 311.13, 349.23, 415.30];
+
+function scheduleTrapStep(step, time) {
+  var bar = Math.floor(step / 16);
+  var stepInBar = step % 16;
+
+  // 808 Bass Line in F minor
+  if (stepInBar === 0) {
+    var f808 = 43.65; // F1
+    if (bar === 1) f808 = 51.91; // Ab1
+    else if (bar === 2) f808 = 38.89; // Eb1
+    else if (bar === 3) f808 = 34.65; // Db1
+    playTrap808(f808, time, 0.75);
+  } else if (stepInBar === 8 && (bar === 0 || bar === 2)) {
+    playTrap808(43.65, time, 0.65);
+  } else if (stepInBar === 10 && bar === 3) {
+    playTrap808(32.70, time, 0.65); // C1
+  }
+
+  // Punchy Trap Kick
+  if (stepInBar === 0 || stepInBar === 5 || stepInBar === 10 || (bar % 2 === 1 && stepInBar === 13)) {
+    playTrapKick(time);
+  }
+
+  // Snare on beat 3 (halftime: step 8)
+  if (stepInBar === 8) {
+    playTrapSnare(time);
+  }
+
+  // Trap Hi-Hats: Regular 8th notes + rolls
+  if (bar === 1 && stepInBar >= 12) {
+    playTrapHat(time, 0.1, 1.2);
+    playTrapHat(time + 0.054, 0.09, 1.4);
+  } else if (bar === 3 && stepInBar >= 14) {
+    playTrapHat(time, 0.11, 1.3);
+    playTrapHat(time + 0.036, 0.1, 1.5);
+    playTrapHat(time + 0.072, 0.09, 1.7);
+  } else if (stepInBar % 2 === 0) {
+    playTrapHat(time, stepInBar % 4 === 0 ? 0.12 : 0.08, 1.0);
+  }
+
+  // Dark Synth Arp
+  if (stepInBar === 0 || stepInBar === 3 || stepInBar === 6 || stepInBar === 9 || stepInBar === 12) {
+    var noteIdx = (bar * 2 + Math.floor(stepInBar / 3)) % TRAP_SYNTH_NOTES.length;
+    playTrapSynth(TRAP_SYNTH_NOTES[noteIdx], time, 0.22);
+  }
+}
+
+// --- Scheduler Loop ---
+function scheduleMusic() {
+  if (!sfxEnabled || bgIsPaused || !audioCtx || !musicMasterGain) return;
+
+  var lookahead = 0.12;
+  var stepDuration = currentMusicTrack === 'marathon' ? (60 / 138) / 4 : (60 / 74) / 4;
+
+  while (nextStepTime < audioCtx.currentTime + lookahead) {
+    if (currentMusicTrack === 'marathon') {
+      scheduleTrapStep(musicStep, nextStepTime);
+    } else {
+      scheduleLofiStep(musicStep, nextStepTime);
+    }
+    nextStepTime += stepDuration;
+    musicStep = (musicStep + 1) % 64;
+  }
+}
+
+function startThemeMusic(theme) {
+  currentMusicTrack = theme;
+  if (!sfxEnabled || bgIsPaused) return;
+
+  var ctx = getAudioContext();
+  if (!ctx || !musicMasterGain) return;
+
+  musicStep = 0;
+  nextStepTime = ctx.currentTime + 0.05;
+
+  if (theme === 'marathon') {
+    stopVinylCrackle();
+  } else {
+    startVinylCrackle();
+  }
+
+  musicMasterGain.gain.setValueAtTime(0.001, ctx.currentTime);
+  musicMasterGain.gain.linearRampToValueAtTime(0.24, ctx.currentTime + 0.35);
+
+  if (!musicSchedulerTimer) {
+    musicSchedulerTimer = setInterval(scheduleMusic, 35);
+  }
+}
+
+function stopThemeMusic() {
+  if (musicMasterGain && audioCtx) {
+    musicMasterGain.gain.setValueAtTime(musicMasterGain.gain.value, audioCtx.currentTime);
+    musicMasterGain.gain.linearRampToValueAtTime(0.0001, audioCtx.currentTime + 0.2);
+  }
+  stopVinylCrackle();
+  if (musicSchedulerTimer) {
+    clearInterval(musicSchedulerTimer);
+    musicSchedulerTimer = null;
+  }
+}
+
+function switchMusicTrack(theme) {
+  currentMusicTrack = theme;
+  if (!sfxEnabled || bgIsPaused) return;
+
+  var ctx = getAudioContext();
+  if (!ctx || !musicMasterGain) return;
+
+  musicMasterGain.gain.setValueAtTime(musicMasterGain.gain.value, ctx.currentTime);
+  musicMasterGain.gain.linearRampToValueAtTime(0.001, ctx.currentTime + 0.2);
+
+  setTimeout(function () {
+    if (!sfxEnabled || bgIsPaused) return;
+    musicStep = 0;
+    nextStepTime = ctx.currentTime + 0.05;
+    if (theme === 'marathon') {
+      stopVinylCrackle();
+    } else {
+      startVinylCrackle();
+    }
+    musicMasterGain.gain.setValueAtTime(0.001, ctx.currentTime);
+    musicMasterGain.gain.linearRampToValueAtTime(0.24, ctx.currentTime + 0.25);
+  }, 200);
+}
+
+function pauseMusic() {
+  if (musicMasterGain && audioCtx) {
+    musicMasterGain.gain.setValueAtTime(musicMasterGain.gain.value, audioCtx.currentTime);
+    musicMasterGain.gain.linearRampToValueAtTime(0.0001, audioCtx.currentTime + 0.06);
+  }
+}
+
+function resumeMusic() {
+  if (!sfxEnabled) return;
+  var ctx = getAudioContext();
+  if (!ctx || !musicMasterGain) return;
+  nextStepTime = ctx.currentTime + 0.05;
+  if (currentTheme !== 'marathon') {
+    startVinylCrackle();
+  } else {
+    stopVinylCrackle();
+  }
+  musicMasterGain.gain.setValueAtTime(0.0001, ctx.currentTime);
+  musicMasterGain.gain.linearRampToValueAtTime(0.24, ctx.currentTime + 0.15);
+  if (!musicSchedulerTimer) {
+    musicSchedulerTimer = setInterval(scheduleMusic, 35);
+  }
 }
 
 var tabs = document.querySelectorAll('.tab'),
@@ -952,7 +1433,10 @@ document.getElementById('d').textContent =
     .replace(',', '');
 
 function burst() {
-  if (matchMedia('(prefers-reduced-motion:reduce)').matches) return;
+  if (bgIsPaused || matchMedia('(prefers-reduced-motion:reduce)').matches) {
+    setTimeout(burst, 2500);
+    return;
+  }
   document.body.classList.add('burst');
   setTimeout(function () {
     document.body.classList.remove('burst');
@@ -965,6 +1449,7 @@ if (!matchMedia('(prefers-reduced-motion:reduce)').matches) {
 var s = 0,
   el = document.getElementById('t');
 setInterval(function () {
+  if (bgIsPaused) return;
   s++;
   var h = Math.floor(s / 3600),
     m = Math.floor((s % 3600) / 60),
@@ -1243,14 +1728,18 @@ loadYouTubeVideos();
 // --- Interactive VHS Controls ---
 var btnPlay = document.getElementById('btn-play');
 if (btnPlay) {
-  var isPaused = false;
   btnPlay.addEventListener('click', function () {
-    isPaused = !isPaused;
-    setBackgroundPaused(isPaused);
-    document.body.classList.toggle('paused', isPaused);
-    btnPlay.textContent = isPaused ? '⏸ PAUSE' : '▶ PLAY';
-    btnPlay.classList.toggle('flashing', isPaused);
-    playToggleSfx();
+    var willPause = !bgIsPaused;
+    setBackgroundPaused(willPause);
+    document.body.classList.toggle('paused', willPause);
+    btnPlay.textContent = willPause ? '⏸ PAUSE' : '▶ PLAY';
+    btnPlay.classList.toggle('flashing', willPause);
+    if (willPause) {
+      pauseMusic();
+    } else {
+      resumeMusic();
+      playToggleSfx();
+    }
   });
 }
 
@@ -1259,6 +1748,17 @@ var btnTracking = document.getElementById('btn-tracking');
 var tab1 = document.getElementById('tab-1');
 var tab2 = document.getElementById('tab-2');
 var tab3 = document.getElementById('tab-3');
+
+var sfxToggle = document.getElementById('sfx-toggle');
+function updateSfxButton() {
+  if (!sfxToggle) return;
+  var themeLabel = currentTheme === 'marathon' ? 'TRAP' : 'LO-FI';
+  sfxToggle.textContent = sfxEnabled ? 'SFX: ON [' + themeLabel + ']' : 'SFX: OFF';
+  sfxToggle.classList.toggle('active', sfxEnabled);
+  sfxToggle.title = sfxEnabled
+    ? 'Audio activo (' + themeLabel + ' + SFX). Clic para silenciar.'
+    : 'Audio silenciado. Clic para activar música (' + themeLabel + ') y efectos de sonido.';
+}
 
 function applyTheme(theme, isUserClick) {
   currentTheme = theme;
@@ -1287,6 +1787,12 @@ function applyTheme(theme, isUserClick) {
     if (bgVideo && !bgIsPaused) bgVideo.play();
   }
 
+  if (typeof switchMusicTrack === 'function' && sfxEnabled && !bgIsPaused) {
+    switchMusicTrack(theme);
+  }
+
+  updateSfxButton();
+
   if (isUserClick) {
     tear();
     triggerBackgroundGlitch(1.2);
@@ -1305,12 +1811,7 @@ if (btnTracking) {
   });
 }
 
-var sfxToggle = document.getElementById('sfx-toggle');
 if (sfxToggle) {
-  function updateSfxButton() {
-    sfxToggle.textContent = 'SFX: ' + (sfxEnabled ? 'ON' : 'OFF');
-    sfxToggle.classList.toggle('active', sfxEnabled);
-  }
   updateSfxButton();
   sfxToggle.addEventListener('click', function () {
     sfxEnabled = !sfxEnabled;
@@ -1319,6 +1820,11 @@ if (sfxToggle) {
     if (sfxEnabled) {
       getAudioContext();
       playToggleSfx();
+      if (!bgIsPaused) {
+        startThemeMusic(currentTheme);
+      }
+    } else {
+      stopThemeMusic();
     }
   });
 }
