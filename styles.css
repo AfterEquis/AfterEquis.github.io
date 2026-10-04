@@ -259,3 +259,19 @@ body[data-theme="marathon"] .btn-osd.active-track{
 .marathon-item:hover{border-left-color:#ff3b00!important}
 .item-tag{display:inline-block;font-family:var(--osd);font-size:12px;letter-spacing:.08em;color:#dfff00;background:rgba(223,255,0,.12);padding:2px 7px;border-radius:4px;margin-bottom:6px}
 
+body[data-theme="marathon"] .btns.marathon-only .btn{
+  border-color:rgba(223,255,0,.25);
+  background:rgba(223,255,0,.06);
+}
+body[data-theme="marathon"] .btns.marathon-only .btn:hover{
+  border-color:#dfff00;
+  background:rgba(223,255,0,.15);
+  box-shadow:0 0 15px rgba(223,255,0,.35);
+  color:#dfff00;
+}
+body[data-theme="marathon"] .icons.marathon-only .ic:hover{
+  background:rgba(223,255,0,.18);
+  color:#dfff00;
+  box-shadow:0 0 12px rgba(223,255,0,.35);
+}
+
