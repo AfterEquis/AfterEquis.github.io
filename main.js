@@ -1,36 +1,258 @@
-var bg = document.getElementById('bg');
-var cols = [
-  'linear-gradient(90deg, transparent, rgba(47,75,255,.75), transparent)',
-  'linear-gradient(90deg, transparent, rgba(255,59,47,.75), transparent)',
-  'linear-gradient(90deg, rgba(255,59,47,.85) 0%, rgba(47,75,255,.85) 100%)',
-  'linear-gradient(90deg, transparent, rgba(106,61,240,.7), transparent)',
-  'linear-gradient(90deg, transparent, rgba(207,230,255,.85), transparent)',
-];
-for (var k = 0, n = innerWidth < 780 ? 22 : 44; k < n; k++) {
-  var i = document.createElement('i');
-  var isNeedle = k % 3 === 0;
-  var height = isNeedle ? 1 + Math.random() * 3 : 4 + Math.random() * 22;
-  var width = isNeedle ? 25 + Math.random() * 55 : 16 + Math.random() * 30;
-  i.style.cssText =
-    'top:' +
-    Math.random() * 100 +
-    '%;left:' +
-    (k % 2 ? Math.random() * 25 - 10 : 58 + Math.random() * 36) +
-    '%;width:' +
-    width +
-    '%;height:' +
-    height +
-    'px;background:' +
-    cols[k % cols.length] +
-    ';opacity:' +
-    (0.3 + Math.random() * 0.55) +
-    ';--x:' +
-    ((Math.random() * 90 - 45) | 0) +
-    'px;--d:' +
-    (1.6 + Math.random() * 4.5).toFixed(1) +
-    's';
-  bg.appendChild(i);
+// --- Authentic CRT Datamosh Glitch Engine (Matching User Reference) ---
+var bgCanvas = document.getElementById('bg-canvas');
+var bgCtx = bgCanvas ? bgCanvas.getContext('2d') : null;
+var bgVideo = document.getElementById('bg-video');
+var bgFallback = document.querySelector('.bg-glitch-fallback');
+var bgIsPaused = false;
+var bgTrackingGlitch = { active: false, intensity: 0, timer: 0, scanlines: [] };
+var mouseGlitchSparks = [];
+
+// Autoplay handling with fallback
+if (bgVideo) {
+  var playPromise = bgVideo.play();
+  if (playPromise !== undefined) {
+    playPromise.catch(function () {
+      if (bgFallback) bgFallback.style.display = 'block';
+    });
+  }
 }
+
+function triggerBackgroundGlitch(intensity) {
+  intensity = intensity || 0.8;
+  var width = window.innerWidth;
+  var height = window.innerHeight;
+  var count = Math.floor(3 + intensity * 5);
+  var scanlines = [];
+  for (var i = 0; i < count; i++) {
+    scanlines.push({
+      y: Math.random() * height,
+      height: 8 + Math.random() * 38 * intensity,
+      shift: (Math.random() * 60 - 30) * intensity,
+      speed: 1.2 + Math.random() * 3.2,
+      color:
+        Math.random() > 0.5
+          ? 'rgba(255, 0, 85, 0.35)'
+          : 'rgba(0, 229, 255, 0.35)',
+    });
+  }
+  bgTrackingGlitch = {
+    active: true,
+    intensity: intensity,
+    timer: 0.28 + intensity * 0.35,
+    scanlines: scanlines,
+  };
+}
+
+function setBackgroundPaused(paused) {
+  bgIsPaused = paused;
+  if (bgVideo) {
+    if (paused) {
+      bgVideo.pause();
+    } else {
+      bgVideo.play();
+    }
+  }
+}
+
+(function initGlitchCanvas() {
+  if (!bgCanvas || !bgCtx) return;
+
+  var dpr = Math.min(window.devicePixelRatio || 1, 2);
+  var width = window.innerWidth;
+  var height = window.innerHeight;
+
+  function resizeCanvas() {
+    width = window.innerWidth;
+    height = window.innerHeight;
+    bgCanvas.width = Math.floor(width * dpr);
+    bgCanvas.height = Math.floor(height * dpr);
+    bgCtx.setTransform(1, 0, 0, 1, 0, 0);
+    bgCtx.scale(dpr, dpr);
+  }
+  resizeCanvas();
+  window.addEventListener('resize', resizeCanvas, { passive: true });
+
+  // Mouse interaction: spawn horizontal glitch needles near cursor
+  window.addEventListener(
+    'mousemove',
+    function (e) {
+      if (bgIsPaused) return;
+      if (Math.random() < 0.35 && mouseGlitchSparks.length < 16) {
+        mouseGlitchSparks.push({
+          x: e.clientX + (Math.random() * 80 - 40),
+          y: e.clientY + (Math.random() * 24 - 12),
+          w: 15 + Math.random() * 55,
+          h: 1 + Math.random() * 2.5,
+          color: Math.random() > 0.5 ? '#00e5ff' : '#ff0055',
+          life: 1.0,
+        });
+      }
+    },
+    { passive: true }
+  );
+
+  // Horizontal scanline needle streaks (persistent drifting lines)
+  var NEEDLE_COUNT = width < 780 ? 25 : 45;
+  var needles = [];
+  var GLITCH_COLORS = [
+    '#ffffff',
+    '#00e5ff',
+    '#ff007f',
+    '#00ff66',
+    '#ffea00',
+    '#2979ff',
+  ];
+  for (var i = 0; i < NEEDLE_COUNT; i++) {
+    needles.push({
+      x: Math.random() * width,
+      y: Math.random() * height,
+      len: 12 + Math.random() * 70,
+      h: Math.random() > 0.85 ? 2.5 : 1,
+      speed: (Math.random() * 350 + 150) * (Math.random() > 0.5 ? 1 : -1),
+      color: GLITCH_COLORS[Math.floor(Math.random() * GLITCH_COLORS.length)],
+      alpha: 0.25 + Math.random() * 0.65,
+    });
+  }
+
+  // Datamosh pixel blocks (bursts of RGB corrupted clusters)
+  var glitchBlocks = [];
+  var nextBlockTimer = 0;
+
+  var lastTime = performance.now();
+
+  function drawGlitchFrame(now) {
+    if (matchMedia('(prefers-reduced-motion:reduce)').matches) {
+      bgCtx.clearRect(0, 0, width, height);
+      return;
+    }
+
+    var dt = Math.min((now - lastTime) / 1000, 0.1);
+    lastTime = now;
+
+    bgCtx.clearRect(0, 0, width, height);
+
+    if (!bgIsPaused) {
+      // 1. Update and draw horizontal needle streaks (RF analog noise)
+      for (var n = 0; n < needles.length; n++) {
+        var nd = needles[n];
+        nd.x += nd.speed * dt;
+        if (nd.x > width + 100) nd.x = -100;
+        if (nd.x < -100) nd.x = width + 100;
+
+        // Occasional vertical scanline jitter
+        if (Math.random() < 0.04) {
+          nd.y = (nd.y + Math.random() * 20 - 10 + height) % height;
+        }
+
+        bgCtx.fillStyle = nd.color;
+        bgCtx.globalAlpha = nd.alpha * (0.6 + 0.4 * Math.sin(now * 0.01 + n));
+        bgCtx.fillRect(nd.x, Math.floor(nd.y), nd.len, nd.h);
+      }
+
+      // 2. Datamosh macroblocks (RGB corruption clusters like the user GIF)
+      nextBlockTimer -= dt;
+      if (nextBlockTimer <= 0) {
+        nextBlockTimer = 0.06 + Math.random() * 0.14;
+        glitchBlocks = [];
+        var clusterCount = Math.floor(1 + Math.random() * 3);
+        for (var c = 0; c < clusterCount; c++) {
+          var clusterY = Math.random() * height;
+          var clusterX = Math.random() * width;
+          var blockSize = Math.floor(2 + Math.random() * 4);
+          for (var b = 0; b < blockSize; b++) {
+            glitchBlocks.push({
+              x: clusterX + (Math.random() * 120 - 60),
+              y: clusterY + (Math.random() * 30 - 15),
+              w: 8 + Math.random() * 45,
+              h: 2 + Math.random() * 12,
+              color:
+                GLITCH_COLORS[
+                  Math.floor(Math.random() * GLITCH_COLORS.length)
+                ],
+              alpha: 0.4 + Math.random() * 0.55,
+            });
+          }
+        }
+      }
+
+      for (var gb = 0; gb < glitchBlocks.length; gb++) {
+        var blk = glitchBlocks[gb];
+        bgCtx.fillStyle = blk.color;
+        bgCtx.globalAlpha = blk.alpha;
+        bgCtx.fillRect(blk.x, Math.floor(blk.y), blk.w, blk.h);
+      }
+
+      // 3. Mouse static sparks
+      for (var ms = mouseGlitchSparks.length - 1; ms >= 0; ms--) {
+        var spark = mouseGlitchSparks[ms];
+        spark.life -= dt * 2.8;
+        if (spark.life <= 0) {
+          mouseGlitchSparks.splice(ms, 1);
+          continue;
+        }
+        bgCtx.fillStyle = spark.color;
+        bgCtx.globalAlpha = spark.life * 0.75;
+        bgCtx.fillRect(spark.x, spark.y, spark.w, spark.h);
+      }
+    }
+
+    // 4. Tracking tear / Horizontal slice displacement
+    if (bgTrackingGlitch.active) {
+      bgTrackingGlitch.timer -= dt;
+      if (bgTrackingGlitch.timer <= 0) {
+        bgTrackingGlitch.active = false;
+      } else {
+        bgCtx.save();
+        for (var g = 0; g < bgTrackingGlitch.scanlines.length; g++) {
+          var sl = bgTrackingGlitch.scanlines[g];
+          sl.y = (sl.y + sl.speed * dt * 450) % height;
+          var sy = Math.floor(sl.y);
+
+          bgCtx.fillStyle = sl.color;
+          bgCtx.globalAlpha = 0.45;
+          bgCtx.fillRect(0, sy, width, sl.height);
+
+          bgCtx.fillStyle = '#ffffff';
+          bgCtx.globalAlpha = 0.8;
+          for (var dot = 0; dot < 24; dot++) {
+            var dotX = Math.random() * width;
+            var dotW = 6 + Math.random() * 35;
+            bgCtx.fillRect(dotX, sy + Math.random() * sl.height, dotW, 1.5);
+          }
+        }
+        bgCtx.restore();
+      }
+    }
+
+    // Periodic random mini tracking slice (every 4-7s)
+    if (!bgIsPaused && !bgTrackingGlitch.active && Math.random() < 0.004) {
+      triggerBackgroundGlitch(0.5);
+    }
+
+    // 5. Paused VHS Tape State
+    if (bgIsPaused) {
+      bgCtx.save();
+      var pauseY = height * 0.48 + Math.sin(now * 0.006) * 6;
+      bgCtx.fillStyle = 'rgba(0, 0, 0, 0.55)';
+      bgCtx.fillRect(0, pauseY - 25, width, 50);
+
+      bgCtx.fillStyle = 'rgba(255, 255, 255, 0.35)';
+      for (var p = 0; p < 45; p++) {
+        bgCtx.fillRect(
+          Math.random() * width,
+          pauseY - 20 + Math.random() * 40,
+          Math.random() * 55,
+          2
+        );
+      }
+      bgCtx.restore();
+    }
+
+    requestAnimationFrame(drawGlitchFrame);
+  }
+
+  requestAnimationFrame(drawGlitchFrame);
+})();
 function updateLens() {
   var card = document.querySelector('.card');
   if (!card) return;
@@ -49,6 +271,7 @@ window.addEventListener('resize', updateLens);
 
 function tear() {
   if (matchMedia('(prefers-reduced-motion:reduce)').matches) return;
+  triggerBackgroundGlitch(0.7);
   var d = document.getElementById('td'),
     t = document.getElementById('tt'),
     t0 = performance.now(),
@@ -502,6 +725,7 @@ if (btnPlay) {
   var isPaused = false;
   btnPlay.addEventListener('click', function () {
     isPaused = !isPaused;
+    setBackgroundPaused(isPaused);
     document.body.classList.toggle('paused', isPaused);
     btnPlay.textContent = isPaused ? '⏸ PAUSE' : '▶ PLAY';
     btnPlay.classList.toggle('flashing', isPaused);
@@ -513,6 +737,7 @@ var btnTracking = document.getElementById('btn-tracking');
 if (btnTracking) {
   btnTracking.addEventListener('click', function () {
     tear();
+    triggerBackgroundGlitch(1.0);
     playGlitchSfx();
   });
 }
