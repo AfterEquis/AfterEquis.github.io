@@ -80,21 +80,251 @@ function setBackgroundPaused(paused) {
   var width = window.innerWidth;
   var height = window.innerHeight;
 
-  function resizeCanvas() {
-    width = window.innerWidth;
-    height = window.innerHeight;
-    bgCanvas.width = Math.floor(width * dpr);
-    bgCanvas.height = Math.floor(height * dpr);
-    bgCtx.setTransform(1, 0, 0, 1, 0, 0);
-    bgCtx.scale(dpr, dpr);
-  }
-  resizeCanvas();
-  window.addEventListener('resize', resizeCanvas, { passive: true });
+  // --- Offscreen Sprite Atlas for Tactical Glyphs (Hardware-Accelerated Blitting) ---
+  var S = 32;
+  function createGlyphAtlas() {
+    var atlas = document.createElement('canvas');
+    var glyphCount = 12;
+    var colorCount = 4; // 0: Volt Yellow, 1: Black, 2: Safety Orange, 3: Electric Cyan
+    atlas.width = S * glyphCount;
+    atlas.height = S * colorCount;
+    var aCtx = atlas.getContext('2d');
+    var colors = ['#dfff00', '#05070a', '#ff3b00', '#00f0ff'];
 
-  // Mouse interaction: spawn horizontal glitch needles near cursor
+    for (var c = 0; c < colors.length; c++) {
+      var col = colors[c];
+      var y0 = c * S;
+
+      for (var g = 0; g < glyphCount; g++) {
+        var x0 = g * S;
+        var cx = x0 + S / 2;
+        var cy = y0 + S / 2;
+
+        aCtx.strokeStyle = col;
+        aCtx.fillStyle = col;
+        aCtx.lineWidth = 2;
+        aCtx.lineCap = 'square';
+
+        switch (g) {
+          case 0: // Empty
+            break;
+          case 1: // Dot ·
+            aCtx.beginPath();
+            aCtx.arc(cx, cy, 2.5, 0, Math.PI * 2);
+            aCtx.fill();
+            break;
+          case 2: // Cross ✕
+            aCtx.beginPath();
+            aCtx.moveTo(cx - 6, cy - 6); aCtx.lineTo(cx + 6, cy + 6);
+            aCtx.moveTo(cx + 6, cy - 6); aCtx.lineTo(cx - 6, cy + 6);
+            aCtx.stroke();
+            break;
+          case 3: // Circle ○
+            aCtx.beginPath();
+            aCtx.arc(cx, cy, 6, 0, Math.PI * 2);
+            aCtx.stroke();
+            break;
+          case 4: // Bullseye ◎
+            aCtx.beginPath();
+            aCtx.arc(cx, cy, 7, 0, Math.PI * 2);
+            aCtx.stroke();
+            aCtx.beginPath();
+            aCtx.arc(cx, cy, 2.5, 0, Math.PI * 2);
+            aCtx.fill();
+            break;
+          case 5: // Square □
+            aCtx.strokeRect(cx - 6, cy - 6, 12, 12);
+            break;
+          case 6: // Plus +
+            aCtx.beginPath();
+            aCtx.moveTo(cx - 6, cy); aCtx.lineTo(cx + 6, cy);
+            aCtx.moveTo(cx, cy - 6); aCtx.lineTo(cx, cy + 6);
+            aCtx.stroke();
+            break;
+          case 7: // Slash /
+            aCtx.beginPath();
+            aCtx.moveTo(cx - 5, cy + 6); aCtx.lineTo(cx + 5, cy - 6);
+            aCtx.stroke();
+            break;
+          case 8: // Backslash \
+            aCtx.beginPath();
+            aCtx.moveTo(cx - 5, cy - 6); aCtx.lineTo(cx + 5, cy + 6);
+            aCtx.stroke();
+            break;
+          case 9: // Quad dots ::
+            aCtx.fillRect(cx - 5, cy - 5, 2.5, 2.5);
+            aCtx.fillRect(cx + 2.5, cy - 5, 2.5, 2.5);
+            aCtx.fillRect(cx - 5, cy + 2.5, 2.5, 2.5);
+            aCtx.fillRect(cx + 2.5, cy + 2.5, 2.5, 2.5);
+            break;
+          case 10: // Target reticle ⌖
+            aCtx.beginPath();
+            aCtx.arc(cx, cy, 5, 0, Math.PI * 2);
+            aCtx.stroke();
+            aCtx.beginPath();
+            aCtx.moveTo(cx - 8, cy); aCtx.lineTo(cx - 5, cy);
+            aCtx.moveTo(cx + 5, cy); aCtx.lineTo(cx + 8, cy);
+            aCtx.moveTo(cx, cy - 8); aCtx.lineTo(cx, cy - 5);
+            aCtx.moveTo(cx, cy + 5); aCtx.lineTo(cx, cy + 8);
+            aCtx.stroke();
+            break;
+          case 11: // Solid block ■
+            aCtx.fillRect(cx - 5, cy - 5, 10, 10);
+            break;
+        }
+      }
+    }
+    return atlas;
+  }
+  var marathonGlyphAtlas = createGlyphAtlas();
+
+  // --- Marathon Procedural Geometry (Image 1 Monoliths & Cutouts) ---
+  var MONOLITHS = [
+    // Top-Right Stepped Monolith (Image 1)
+    { x1: 0.68, y1: 0.0, x2: 1.0, y2: 0.44 },
+    { x1: 0.78, y1: 0.44, x2: 1.0, y2: 0.58 },
+    { x1: 0.88, y1: 0.58, x2: 1.0, y2: 0.72 },
+    // Lower-Left Monolith (Image 1)
+    { x1: 0.0, y1: 0.54, x2: 0.24, y2: 0.68 },
+    { x1: 0.0, y1: 0.0, x2: 0.07, y2: 0.30 },
+    // Bottom-Center-Right Monolith (Image 1)
+    { x1: 0.46, y1: 0.88, x2: 0.64, y2: 1.0 },
+    // Mid-Right Column Block
+    { x1: 0.54, y1: 0.22, x2: 0.64, y2: 0.52 },
+  ];
+
+  var MONOLITH_CUTOUTS = [
+    // Inverted Black Cutout in Top-Right
+    { x1: 0.74, y1: 0.18, x2: 0.86, y2: 0.40 },
+    // Inverted Notch in Lower-Left
+    { x1: 0.05, y1: 0.58, x2: 0.14, y2: 0.65 },
+  ];
+
+  function isInsideBoxes(xn, yn, boxes) {
+    for (var i = 0; i < boxes.length; i++) {
+      var b = boxes[i];
+      if (xn >= b.x1 && xn <= b.x2 && yn >= b.y1 && yn <= b.y2) return true;
+    }
+    return false;
+  }
+
+  // Barcode telemetry bars
+  var barcodeBars = [];
+  function initBarcodeBars() {
+    barcodeBars = [];
+    var bx = 0;
+    var widths = [1.5, 2, 3.5, 1.5, 5, 2, 1.5, 3, 2, 4, 1.5, 2.5, 1.5, 3, 2, 1.5, 4.5, 2, 3, 1.5, 2, 4, 1.5];
+    for (var b = 0; b < widths.length; b++) {
+      var w = widths[b];
+      barcodeBars.push({ x: bx, w: w });
+      bx += w + (b % 3 === 0 ? 3.5 : 2);
+    }
+  }
+  initBarcodeBars();
+
+  // Marathon Matrix Grid
+  var M_CELL = 24;
+  var mCols = 0, mRows = 0;
+  var mGrid = [];
+
+  function initMarathonGrid() {
+    mCols = Math.ceil(width / M_CELL);
+    mRows = Math.ceil(height / M_CELL);
+    mGrid = [];
+
+    for (var r = 0; r < mRows; r++) {
+      for (var c = 0; c < mCols; c++) {
+        var xn = (c * M_CELL) / width;
+        var yn = (r * M_CELL) / height;
+
+        var inCutout = isInsideBoxes(xn, yn, MONOLITH_CUTOUTS);
+        var inMonolith = !inCutout && isInsideBoxes(xn, yn, MONOLITHS);
+
+        var glyph = 0;
+        var colorRow = 0; // 0: Volt, 1: Black, 2: Orange, 3: Cyan
+        var alpha = 0.75;
+
+        if (inMonolith) {
+          // Inside solid yellow monolith: black glyphs on yellow
+          if (Math.random() < 0.38) {
+            glyph = Math.floor(1 + Math.random() * 9);
+            colorRow = 1; // Black
+            alpha = 0.9;
+          } else {
+            glyph = 0;
+          }
+        } else {
+          // In dark field: Image 1 cluster patterns & runner stripes
+          if (c % 14 === 2) {
+            glyph = r % 2 === 0 ? 4 : 2; // ◎ and ✕
+            alpha = 0.85;
+          } else if (c % 14 === 3) {
+            glyph = r % 2 === 0 ? 5 : 3; // □ and ○
+            alpha = 0.8;
+          } else if (c % 14 === 8) {
+            glyph = 6; // +
+            alpha = 0.7;
+          } else {
+            var cluster =
+              Math.sin(c * 0.28) * Math.cos(r * 0.22) +
+              Math.sin((c + r) * 0.16);
+
+            if (cluster > 0.55) {
+              var gPool = [2, 3, 4, 5, 10];
+              glyph = gPool[Math.floor(Math.random() * gPool.length)];
+              alpha = 0.65 + Math.random() * 0.3;
+            } else if (cluster > 0.0) {
+              var gPool2 = [6, 7, 8, 9];
+              glyph = gPool2[Math.floor(Math.random() * gPool2.length)];
+              alpha = 0.5 + Math.random() * 0.3;
+            } else if (cluster > -0.65) {
+              glyph = 1; // Dot ·
+              alpha = 0.22 + Math.random() * 0.28;
+            } else {
+              glyph = 0; // Negative space
+            }
+          }
+
+          var colRand = Math.random();
+          if (colRand < 0.82) {
+            colorRow = 0; // Volt Yellow
+          } else if (colRand < 0.92) {
+            colorRow = 2; // Safety Orange
+          } else {
+            colorRow = 3; // Electric Cyan
+          }
+        }
+
+        mGrid.push({
+          c: c,
+          r: r,
+          isSolid: inMonolith,
+          glyph: glyph,
+          baseGlyph: glyph,
+          colorRow: colorRow,
+          baseAlpha: alpha,
+          flickerTimer: Math.random() * 5,
+        });
+      }
+    }
+  }
+
+  // Mouse interaction state
+  var marathonMouseX = -999, marathonMouseY = -999;
+  var marathonMouseActive = false;
+  var mouseInactiveTimer = null;
+
   window.addEventListener(
     'mousemove',
     function (e) {
+      marathonMouseX = e.clientX;
+      marathonMouseY = e.clientY;
+      marathonMouseActive = true;
+      clearTimeout(mouseInactiveTimer);
+      mouseInactiveTimer = setTimeout(function () {
+        marathonMouseActive = false;
+      }, 3500);
+
       if (bgIsPaused) return;
       if (Math.random() < 0.35 && mouseGlitchSparks.length < 16) {
         mouseGlitchSparks.push({
@@ -113,11 +343,24 @@ function setBackgroundPaused(paused) {
     { passive: true }
   );
 
+  function resizeCanvas() {
+    width = window.innerWidth;
+    height = window.innerHeight;
+    bgCanvas.width = Math.floor(width * dpr);
+    bgCanvas.height = Math.floor(height * dpr);
+    bgCtx.setTransform(1, 0, 0, 1, 0, 0);
+    bgCtx.scale(dpr, dpr);
+    initNeedles();
+    initMarathonGrid();
+  }
+  resizeCanvas();
+  window.addEventListener('resize', resizeCanvas, { passive: true });
+
   function getGlitchPalette() {
     return currentTheme === 'marathon' ? GLITCH_COLORS_MARATHON : GLITCH_COLORS_VHS;
   }
 
-  // Horizontal scanline needle streaks (persistent drifting lines)
+  // --- VHS Needle Streaks & Datamosh ---
   var NEEDLE_COUNT = width < 780 ? 25 : 45;
   var needles = [];
   function initNeedles() {
@@ -136,34 +379,29 @@ function setBackgroundPaused(paused) {
     }
   }
   initNeedles();
-  refreshGlitchPalette = initNeedles;
+  refreshGlitchPalette = function () {
+    initNeedles();
+    initMarathonGrid();
+  };
 
-  // Datamosh pixel blocks (bursts of RGB corrupted clusters)
   var glitchBlocks = [];
   var nextBlockTimer = 0;
+  var marathonScanY = 0;
+  var marathonDatamoshTimer = 0;
+  var marathonDatamosh = { active: false, y: 0, h: 0, shift: 0, timer: 0 };
 
-  var lastTime = performance.now();
-
-  function drawGlitchFrame(now) {
-    if (matchMedia('(prefers-reduced-motion:reduce)').matches) {
-      bgCtx.clearRect(0, 0, width, height);
-      return;
-    }
-
-    var dt = Math.min((now - lastTime) / 1000, 0.1);
-    lastTime = now;
-
+  // --- Theme 1 Frame Renderer: Original VHS CRT Datamosh ---
+  function drawVhsFrame(now, dt) {
     bgCtx.clearRect(0, 0, width, height);
 
     if (!bgIsPaused) {
-      // 1. Update and draw horizontal needle streaks (RF analog noise)
+      // 1. Horizontal needle streaks (RF analog noise)
       for (var n = 0; n < needles.length; n++) {
         var nd = needles[n];
         nd.x += nd.speed * dt;
         if (nd.x > width + 100) nd.x = -100;
         if (nd.x < -100) nd.x = width + 100;
 
-        // Occasional vertical scanline jitter
         if (Math.random() < 0.04) {
           nd.y = (nd.y + Math.random() * 20 - 10 + height) % height;
         }
@@ -173,7 +411,7 @@ function setBackgroundPaused(paused) {
         bgCtx.fillRect(nd.x, Math.floor(nd.y), nd.len, nd.h);
       }
 
-      // 2. Datamosh macroblocks (RGB corruption clusters like the user GIF)
+      // 2. Datamosh macroblocks
       nextBlockTimer -= dt;
       if (nextBlockTimer <= 0) {
         nextBlockTimer = 0.06 + Math.random() * 0.14;
@@ -218,7 +456,287 @@ function setBackgroundPaused(paused) {
       }
     }
 
-    // 4. Tracking tear / Horizontal slice displacement
+    // 4. Paused VHS Tape State
+    if (bgIsPaused) {
+      bgCtx.save();
+      var pauseY = height * 0.48 + Math.sin(now * 0.006) * 6;
+      bgCtx.fillStyle = 'rgba(0, 0, 0, 0.55)';
+      bgCtx.fillRect(0, pauseY - 25, width, 50);
+
+      bgCtx.fillStyle = 'rgba(255, 255, 255, 0.35)';
+      for (var p = 0; p < 45; p++) {
+        bgCtx.fillRect(
+          Math.random() * width,
+          pauseY - 20 + Math.random() * 40,
+          Math.random() * 55,
+          2
+        );
+      }
+      bgCtx.restore();
+    }
+  }
+
+  // --- Theme 2 Frame Renderer: Marathon Tactical Glyphs & Telemetry Matrix ---
+  function drawMarathonFrame(now, dt) {
+    // 1. Clear to void black
+    bgCtx.fillStyle = '#05070a';
+    bgCtx.fillRect(0, 0, width, height);
+
+    // 2. Solid Volt Monoliths (Image 1)
+    bgCtx.fillStyle = '#dfff00';
+    for (var m = 0; m < MONOLITHS.length; m++) {
+      var mono = MONOLITHS[m];
+      bgCtx.fillRect(
+        mono.x1 * width,
+        mono.y1 * height,
+        (mono.x2 - mono.x1) * width,
+        (mono.y2 - mono.y1) * height
+      );
+    }
+
+    // 3. Inverted Black Cutout Windows (Image 1)
+    bgCtx.fillStyle = '#05070a';
+    for (var k = 0; k < MONOLITH_CUTOUTS.length; k++) {
+      var cut = MONOLITH_CUTOUTS[k];
+      bgCtx.fillRect(
+        cut.x1 * width,
+        cut.y1 * height,
+        (cut.x2 - cut.x1) * width,
+        (cut.y2 - cut.y1) * height
+      );
+    }
+
+    // 4. Update and Draw Scanline Laser Sweep (Image 2)
+    marathonScanY = (marathonScanY + dt * 115) % (height + 250);
+    var currentLaserY = marathonScanY - 100;
+    if (currentLaserY >= 0 && currentLaserY <= height) {
+      bgCtx.save();
+      bgCtx.fillStyle = 'rgba(223, 255, 0, 0.4)';
+      bgCtx.fillRect(0, currentLaserY, width, 1.5);
+      var grad = bgCtx.createLinearGradient(0, currentLaserY - 35, 0, currentLaserY);
+      grad.addColorStop(0, 'rgba(223, 255, 0, 0)');
+      grad.addColorStop(1, 'rgba(223, 255, 0, 0.1)');
+      bgCtx.fillStyle = grad;
+      bgCtx.fillRect(0, currentLaserY - 35, width, 35);
+      bgCtx.restore();
+    }
+
+    // 5. Draw Tactical Glyphs via Cached Sprite Atlas
+    for (var i = 0; i < mGrid.length; i++) {
+      var cell = mGrid[i];
+      if (cell.glyph === 0) continue;
+
+      var cx = cell.c * M_CELL;
+      var cy = cell.r * M_CELL;
+
+      var laserDist = Math.abs(cy - currentLaserY);
+      var isLaserNear = laserDist < 50;
+
+      var isMouseNear = false;
+      if (marathonMouseActive) {
+        var mdx = cx + M_CELL / 2 - marathonMouseX;
+        var mdy = cy + M_CELL / 2 - marathonMouseY;
+        isMouseNear = (mdx * mdx + mdy * mdy) < (130 * 130);
+      }
+
+      var curAlpha = cell.baseAlpha;
+      var curColor = cell.colorRow;
+
+      if (isLaserNear && !cell.isSolid) {
+        curAlpha = Math.min(1.0, curAlpha + (1 - laserDist / 50) * 0.45);
+      }
+      if (isMouseNear && !cell.isSolid) {
+        curAlpha = 1.0;
+        if (Math.random() < 0.25) curColor = 3; // Shift to electric cyan
+      }
+
+      cell.flickerTimer -= dt;
+      if (cell.flickerTimer <= 0) {
+        cell.flickerTimer = 2.5 + Math.random() * 5.0;
+        if (!cell.isSolid && cell.baseGlyph > 1 && Math.random() < 0.4) {
+          cell.glyph = Math.floor(2 + Math.random() * 9);
+        } else {
+          cell.glyph = cell.baseGlyph;
+        }
+      }
+
+      bgCtx.globalAlpha = curAlpha;
+      bgCtx.drawImage(
+        marathonGlyphAtlas,
+        cell.glyph * S,
+        curColor * S,
+        S,
+        S,
+        cx,
+        cy,
+        M_CELL,
+        M_CELL
+      );
+    }
+    bgCtx.globalAlpha = 1.0;
+
+    // 6. Draw Telemetry HUD Badges (Image 2)
+    drawMarathonTelemetry(now);
+
+    // 7. Periodic Datamosh Horizontal Displacement Slices (Image 2)
+    marathonDatamoshTimer -= dt;
+    if (marathonDatamoshTimer <= 0) {
+      marathonDatamoshTimer = 3.6 + Math.random() * 3.0;
+      marathonDatamosh = {
+        active: true,
+        y: Math.random() * (height - 80),
+        h: 25 + Math.random() * 45,
+        shift: (Math.random() * 24 + 14) * (Math.random() > 0.5 ? 1 : -1),
+        timer: 0.12,
+      };
+    }
+
+    if (marathonDatamosh.active) {
+      marathonDatamosh.timer -= dt;
+      if (marathonDatamosh.timer <= 0) {
+        marathonDatamosh.active = false;
+      } else {
+        bgCtx.save();
+        var sy = marathonDatamosh.y;
+        var sh = marathonDatamosh.h;
+        var shift = marathonDatamosh.shift;
+
+        bgCtx.drawImage(
+          bgCanvas,
+          0,
+          Math.floor(sy * dpr),
+          Math.floor(width * dpr),
+          Math.floor(sh * dpr),
+          shift,
+          sy,
+          width,
+          sh
+        );
+
+        bgCtx.fillStyle = '#ff3b00';
+        bgCtx.globalAlpha = 0.45;
+        bgCtx.fillRect(0, sy, width, 2);
+        bgCtx.fillStyle = '#00f0ff';
+        bgCtx.fillRect(0, sy + sh - 2, width, 2);
+        bgCtx.restore();
+      }
+    }
+
+    // 8. Interactive Mouse Tactical Crosshair
+    if (marathonMouseActive && marathonMouseX > 0 && marathonMouseY > 0) {
+      drawMouseReticle();
+    }
+  }
+
+  function drawMarathonTelemetry(now) {
+    bgCtx.save();
+    var bx = Math.max(20, Math.floor(width * 0.035));
+    var by = Math.max(28, Math.floor(height * 0.08));
+
+    if (width > 680) {
+      // Vertical Barcode Panel
+      bgCtx.fillStyle = 'rgba(5, 7, 10, 0.76)';
+      bgCtx.strokeStyle = 'rgba(223, 255, 0, 0.45)';
+      bgCtx.lineWidth = 1;
+      bgCtx.fillRect(bx, by, 180, 116);
+      bgCtx.strokeRect(bx, by, 180, 116);
+
+      bgCtx.font = '13px VT323, monospace';
+      bgCtx.fillStyle = '#dfff00';
+      bgCtx.fillText('// RUNNER TELEMETRY', bx + 10, by + 18);
+
+      for (var b = 0; b < barcodeBars.length; b++) {
+        var bar = barcodeBars[b];
+        if (bar.x + bar.w > 160) break;
+        bgCtx.fillRect(bx + 10 + bar.x, by + 26, bar.w, 36);
+      }
+
+      bgCtx.fillStyle = '#f1f3fb';
+      bgCtx.font = '11px VT323, monospace';
+      bgCtx.fillText('2999.1/156  ·  A1.2 // SEC.VAL', bx + 10, by + 78);
+      bgCtx.fillStyle = '#00f0ff';
+      bgCtx.fillText('BUFFER: 180Hz  STATUS: ARSENAL', bx + 10, by + 94);
+      bgCtx.fillStyle = '#ff3b00';
+      bgCtx.fillText('EXTR: 99.4%   DESPLEGADO', bx + 10, by + 108);
+
+      // Large 99 Badge from Image 2
+      if (width > 980) {
+        var rx = width - 140;
+        var ry = by + 20;
+
+        bgCtx.strokeStyle = '#dfff00';
+        bgCtx.lineWidth = 1.5;
+        bgCtx.strokeRect(rx, ry, 34, 34);
+        bgCtx.beginPath();
+        bgCtx.moveTo(rx + 6, ry + 28); bgCtx.lineTo(rx + 28, ry + 6);
+        bgCtx.moveTo(rx + 12, ry + 28); bgCtx.lineTo(rx + 28, ry + 12);
+        bgCtx.moveTo(rx + 18, ry + 28); bgCtx.lineTo(rx + 28, ry + 18);
+        bgCtx.stroke();
+
+        bgCtx.font = '38px VT323, monospace';
+        bgCtx.fillStyle = '#dfff00';
+        bgCtx.fillText('99', rx + 44, ry + 32);
+
+        bgCtx.font = '11px VT323, monospace';
+        bgCtx.fillStyle = '#00f0ff';
+        bgCtx.fillText('VALENCIA // 39°N', rx, ry + 52);
+      }
+    }
+    bgCtx.restore();
+  }
+
+  function drawMouseReticle() {
+    bgCtx.save();
+    var r = 16;
+    bgCtx.strokeStyle = 'rgba(223, 255, 0, 0.75)';
+    bgCtx.lineWidth = 1.5;
+
+    bgCtx.beginPath();
+    bgCtx.moveTo(marathonMouseX - r, marathonMouseY - r + 6);
+    bgCtx.lineTo(marathonMouseX - r, marathonMouseY - r);
+    bgCtx.lineTo(marathonMouseX - r + 6, marathonMouseY - r);
+
+    bgCtx.moveTo(marathonMouseX + r - 6, marathonMouseY - r);
+    bgCtx.lineTo(marathonMouseX + r, marathonMouseY - r);
+    bgCtx.lineTo(marathonMouseX + r, marathonMouseY - r + 6);
+
+    bgCtx.moveTo(marathonMouseX - r, marathonMouseY + r - 6);
+    bgCtx.lineTo(marathonMouseX - r, marathonMouseY + r);
+    bgCtx.lineTo(marathonMouseX - r + 6, marathonMouseY + r);
+
+    bgCtx.moveTo(marathonMouseX + r - 6, marathonMouseY + r);
+    bgCtx.lineTo(marathonMouseX + r, marathonMouseY + r);
+    bgCtx.lineTo(marathonMouseX + r, marathonMouseY + r - 6);
+    bgCtx.stroke();
+
+    bgCtx.font = '12px VT323, monospace';
+    bgCtx.fillStyle = '#dfff00';
+    bgCtx.fillText(
+      'LOC [' + Math.floor(marathonMouseX) + ',' + Math.floor(marathonMouseY) + ']',
+      marathonMouseX + r + 6,
+      marathonMouseY - 4
+    );
+    bgCtx.restore();
+  }
+
+  var lastTime = performance.now();
+
+  function drawGlitchFrame(now) {
+    if (matchMedia('(prefers-reduced-motion:reduce)').matches) {
+      bgCtx.clearRect(0, 0, width, height);
+      return;
+    }
+
+    var dt = Math.min((now - lastTime) / 1000, 0.1);
+    lastTime = now;
+
+    if (currentTheme === 'marathon') {
+      drawMarathonFrame(now, dt);
+    } else {
+      drawVhsFrame(now, dt);
+    }
+
+    // Tracking tear / Horizontal slice displacement
     if (bgTrackingGlitch.active) {
       bgTrackingGlitch.timer -= dt;
       if (bgTrackingGlitch.timer <= 0) {
@@ -246,28 +764,9 @@ function setBackgroundPaused(paused) {
       }
     }
 
-    // Periodic random mini tracking slice (every 4-7s)
-    if (!bgIsPaused && !bgTrackingGlitch.active && Math.random() < 0.004) {
+    // Periodic random mini tracking slice in VHS mode (every 4-7s)
+    if (currentTheme !== 'marathon' && !bgIsPaused && !bgTrackingGlitch.active && Math.random() < 0.004) {
       triggerBackgroundGlitch(0.5);
-    }
-
-    // 5. Paused VHS Tape State
-    if (bgIsPaused) {
-      bgCtx.save();
-      var pauseY = height * 0.48 + Math.sin(now * 0.006) * 6;
-      bgCtx.fillStyle = 'rgba(0, 0, 0, 0.55)';
-      bgCtx.fillRect(0, pauseY - 25, width, 50);
-
-      bgCtx.fillStyle = 'rgba(255, 255, 255, 0.35)';
-      for (var p = 0; p < 45; p++) {
-        bgCtx.fillRect(
-          Math.random() * width,
-          pauseY - 20 + Math.random() * 40,
-          Math.random() * 55,
-          2
-        );
-      }
-      bgCtx.restore();
     }
 
     requestAnimationFrame(drawGlitchFrame);
@@ -780,6 +1279,12 @@ function applyTheme(theme, isUserClick) {
 
   if (typeof refreshGlitchPalette === 'function') {
     refreshGlitchPalette();
+  }
+
+  if (theme === 'marathon') {
+    if (bgVideo) bgVideo.pause();
+  } else {
+    if (bgVideo && !bgIsPaused) bgVideo.play();
   }
 
   if (isUserClick) {
