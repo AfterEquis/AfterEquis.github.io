@@ -127,29 +127,6 @@ a.item:hover{background:rgba(255,255,255,.15)}
   100%{transform:scale(1.02) translate(0,0);filter:none}
 }
 
-/* Terminal Card (CH 03 SETUP) */
-.terminal-card{display:flex;flex-direction:column;border-radius:18px;background:rgba(5,7,14,.85);border:1px solid rgba(255,255,255,.16);box-shadow:inset 0 1px 0 rgba(255,255,255,.15),0 14px 34px rgba(0,0,0,.5);overflow:hidden}
-.term-header{display:flex;align-items:center;gap:12px;padding:10px 16px;background:rgba(255,255,255,.05);border-bottom:1px solid rgba(255,255,255,.1)}
-.term-dots{display:flex;gap:6px}
-.term-dots span{width:10px;height:10px;border-radius:50%}
-.term-dots span:nth-child(1){background:#ff5f56}
-.term-dots span:nth-child(2){background:#ffbd2e}
-.term-dots span:nth-child(3){background:#27c93f}
-.term-title{font-family:var(--osd);font-size:16px;color:var(--muted);letter-spacing:.05em}
-.term-body{padding:16px 20px}
-.term-grid{display:grid;grid-template-columns:auto 1fr;gap:20px;align-items:start}
-.term-ascii{margin:0;font-family:monospace;font-size:11px;line-height:1.2;color:#00e5ff;text-shadow:0 0 10px rgba(0,229,255,.4);user-select:none}
-.term-specs{display:flex;flex-direction:column;gap:5px;font-size:14px;line-height:1.4}
-.t-row{display:grid;grid-template-columns:85px 1fr;gap:8px}
-.t-k{font-weight:600;color:#ff3b2f;font-family:var(--osd);letter-spacing:.04em}
-.t-v{color:#e9ecf6}
-.term-palette{display:flex;gap:4px;margin-top:8px}
-.term-palette i{width:14px;height:10px;border-radius:2px;background:var(--pc)}
-@media(max-width:640px){
-  .term-grid{grid-template-columns:1fr}
-  .term-ascii{display:none}
-}
-
 /* YouTube Videos Grid (CH 02) */
 .yt-container{display:flex;flex-direction:column;gap:10px}
 .yt-mini-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
