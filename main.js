@@ -1,32 +1,33 @@
-var bg = document.getElementById('bg'),
-  cols = [
-    '#2f4bff',
-    '#6a3df0',
-    '#ff3b2f',
-    '#cfe6ff',
-    '#3a1410',
-    '#2f4bff',
-    '#ff3b2f',
-  ];
-for (var k = 0, n = innerWidth < 780 ? 16 : 34; k < n; k++) {
+var bg = document.getElementById('bg');
+var cols = [
+  'linear-gradient(90deg, transparent, rgba(47,75,255,.75), transparent)',
+  'linear-gradient(90deg, transparent, rgba(255,59,47,.75), transparent)',
+  'linear-gradient(90deg, rgba(255,59,47,.85) 0%, rgba(47,75,255,.85) 100%)',
+  'linear-gradient(90deg, transparent, rgba(106,61,240,.7), transparent)',
+  'linear-gradient(90deg, transparent, rgba(207,230,255,.85), transparent)',
+];
+for (var k = 0, n = innerWidth < 780 ? 22 : 44; k < n; k++) {
   var i = document.createElement('i');
+  var isNeedle = k % 3 === 0;
+  var height = isNeedle ? 1 + Math.random() * 3 : 4 + Math.random() * 22;
+  var width = isNeedle ? 25 + Math.random() * 55 : 16 + Math.random() * 30;
   i.style.cssText =
     'top:' +
     Math.random() * 100 +
     '%;left:' +
-    (k % 2 ? Math.random() * 20 - 12 : 62 + Math.random() * 30) +
+    (k % 2 ? Math.random() * 25 - 10 : 58 + Math.random() * 36) +
     '%;width:' +
-    (14 + Math.random() * 24) +
+    width +
     '%;height:' +
-    (3 + Math.random() * 26) +
+    height +
     'px;background:' +
     cols[k % cols.length] +
     ';opacity:' +
-    (0.35 + Math.random() * 0.5) +
+    (0.3 + Math.random() * 0.55) +
     ';--x:' +
-    ((Math.random() * 80 - 40) | 0) +
+    ((Math.random() * 90 - 45) | 0) +
     'px;--d:' +
-    (2 + Math.random() * 5).toFixed(1) +
+    (1.6 + Math.random() * 4.5).toFixed(1) +
     's';
   bg.appendChild(i);
 }
