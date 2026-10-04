@@ -62,10 +62,14 @@
   <section class="left">
    <div class="avatar" id="avatar-box" role="button" tabindex="0" title="AfterX" aria-label="AfterX"><img id="avatar-img" alt="Smiley glitch de AfterX" src="./assets/avatar.jpg"></div>
    <h1 data-t="AfterX">After<b>X</b></h1>
-   <p class="bio">Estudiante de informática y creador de contenido en español.</p>
-   <div class="meta">Valencia, ES · Linux · Hardware</div>
-   <div class="status"><span class="dot"></span><span class="ok">SEÑAL OK</span><span>En línea</span></div>
-   <a class="cta" href="https://youtube.com/@afterxesp">Ver mi canal de YouTube</a>
+   <p class="bio vhs-only">Estudiante de informática y creador de contenido en español.</p>
+   <p class="bio marathon-only">Runner táctico, creador de contenido y piloto de extracción.</p>
+   <div class="meta vhs-only">Valencia, ES · Linux · Hardware</div>
+   <div class="meta marathon-only">SECTOR VALENCIA · COMBATE · 180Hz</div>
+   <div class="status vhs-only"><span class="dot"></span><span class="ok">SEÑAL OK</span><span>En línea</span></div>
+   <div class="status marathon-only"><span class="dot"></span><span class="ok">STATUS: DESPLEGADO</span><span>En línea</span></div>
+   <a class="cta vhs-only" href="https://youtube.com/@afterxesp">Ver mi canal de YouTube</a>
+   <a class="cta marathon-only" href="https://youtube.com/@afterxesp">Ver transmisiones de YouTube</a>
    <div class="icons">
     <a class="ic" href="https://github.com/AfterEquis" aria-label="GitHub"><svg><use href="#gh"/></svg></a>
     <a class="ic" href="https://youtube.com/@afterxesp" aria-label="YouTube"><svg><use href="#yt"/></svg></a>
@@ -73,25 +77,73 @@
   </section>
 
   <section class="right">
-   <div class="panel on" id="p1" role="tabpanel" aria-labelledby="tab-1"><h2>Sobre mí</h2>
-    <p class="txt">Soy After, estudiante de informática en Valencia. Me interesan la programación, Linux y el hardware.</p>
-    <p class="txt">En YouTube hago vídeos de opinión y comentario en español, en el canal AfterXEsp_. Esta página reúne lo que hago: mis proyectos y mi canal.</p></div>
-
-   <div class="panel" id="p2" role="tabpanel" aria-labelledby="tab-2"><h2>Proyectos</h2>
-    <div class="sub">GitHub</div>
-    <div id="gh-repos" class="repos-list">
-     <a class="item" href="https://github.com/AfterEquis/AudioVisual" target="_blank" rel="noopener noreferrer"><h3>AudioVisual</h3><p>Proyectos de edición de vídeo, fotografía y multimedia</p></a>
+   <div class="panel on" id="p1" role="tabpanel" aria-labelledby="tab-1">
+    <div class="vhs-only">
+     <h2>Sobre mí</h2>
+     <p class="txt">Soy After, estudiante de informática en Valencia. Me interesan la programación, Linux y el hardware.</p>
+     <p class="txt">En YouTube hago vídeos de opinión y comentario en español, en el canal AfterXEsp_. Esta página reúne lo que hago: mis proyectos y mi canal.</p>
     </div>
-    <div class="sub">YouTube</div>
+    <div class="marathon-only">
+     <h2>// ARCHIVO: RUNNER AFTERX</h2>
+     <p class="txt">Especializado en combate táctico a alta velocidad, shooters y partidas de pura tensión. En YouTube comparto anécdotas, victorias in extremis y esos momentos donde el juego decide trolearme por completo.</p>
+     <p class="txt">Mi estilo en el escuadrón: flanqueo rápido, reconocimiento con francotirador y comunicación directa. Si hay un tiroteo en marcha, voy de cabeza.</p>
+     <div class="runner-stats">
+      <div class="stat-pill"><span class="k">SECTOR</span><span class="v">VALENCIA (ES)</span></div>
+      <div class="stat-pill"><span class="k">ROL</span><span class="v">FLANKER / SNIPER</span></div>
+      <div class="stat-pill"><span class="k">EXTRACCIÓN</span><span class="v">99.4% ÉXITO</span></div>
+     </div>
+    </div>
+   </div>
+
+   <div class="panel" id="p2" role="tabpanel" aria-labelledby="tab-2">
+    <div class="vhs-only">
+     <h2>Proyectos</h2>
+     <div class="sub">GitHub</div>
+     <div id="gh-repos" class="repos-list">
+      <a class="item" href="https://github.com/AfterEquis/AudioVisual" target="_blank" rel="noopener noreferrer"><h3>AudioVisual</h3><p>Proyectos de edición de vídeo, fotografía y multimedia</p></a>
+     </div>
+     <div class="sub">YouTube</div>
+    </div>
+    <div class="marathon-only">
+     <h2>Transmisiones // Logs</h2>
+     <div class="sub">Grabaciones de Campo // YouTube</div>
+    </div>
     <div id="yt-list" class="yt-container">
      <a class="item vid" id="yt-video" href="https://www.youtube.com/watch?v=4iT_sjNgHt8" target="_blank" rel="noopener noreferrer"><div class="thumb"><img src="https://i1.ytimg.com/vi/4iT_sjNgHt8/hqdefault.jpg" alt="Miniatura de vídeo" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;"><span class="play">▶</span></div><div><h3>Intente jugar WARZONE y ME PASO ESTO...</h3><p>Canal AfterXEsp_ · 27 oct 2024</p></div></a>
     </div>
-    <div class="btns"><a class="btn" href="https://github.com/AfterEquis">Ver repos <svg viewBox="0 0 16 16"><use href="#gh"/></svg></a><a class="btn" href="https://youtube.com/@afterxesp">Ir al canal <svg viewBox="0 0 24 24"><use href="#yt"/></svg></a></div></div>
+    <div class="btns">
+     <a class="btn vhs-only" href="https://github.com/AfterEquis">Ver repos <svg viewBox="0 0 16 16"><use href="#gh"/></svg></a>
+     <a class="btn marathon-only" href="https://github.com/AfterEquis">Repositorios <svg viewBox="0 0 16 16"><use href="#gh"/></svg></a>
+     <a class="btn" href="https://youtube.com/@afterxesp">Ir al canal <svg viewBox="0 0 24 24"><use href="#yt"/></svg></a>
+    </div>
+   </div>
 
-   <div class="panel" id="p3" role="tabpanel" aria-labelledby="tab-3"><h2>Setup</h2>
-    <div class="item"><h3>Equipo</h3><p>AMD Ryzen 7 7700X (8C/16T) · NVIDIA GeForce RTX 5060 Ti 16GB · 32 GB DDR5 · Pantalla 1440p @ 180Hz</p></div>
-    <div class="item"><h3>Sistema</h3><p>CachyOS Linux (Kernel optimizado) · KDE Plasma, GNOME y Hyprland · Terminal Kitty con Fish/Zsh</p></div>
-    <div class="item"><h3>Programas</h3><p>VSCodium para desarrollo · OBS Studio para grabación · Kdenlive para edición de vídeo</p></div></div>
+   <div class="panel" id="p3" role="tabpanel" aria-labelledby="tab-3">
+    <div class="vhs-only">
+     <h2>Setup</h2>
+     <div class="item"><h3>Equipo</h3><p>AMD Ryzen 7 7700X (8C/16T) · NVIDIA GeForce RTX 5060 Ti 16GB · 32 GB DDR5 · Pantalla 1440p @ 180Hz</p></div>
+     <div class="item"><h3>Sistema</h3><p>CachyOS Linux (Kernel optimizado) · KDE Plasma, GNOME y Hyprland · Terminal Kitty con Fish/Zsh</p></div>
+     <div class="item"><h3>Programas</h3><p>VSCodium para desarrollo · OBS Studio para grabación · Kdenlive para edición de vídeo</p></div>
+    </div>
+    <div class="marathon-only">
+     <h2>Juegos en Rotación // Arsenal</h2>
+     <div class="item marathon-item">
+      <div class="item-tag">MAIN TACTICAL</div>
+      <h3>Call of Duty: Warzone</h3>
+      <p>Resurgimiento y Battle Royale en escuadrón. Posicionamiento agresivo, rotaciones con francotirador y duelos a corta distancia.</p>
+     </div>
+     <div class="item marathon-item">
+      <div class="item-tag">OPERACIONES</div>
+      <h3>Shooters Tácticos & Extracción</h3>
+      <p>Tensión calculada bajo fuego cruzado. Coordinación en equipo, gestión de recursos y extracción con el botín en el último segundo.</p>
+     </div>
+     <div class="item marathon-item">
+      <div class="item-tag">CASUAL & COMUNIDAD</div>
+      <h3>Competitivos Casuales & Novedades</h3>
+      <p>Descubriendo nuevos títulos para el canal, desafíos cómicos y partidas relajadas para pasar un buen rato con la comunidad.</p>
+     </div>
+    </div>
+   </div>
   </section>
  </div>
 

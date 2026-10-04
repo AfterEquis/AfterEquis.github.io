@@ -6,6 +6,24 @@ var bgFallback = document.querySelector('.bg-glitch-fallback');
 var bgIsPaused = false;
 var bgTrackingGlitch = { active: false, intensity: 0, timer: 0, scanlines: [] };
 var mouseGlitchSparks = [];
+var currentTheme = localStorage.getItem('afterx_theme') || 'vhs';
+var refreshGlitchPalette = null;
+
+var GLITCH_COLORS_VHS = [
+  '#ffffff',
+  '#00e5ff',
+  '#ff007f',
+  '#00ff66',
+  '#ffea00',
+  '#2979ff',
+];
+var GLITCH_COLORS_MARATHON = [
+  '#dfff00',
+  '#ff3b00',
+  '#00f0ff',
+  '#ffffff',
+  '#ffe600',
+];
 
 // Autoplay handling with fallback
 if (bgVideo) {
@@ -23,6 +41,7 @@ function triggerBackgroundGlitch(intensity) {
   var height = window.innerHeight;
   var count = Math.floor(3 + intensity * 5);
   var scanlines = [];
+  var isMarathon = currentTheme === 'marathon';
   for (var i = 0; i < count; i++) {
     scanlines.push({
       y: Math.random() * height,
@@ -31,8 +50,8 @@ function triggerBackgroundGlitch(intensity) {
       speed: 1.2 + Math.random() * 3.2,
       color:
         Math.random() > 0.5
-          ? 'rgba(255, 0, 85, 0.35)'
-          : 'rgba(0, 229, 255, 0.35)',
+          ? (isMarathon ? 'rgba(223, 255, 0, 0.45)' : 'rgba(255, 0, 85, 0.35)')
+          : (isMarathon ? 'rgba(255, 59, 0, 0.45)' : 'rgba(0, 229, 255, 0.35)'),
     });
   }
   bgTrackingGlitch = {
@@ -83,7 +102,10 @@ function setBackgroundPaused(paused) {
           y: e.clientY + (Math.random() * 24 - 12),
           w: 15 + Math.random() * 55,
           h: 1 + Math.random() * 2.5,
-          color: Math.random() > 0.5 ? '#00e5ff' : '#ff0055',
+          color:
+            currentTheme === 'marathon'
+              ? (Math.random() > 0.5 ? '#dfff00' : '#ff3b00')
+              : (Math.random() > 0.5 ? '#00e5ff' : '#ff0055'),
           life: 1.0,
         });
       }
@@ -91,28 +113,30 @@ function setBackgroundPaused(paused) {
     { passive: true }
   );
 
+  function getGlitchPalette() {
+    return currentTheme === 'marathon' ? GLITCH_COLORS_MARATHON : GLITCH_COLORS_VHS;
+  }
+
   // Horizontal scanline needle streaks (persistent drifting lines)
   var NEEDLE_COUNT = width < 780 ? 25 : 45;
   var needles = [];
-  var GLITCH_COLORS = [
-    '#ffffff',
-    '#00e5ff',
-    '#ff007f',
-    '#00ff66',
-    '#ffea00',
-    '#2979ff',
-  ];
-  for (var i = 0; i < NEEDLE_COUNT; i++) {
-    needles.push({
-      x: Math.random() * width,
-      y: Math.random() * height,
-      len: 12 + Math.random() * 70,
-      h: Math.random() > 0.85 ? 2.5 : 1,
-      speed: (Math.random() * 350 + 150) * (Math.random() > 0.5 ? 1 : -1),
-      color: GLITCH_COLORS[Math.floor(Math.random() * GLITCH_COLORS.length)],
-      alpha: 0.25 + Math.random() * 0.65,
-    });
+  function initNeedles() {
+    needles = [];
+    var pal = getGlitchPalette();
+    for (var i = 0; i < NEEDLE_COUNT; i++) {
+      needles.push({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        len: 12 + Math.random() * 70,
+        h: Math.random() > 0.85 ? 2.5 : 1,
+        speed: (Math.random() * 350 + 150) * (Math.random() > 0.5 ? 1 : -1),
+        color: pal[Math.floor(Math.random() * pal.length)],
+        alpha: 0.25 + Math.random() * 0.65,
+      });
+    }
   }
+  initNeedles();
+  refreshGlitchPalette = initNeedles;
 
   // Datamosh pixel blocks (bursts of RGB corrupted clusters)
   var glitchBlocks = [];
@@ -155,6 +179,7 @@ function setBackgroundPaused(paused) {
         nextBlockTimer = 0.06 + Math.random() * 0.14;
         glitchBlocks = [];
         var clusterCount = Math.floor(1 + Math.random() * 3);
+        var pal = getGlitchPalette();
         for (var c = 0; c < clusterCount; c++) {
           var clusterY = Math.random() * height;
           var clusterX = Math.random() * width;
@@ -165,10 +190,7 @@ function setBackgroundPaused(paused) {
               y: clusterY + (Math.random() * 30 - 15),
               w: 8 + Math.random() * 45,
               h: 2 + Math.random() * 12,
-              color:
-                GLITCH_COLORS[
-                  Math.floor(Math.random() * GLITCH_COLORS.length)
-                ],
+              color: pal[Math.floor(Math.random() * pal.length)],
               alpha: 0.4 + Math.random() * 0.55,
             });
           }
@@ -733,12 +755,48 @@ if (btnPlay) {
   });
 }
 
+// --- Theme Switcher (VHS Glitch vs Marathon Gaming) via TRACKING ---
 var btnTracking = document.getElementById('btn-tracking');
+var tab1 = document.getElementById('tab-1');
+var tab2 = document.getElementById('tab-2');
+var tab3 = document.getElementById('tab-3');
+
+function applyTheme(theme, isUserClick) {
+  currentTheme = theme;
+  document.body.setAttribute('data-theme', theme);
+
+  if (tab1) tab1.textContent = theme === 'marathon' ? 'CH 01 RUNNER' : 'CH 01 SOBRE MÍ';
+  if (tab2) tab2.textContent = theme === 'marathon' ? 'CH 02 TRANSMISIONES' : 'CH 02 PROYECTOS';
+  if (tab3) tab3.textContent = theme === 'marathon' ? 'CH 03 JUEGOS' : 'CH 03 SETUP';
+
+  if (btnTracking) {
+    btnTracking.textContent = theme === 'marathon' ? 'TRACKING [GAMING]' : 'TRACKING [VHS]';
+    btnTracking.classList.toggle('active-track', theme === 'marathon');
+    btnTracking.title =
+      theme === 'marathon'
+        ? 'Ajuste de tracking: cambiar a VHS Glitch'
+        : 'Ajuste de tracking: cambiar a Marathon Gaming';
+  }
+
+  if (typeof refreshGlitchPalette === 'function') {
+    refreshGlitchPalette();
+  }
+
+  if (isUserClick) {
+    tear();
+    triggerBackgroundGlitch(1.2);
+    playGlitchSfx();
+  }
+}
+
+// Initial theme setup on page load
+applyTheme(currentTheme, false);
+
 if (btnTracking) {
   btnTracking.addEventListener('click', function () {
-    tear();
-    triggerBackgroundGlitch(1.0);
-    playGlitchSfx();
+    var nextTheme = currentTheme === 'marathon' ? 'vhs' : 'marathon';
+    localStorage.setItem('afterx_theme', nextTheme);
+    applyTheme(nextTheme, true);
   });
 }
 
