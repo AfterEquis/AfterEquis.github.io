@@ -679,7 +679,7 @@ function setBackgroundPaused(paused) {
 
         bgCtx.font = '11px VT323, monospace';
         bgCtx.fillStyle = '#00f0ff';
-        bgCtx.fillText('VALENCIA // 39°N', rx, ry + 52);
+        bgCtx.fillText('TACTICAL // 180HZ', rx, ry + 52);
       }
     }
     bgCtx.restore();
