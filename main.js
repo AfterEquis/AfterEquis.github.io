@@ -71,10 +71,83 @@ function tear() {
   })(t0);
 }
 
+// --- Retro Web Audio Synthesizer ---
+var sfxEnabled = localStorage.getItem('afterx_sfx') === 'true';
+var audioCtx = null;
+
+function getAudioContext() {
+  if (!audioCtx && (window.AudioContext || window.webkitAudioContext)) {
+    var AudioClass = window.AudioContext || window.webkitAudioContext;
+    audioCtx = new AudioClass();
+  }
+  if (audioCtx && audioCtx.state === 'suspended') {
+    audioCtx.resume();
+  }
+  return audioCtx;
+}
+
+function playBlip() {
+  if (!sfxEnabled) return;
+  var ctx = getAudioContext();
+  if (!ctx) return;
+  var osc = ctx.createOscillator();
+  var gain = ctx.createGain();
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(840, ctx.currentTime);
+  osc.frequency.exponentialRampToValueAtTime(420, ctx.currentTime + 0.045);
+  gain.gain.setValueAtTime(0.06, ctx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.045);
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  osc.start();
+  osc.stop(ctx.currentTime + 0.045);
+}
+
+function playGlitchSfx() {
+  if (!sfxEnabled) return;
+  var ctx = getAudioContext();
+  if (!ctx) return;
+  var bufferSize = ctx.sampleRate * 0.12;
+  var buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+  var data = buffer.getChannelData(0);
+  for (var i = 0; i < bufferSize; i++) {
+    data[i] = Math.random() * 2 - 1;
+  }
+  var noise = ctx.createBufferSource();
+  noise.buffer = buffer;
+  var filter = ctx.createBiquadFilter();
+  filter.type = 'bandpass';
+  filter.frequency.value = 1400;
+  var gain = ctx.createGain();
+  gain.gain.setValueAtTime(0.09, ctx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.12);
+  noise.connect(filter);
+  filter.connect(gain);
+  gain.connect(ctx.destination);
+  noise.start();
+}
+
+function playToggleSfx() {
+  if (!sfxEnabled) return;
+  var ctx = getAudioContext();
+  if (!ctx) return;
+  var osc = ctx.createOscillator();
+  var gain = ctx.createGain();
+  osc.type = 'triangle';
+  osc.frequency.setValueAtTime(480, ctx.currentTime);
+  gain.gain.setValueAtTime(0.05, ctx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.035);
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  osc.start();
+  osc.stop(ctx.currentTime + 0.035);
+}
+
 var tabs = document.querySelectorAll('.tab'),
   ps = document.querySelectorAll('.panel');
 
 function switchTab(targetTab) {
+  playBlip();
   var isReduced = matchMedia('(prefers-reduced-motion:reduce)').matches;
   if (!isReduced) {
     tear();
@@ -204,13 +277,17 @@ function renderRepos(repos, container) {
     .map(function (repo) {
       var lang = repo.language;
       var color = lang && LANG_COLORS[lang] ? LANG_COLORS[lang] : '#58a6ff';
-      var langHtml = lang
-        ? '<div class="row"><span class="lang" style="--c:' +
+      var starsHtml =
+        repo.stargazers_count > 0
+          ? '<span class="stat-badge">⭐ ' + repo.stargazers_count + '</span>'
+          : '';
+      var langPart = lang
+        ? '<span class="lang" style="--c:' +
           color +
           '">' +
           escapeHTML(lang) +
-          '</span></div>'
-        : '';
+          '</span>'
+        : '<span></span>';
       var desc = repo.description
         ? escapeHTML(repo.description)
         : 'Sin descripción disponible.';
@@ -224,7 +301,12 @@ function renderRepos(repos, container) {
         '<p>' +
         desc +
         '</p>' +
-        langHtml +
+        '<div class="row">' +
+        langPart +
+        '<div>' +
+        starsHtml +
+        '</div>' +
+        '</div>' +
         '</a>'
       );
     })
@@ -321,9 +403,9 @@ async function loadGitHubRepos() {
 
 loadGitHubRepos();
 
-// --- YouTube Latest Video Loader ---
-async function loadYouTubeVideo() {
-  var container = document.getElementById('yt-video');
+// --- YouTube Multi-Video Loader ---
+async function loadYouTubeVideos() {
+  var container = document.getElementById('yt-list');
   if (!container) return;
 
   try {
@@ -336,22 +418,20 @@ async function loadYouTubeVideo() {
     var latest = videos[0];
     if (!latest || !latest.title || !latest.url) return;
 
-    var dateStr = '';
-    if (latest.published) {
-      var d = new Date(latest.published);
-      if (!isNaN(d.getTime())) {
-        dateStr =
-          ' · ' +
-          d.toLocaleDateString('es-ES', {
-            day: 'numeric',
-            month: 'short',
-            year: 'numeric',
-          });
-      }
+    function formatPubDate(isoStr) {
+      if (!isoStr) return '';
+      var d = new Date(isoStr);
+      return !isNaN(d.getTime())
+        ? ' · ' +
+            d.toLocaleDateString('es-ES', {
+              day: 'numeric',
+              month: 'short',
+              year: 'numeric',
+            })
+        : '';
     }
 
-    container.href = escapeHTML(latest.url);
-    var thumbHtml = latest.thumbnail
+    var mainThumb = latest.thumbnail
       ? '<img src="' +
         escapeHTML(latest.thumbnail) +
         '" alt="' +
@@ -359,26 +439,103 @@ async function loadYouTubeVideo() {
         '" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;"><span class="play">▶</span>'
       : '<span class="play">▶</span>';
 
-    container.innerHTML =
+    var mainHtml =
+      '<a class="item vid" href="' +
+      escapeHTML(latest.url) +
+      '" target="_blank" rel="noopener noreferrer">' +
       '<div class="thumb">' +
-      thumbHtml +
+      mainThumb +
       '</div>' +
       '<div>' +
       '<h3>' +
       escapeHTML(latest.title) +
       '</h3>' +
       '<p>Canal AfterXEsp_' +
-      dateStr +
+      formatPubDate(latest.published) +
       '</p>' +
-      '</div>';
+      '</div></a>';
+
+    var secondaryHtml = '';
+    if (videos.length >= 3) {
+      var extra = [videos[1], videos[2]];
+      secondaryHtml =
+        '<div class="yt-mini-grid">' +
+        extra
+          .map(function (v) {
+            return (
+              '<a class="yt-mini-card" href="' +
+              escapeHTML(v.url) +
+              '" target="_blank" rel="noopener noreferrer">' +
+              '<div class="thumb" style="aspect-ratio:16/9">' +
+              (v.thumbnail
+                ? '<img src="' +
+                  escapeHTML(v.thumbnail) +
+                  '" alt="' +
+                  escapeHTML(v.title) +
+                  '" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;"><span class="play" style="font-size:18px;padding:0 12px">▶</span>'
+                : '<span class="play">▶</span>') +
+              '</div>' +
+              '<h4>' +
+              escapeHTML(v.title) +
+              '</h4>' +
+              '<p>AfterXEsp_' +
+              formatPubDate(v.published) +
+              '</p>' +
+              '</a>'
+            );
+          })
+          .join('') +
+        '</div>';
+    }
+
+    container.innerHTML = mainHtml + secondaryHtml;
   } catch (err) {
-    console.warn('Could not load latest YouTube video from videos.json:', err);
+    console.warn('Could not load latest YouTube videos from videos.json:', err);
   }
 }
 
-loadYouTubeVideo();
+loadYouTubeVideos();
 
-// --- Avatar Glitch Cycle (Exclusivo al hacer clic) ---
+// --- Interactive VHS Controls ---
+var btnPlay = document.getElementById('btn-play');
+if (btnPlay) {
+  var isPaused = false;
+  btnPlay.addEventListener('click', function () {
+    isPaused = !isPaused;
+    document.body.classList.toggle('paused', isPaused);
+    btnPlay.textContent = isPaused ? '⏸ PAUSE' : '▶ PLAY';
+    btnPlay.classList.toggle('flashing', isPaused);
+    playToggleSfx();
+  });
+}
+
+var btnTracking = document.getElementById('btn-tracking');
+if (btnTracking) {
+  btnTracking.addEventListener('click', function () {
+    tear();
+    playGlitchSfx();
+  });
+}
+
+var sfxToggle = document.getElementById('sfx-toggle');
+if (sfxToggle) {
+  function updateSfxButton() {
+    sfxToggle.textContent = 'SFX: ' + (sfxEnabled ? 'ON' : 'OFF');
+    sfxToggle.classList.toggle('active', sfxEnabled);
+  }
+  updateSfxButton();
+  sfxToggle.addEventListener('click', function () {
+    sfxEnabled = !sfxEnabled;
+    localStorage.setItem('afterx_sfx', sfxEnabled.toString());
+    updateSfxButton();
+    if (sfxEnabled) {
+      getAudioContext();
+      playToggleSfx();
+    }
+  });
+}
+
+// --- Avatar Secret Glitch Cycle (Triple Clic Secreto para Activar) ---
 var AVATAR_LIST = [
   { src: './assets/avatar.jpg', alt: 'Smiley AfterX con glitch' },
   { src: './assets/avatar-1.jpg', alt: 'Foto de AfterX con casco Mandalorian' },
@@ -397,10 +554,16 @@ var avatarBox = document.getElementById('avatar-box');
 var avatarImg = document.getElementById('avatar-img');
 var avatarIndex = 0;
 var avatarGlitching = false;
+var easterEggUnlocked = false;
+var clickStreak = 0;
+var clickStreakTimer = null;
+var autoRelockTimer = null;
 
 function switchAvatar(targetIndex) {
   if (avatarGlitching || !avatarBox || !avatarImg) return;
   var isReduced = matchMedia('(prefers-reduced-motion:reduce)').matches;
+
+  playGlitchSfx();
 
   if (isReduced) {
     avatarIndex = targetIndex;
@@ -424,20 +587,59 @@ function switchAvatar(targetIndex) {
   }, 440);
 }
 
-function nextAvatar() {
-  var nextIdx = (avatarIndex + 1) % AVATAR_LIST.length;
-  switchAvatar(nextIdx);
+function handleAvatarActivation() {
+  if (avatarGlitching) return;
+
+  if (!easterEggUnlocked) {
+    clickStreak++;
+    clearTimeout(clickStreakTimer);
+    clickStreakTimer = setTimeout(function () {
+      clickStreak = 0;
+    }, 700);
+
+    // Reacción micro-jitter sutil en cada clic previo
+    if (clickStreak < 3) {
+      avatarBox.style.transform = 'scale(1.08) rotate(' + (clickStreak % 2 === 0 ? '-3deg' : '3deg') + ')';
+      setTimeout(function () {
+        avatarBox.style.transform = '';
+      }, 140);
+    } else {
+      // ¡Triple clic alcanzado! Se desbloquea el easter egg y muestra la primera foto
+      easterEggUnlocked = true;
+      clickStreak = 0;
+      switchAvatar(1);
+      scheduleAutoRelock();
+    }
+  } else {
+    // Si ya está desbloqueado, avanza a la siguiente foto
+    scheduleAutoRelock();
+    var nextIdx = (avatarIndex + 1) % AVATAR_LIST.length;
+    if (nextIdx === 0) {
+      // Al volver al smiley, se re-bloquea
+      easterEggUnlocked = false;
+      clearTimeout(autoRelockTimer);
+    }
+    switchAvatar(nextIdx);
+  }
+}
+
+function scheduleAutoRelock() {
+  clearTimeout(autoRelockTimer);
+  // Re-bloquea automáticamente si está inactivo 25 segundos en foto personal
+  autoRelockTimer = setTimeout(function () {
+    if (avatarIndex !== 0) {
+      easterEggUnlocked = false;
+      switchAvatar(0);
+    }
+  }, 25000);
 }
 
 if (avatarBox) {
-  avatarBox.addEventListener('click', function () {
-    nextAvatar();
-  });
-
+  avatarBox.addEventListener('click', handleAvatarActivation);
   avatarBox.addEventListener('keydown', function (e) {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
-      nextAvatar();
+      handleAvatarActivation();
     }
   });
 }

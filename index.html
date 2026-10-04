@@ -40,16 +40,19 @@
 <symbol id="ml" viewBox="0 0 24 24"><path d="M3 5h18a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1zm1.6 2L12 12.6 19.4 7z"/></symbol></svg>
 
 <main class="card">
- <div class="bar top"><span class="osd hide">▶ PLAY</span>
+ <div class="bar top">
+  <button class="osd btn-osd" id="btn-play" title="Pausar / Reproducir estética VHS" aria-label="Control de reproducción VHS">▶ PLAY</button>
   <div class="tabs" role="tablist" aria-label="Canales">
    <button class="tab" role="tab" id="tab-1" aria-controls="p1" aria-selected="true" tabindex="0" data-ch="1">CH 01 SOBRE MÍ</button>
    <button class="tab" role="tab" id="tab-2" aria-controls="p2" aria-selected="false" tabindex="-1" data-ch="2">CH 02 PROYECTOS</button>
    <button class="tab" role="tab" id="tab-3" aria-controls="p3" aria-selected="false" tabindex="-1" data-ch="3">CH 03 SETUP</button>
-  </div><span class="osd hide">TRACKING</span></div>
+  </div>
+  <button class="osd btn-osd" id="btn-tracking" title="Ajuste de tracking analógico" aria-label="Ajuste de tracking">TRACKING</button>
+ </div>
 
  <div class="main">
   <section class="left">
-   <div class="avatar" id="avatar-box" role="button" tabindex="0" title="Foto de perfil de After (haz clic para cambiar)" aria-label="Cambiar foto de perfil"><img id="avatar-img" alt="Smiley glitch de AfterX" src="./assets/avatar.jpg"></div>
+   <div class="avatar" id="avatar-box" role="button" tabindex="0" title="AfterX" aria-label="AfterX"><img id="avatar-img" alt="Smiley glitch de AfterX" src="./assets/avatar.jpg"></div>
    <h1 data-t="AfterX">After<b>X</b></h1>
    <p class="bio">Estudiante de informática y creador de contenido en español.</p>
    <div class="meta">Valencia, ES · Linux · Hardware</div>
@@ -65,22 +68,63 @@
    <div class="panel on" id="p1" role="tabpanel" aria-labelledby="tab-1"><h2>Sobre mí</h2>
     <p class="txt">Soy After, estudiante de informática en Valencia. Me interesan la programación, Linux y el hardware.</p>
     <p class="txt">En YouTube hago vídeos de opinión y comentario en español, en el canal AfterXEsp_. Esta página reúne lo que hago: mis proyectos y mi canal.</p></div>
+
    <div class="panel" id="p2" role="tabpanel" aria-labelledby="tab-2"><h2>Proyectos</h2>
     <div class="sub">GitHub</div>
     <div id="gh-repos" class="repos-list">
      <a class="item" href="https://github.com/AfterEquis/AudioVisual" target="_blank" rel="noopener noreferrer"><h3>AudioVisual</h3><p>Proyectos de edición de vídeo, fotografía y multimedia</p></a>
     </div>
     <div class="sub">YouTube</div>
-    <a class="item vid" id="yt-video" href="https://www.youtube.com/watch?v=4iT_sjNgHt8" target="_blank" rel="noopener noreferrer"><div class="thumb"><img src="https://i1.ytimg.com/vi/4iT_sjNgHt8/hqdefault.jpg" alt="Miniatura de vídeo" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;"><span class="play">▶</span></div><div><h3>Intente jugar WARZONE y ME PASO ESTO...</h3><p>Canal AfterXEsp_ · 27 oct 2024</p></div></a>
+    <div id="yt-list" class="yt-container">
+     <a class="item vid" id="yt-video" href="https://www.youtube.com/watch?v=4iT_sjNgHt8" target="_blank" rel="noopener noreferrer"><div class="thumb"><img src="https://i1.ytimg.com/vi/4iT_sjNgHt8/hqdefault.jpg" alt="Miniatura de vídeo" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;"><span class="play">▶</span></div><div><h3>Intente jugar WARZONE y ME PASO ESTO...</h3><p>Canal AfterXEsp_ · 27 oct 2024</p></div></a>
+    </div>
     <div class="btns"><a class="btn" href="https://github.com/AfterEquis">Ver repos <svg viewBox="0 0 16 16"><use href="#gh"/></svg></a><a class="btn" href="https://youtube.com/@afterxesp">Ir al canal <svg viewBox="0 0 24 24"><use href="#yt"/></svg></a></div></div>
+
    <div class="panel" id="p3" role="tabpanel" aria-labelledby="tab-3"><h2>Setup</h2>
-    <div class="item"><h3>Equipo</h3><p>AMD Ryzen 7 7700X (8C/16T) · NVIDIA GeForce RTX 5060 Ti 16GB · 32 GB DDR5 · Pantalla 1440p @ 180Hz</p></div>
-    <div class="item"><h3>Sistema</h3><p>CachyOS Linux (Kernel optimizado) · KDE Plasma, GNOME y Hyprland · Terminal Kitty con Fish/Zsh</p></div>
-    <div class="item"><h3>Programas</h3><p>VSCodium para desarrollo · OBS Studio para grabación · Kdenlive para edición de vídeo</p></div></div>
+    <div class="terminal-card">
+     <div class="term-header">
+      <div class="term-dots"><span></span><span></span><span></span></div>
+      <div class="term-title">after@cachyos: ~ (fastfetch)</div>
+     </div>
+     <div class="term-body">
+      <div class="term-grid">
+       <pre class="term-ascii" aria-hidden="true">
+   ____           _           
+  / ___|__ _  ___| |__  _   _ 
+ | |   / _` |/ __| '_ \| | | |
+ | |__| (_| | (__| | | | |_| |
+  \____\__,_|\___|_| |_|\__, |
+  OS Linux              |___/ 
+       </pre>
+       <div class="term-specs">
+        <div class="t-row"><span class="t-k">OS</span><span class="t-v">CachyOS Linux x86_64</span></div>
+        <div class="t-row"><span class="t-k">Kernel</span><span class="t-v">Linux zen-cachyos (Bore / Sched-ext)</span></div>
+        <div class="t-row"><span class="t-k">Host</span><span class="t-v">Custom PC Rig</span></div>
+        <div class="t-row"><span class="t-k">DE / WM</span><span class="t-v">KDE Plasma 6 · Hyprland · GNOME</span></div>
+        <div class="t-row"><span class="t-k">Terminal</span><span class="t-v">Kitty (Fish / Zsh)</span></div>
+        <div class="t-row"><span class="t-k">CPU</span><span class="t-v">AMD Ryzen 7 7700X (16) @ 5.40GHz</span></div>
+        <div class="t-row"><span class="t-k">GPU</span><span class="t-v">NVIDIA GeForce RTX 5060 Ti 16GB</span></div>
+        <div class="t-row"><span class="t-k">Memory</span><span class="t-v">32 GB DDR5 6000MHz</span></div>
+        <div class="t-row"><span class="t-k">Display</span><span class="t-v">2560x1440 @ 180Hz (1440p)</span></div>
+        <div class="t-row"><span class="t-k">Dev Tools</span><span class="t-v">VSCodium · Git</span></div>
+        <div class="t-row"><span class="t-k">Media</span><span class="t-v">OBS Studio · Kdenlive</span></div>
+        <div class="term-palette" aria-hidden="true">
+         <i style="--pc:#ff1744"></i><i style="--pc:#ff9100"></i><i style="--pc:#ffea00"></i><i style="--pc:#00e676"></i><i style="--pc:#00e5ff"></i><i style="--pc:#2979ff"></i><i style="--pc:#d500f9"></i><i style="--pc:#ffffff"></i>
+        </div>
+       </div>
+      </div>
+     </div>
+    </div>
+   </div>
   </section>
  </div>
 
- <div class="bar bot"><span class="osd">AUX</span><span class="osd hide" id="d"></span><span class="osd" id="t">TIME 0:00:00</span></div>
+ <div class="bar bot">
+  <span class="osd">AUX</span>
+  <span class="osd hide" id="d"></span>
+  <button class="osd btn-osd" id="sfx-toggle" title="Activar / Desactivar efectos de audio retro" aria-label="Alternar efectos de sonido">SFX: OFF</button>
+  <span class="osd" id="t">TIME 0:00:00</span>
+ </div>
 </main>
 
 <script type="module" src="./main.js"></script>
