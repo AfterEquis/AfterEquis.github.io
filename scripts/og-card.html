@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>AfterX OG</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=VT323&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  html, body {
+    width: 1200px;
+    height: 630px;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #05060a;
+  }
+  .og-card {
+    width: 1040px;
+    padding: 36px 48px;
+    border-radius: 32px;
+    background: linear-gradient(160deg, rgba(255,255,255,.14), rgba(255,255,255,.05)), rgba(8,10,22,.45);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(255,255,255,.2);
+    box-shadow: 0 25px 60px rgba(0,0,0,.65), inset 0 0 0 1px rgba(255,255,255,.12);
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+  }
+  .og-top, .og-bot {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: var(--osd);
+    font-size: 24px;
+    letter-spacing: .08em;
+    color: var(--text);
+    text-shadow: 1px 0 var(--red), -1px 0 var(--blue);
+  }
+  .og-content {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    gap: 36px;
+    align-items: center;
+  }
+  .og-avatar {
+    width: 190px;
+    height: 190px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 2px solid rgba(255,255,255,.35);
+    box-shadow: 0 10px 30px rgba(0,0,0,.5);
+    margin: 0 auto;
+  }
+  .og-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transform: scale(1.14);
+  }
+  .og-info h1 {
+    font-size: 80px;
+    margin: 0 0 8px 0;
+    line-height: 1;
+  }
+  .og-info .bio {
+    font-size: 22px;
+    color: #e9ecf6;
+    margin-bottom: 12px;
+    max-width: 48ch;
+  }
+  .og-info .meta {
+    font-size: 24px;
+    color: var(--muted);
+    font-family: var(--osd);
+    letter-spacing: .06em;
+  }
+  .og-badges {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    margin-top: 14px;
+  }
+  .badge-tag {
+    font-family: var(--osd);
+    font-size: 20px;
+    background: rgba(255,255,255,.1);
+    border: 1px solid rgba(255,255,255,.2);
+    padding: 4px 14px;
+    border-radius: 8px;
+    color: #fff;
+  }
+</style>
+</head>
+<body>
+<div class="bg" id="bg" aria-hidden="true"></div>
+<div class="scan" aria-hidden="true"></div>
+<div class="grain" aria-hidden="true"></div>
+
+<div class="og-card">
+  <div class="og-top">
+    <span>▶ PLAY · CH 01</span>
+    <span style="color:var(--red)">● REC</span>
+    <span>TRACKING</span>
+  </div>
+
+  <div class="og-content">
+    <div class="og-avatar">
+      <img src="../assets/avatar.jpg" alt="AfterX">
+    </div>
+    <div class="og-info">
+      <h1 data-t="AfterX">After<b>X</b></h1>
+      <p class="bio">Estudiante de informática y creador de contenido en español.</p>
+      <div class="meta">Valencia, ES · Python · Linux · Hardware</div>
+      <div class="og-badges">
+        <span class="badge-tag">YOUTUBE: @afterxesp</span>
+        <span class="badge-tag">GITHUB: @AfterEquis</span>
+        <span class="status" style="margin-left:auto"><span class="dot"></span><span class="ok">SEÑAL OK</span></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="og-bot">
+    <span>AUX</span>
+    <span>SP OCT 04 2026</span>
+    <span>TIME 0:00:00</span>
+  </div>
+</div>
+
+<script>
+  var bg = document.getElementById('bg');
+  var cols = ['#2f4bff', '#6a3df0', '#ff3b2f', '#cfe6ff', '#3a1410', '#2f4bff', '#ff3b2f'];
+  for (var k = 0; k < 36; k++) {
+    var i = document.createElement('i');
+    i.style.cssText = 'top:' + (Math.random() * 100) + '%;left:' + (k % 2 ? (Math.random() * 25 - 10) : (60 + Math.random() * 35)) + '%;width:' + (18 + Math.random() * 28) + '%;height:' + (4 + Math.random() * 26) + 'px;background:' + cols[k % cols.length] + ';opacity:' + (.4 + Math.random() * .4) + ';--x:' + ((Math.random() * 60 - 30) | 0) + 'px;--d:4s';
+    bg.appendChild(i);
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AfterX</title>
+<meta name="description" content="Estudiante de informática y creador de contenido en español.">
+<meta name="theme-color" content="#05060a">
+
+<!-- Favicon -->
+<link rel="icon" type="image/png" sizes="32x32" href="./assets/favicon.png">
+<link rel="icon" type="image/x-icon" href="./favicon.ico">
+<link rel="apple-touch-icon" sizes="180x180" href="./assets/apple-touch-icon.png">
+
+<!-- Open Graph / Facebook -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="AfterX">
+<meta property="og:description" content="Estudiante de informática y creador de contenido en español.">
+<meta property="og:image" content="./assets/og-image.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="AfterX - Estudiante de informática y creador de contenido en español">
+<meta property="og:site_name" content="AfterX">
+<meta property="og:locale" content="es_ES">
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="AfterX">
+<meta name="twitter:description" content="Estudiante de informática y creador de contenido en español.">
+<meta name="twitter:image" content="./assets/og-image.jpg">
+<meta name="twitter:image:alt" content="AfterX - Estudiante de informática y creador de contenido en español">
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=VT323&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+<div class="bg" id="bg" aria-hidden="true"></div><div class="scan" aria-hidden="true"></div><div class="grain" aria-hidden="true"></div><div class="track" aria-hidden="true"></div>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><filter id="tear" x="-6%" y="0" width="112%" height="100%"><feTurbulence id="tt" type="fractalNoise" baseFrequency=".002 .09" numOctaves="1" seed="2" result="t"/><feDisplacementMap id="td" in="SourceGraphic" in2="t" scale="0" xChannelSelector="R" yChannelSelector="G"/></filter><filter id="lens" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB"><feTurbulence type="fractalNoise" baseFrequency=".006 .011" numOctaves="2" seed="7" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="46" xChannelSelector="R" yChannelSelector="G" result="a"/><feColorMatrix in="a" values="1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0" result="r"/><feDisplacementMap in="SourceGraphic" in2="n" scale="58" xChannelSelector="R" yChannelSelector="G" result="b"/><feColorMatrix in="b" values="0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1 0" result="g"/><feDisplacementMap in="SourceGraphic" in2="n" scale="70" xChannelSelector="R" yChannelSelector="G" result="c"/><feColorMatrix in="c" values="0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 1 0" result="bl"/><feBlend in="r" in2="g" mode="screen" result="rg"/><feBlend in="rg" in2="bl" mode="screen"/></filter><symbol id="gh" viewBox="0 0 16 16"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></symbol>
+<symbol id="yt" viewBox="0 0 24 24"><path d="M23 7.2a3 3 0 0 0-2.1-2.1C19 4.6 12 4.6 12 4.6s-7 0-8.9.5A3 3 0 0 0 1 7.2C.5 9.1.5 12 .5 12s0 2.9.5 4.8a3 3 0 0 0 2.1 2.1c1.9.5 8.9.5 8.9.5s7 0 8.9-.5a3 3 0 0 0 2.1-2.1c.5-1.9.5-4.8.5-4.8s0-2.9-.5-4.8zM9.7 15.5v-7l6 3.5z"/></symbol>
+<symbol id="ml" viewBox="0 0 24 24"><path d="M3 5h18a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1zm1.6 2L12 12.6 19.4 7z"/></symbol></svg>
+
+<main class="card">
+ <div class="bar top"><span class="osd hide">▶ PLAY</span>
+  <div class="tabs" role="tablist" aria-label="Canales">
+   <button class="tab" role="tab" id="tab-1" aria-controls="p1" aria-selected="true" tabindex="0" data-ch="1">CH 01 SOBRE MÍ</button>
+   <button class="tab" role="tab" id="tab-2" aria-controls="p2" aria-selected="false" tabindex="-1" data-ch="2">CH 02 PROYECTOS</button>
+   <button class="tab" role="tab" id="tab-3" aria-controls="p3" aria-selected="false" tabindex="-1" data-ch="3">CH 03 SETUP</button>
+  </div><span class="osd hide">TRACKING</span></div>
+
+ <div class="main">
+  <section class="left">
+   <div class="avatar"><img alt="Logo de AfterX: cara sonriente con glitch" src="./assets/avatar.jpg"></div>
+   <h1 data-t="AfterX">After<b>X</b></h1>
+   <p class="bio">Estudiante de informática y creador de contenido en español.</p>
+   <div class="meta">Valencia, ES · Python · Linux · Hardware</div>
+   <div class="status"><span class="dot"></span><span class="ok">SEÑAL OK</span><span>En línea</span></div>
+   <a class="cta" href="https://youtube.com/@afterxesp">Ver mi canal de YouTube</a>
+   <div class="icons">
+    <a class="ic" href="https://github.com/AfterEquis" aria-label="GitHub"><svg><use href="#gh"/></svg></a>
+    <a class="ic" href="https://youtube.com/@afterxesp" aria-label="YouTube"><svg><use href="#yt"/></svg></a>
+   </div>
+  </section>
+
+  <section class="right">
+   <div class="panel on" id="p1" role="tabpanel" aria-labelledby="tab-1"><h2>Sobre mí</h2>
+    <p class="txt">Soy After, estudiante de informática en Valencia. Me interesan la programación, Linux y el hardware.</p>
+    <p class="txt">En YouTube hago vídeos de opinión y comentario en español, en el canal AfterXEsp_. Esta página reúne lo que hago: mis proyectos y mi canal.</p></div>
+   <div class="panel" id="p2" role="tabpanel" aria-labelledby="tab-2"><h2>Proyectos</h2>
+    <div class="sub">GitHub</div>
+    <div id="gh-repos" class="repos-list">
+     <a class="item" href="https://github.com/AfterEquis/Afterwave" target="_blank" rel="noopener noreferrer"><h3>Afterwave</h3><p>Combined audio</p><div class="row"><span class="lang" style="--c:#3572A5">Python</span></div></a>
+    </div>
+    <div class="sub">YouTube</div>
+    <a class="item vid" id="yt-video" href="https://www.youtube.com/watch?v=4iT_sjNgHt8" target="_blank" rel="noopener noreferrer"><div class="thumb"><img src="https://i1.ytimg.com/vi/4iT_sjNgHt8/hqdefault.jpg" alt="Miniatura de vídeo" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;"><span class="play">▶</span></div><div><h3>Intente jugar WARZONE y ME PASO ESTO...</h3><p>Canal AfterXEsp_ · 27 oct 2024</p></div></a>
+    <div class="btns"><a class="btn" href="https://github.com/AfterEquis">Ver repos <svg viewBox="0 0 16 16"><use href="#gh"/></svg></a><a class="btn" href="https://youtube.com/@afterxesp">Ir al canal <svg viewBox="0 0 24 24"><use href="#yt"/></svg></a></div></div>
+   <div class="panel" id="p3" role="tabpanel" aria-labelledby="tab-3"><h2>Setup</h2>
+    <!-- TODO: Especificar los componentes reales de tu Setup (Equipo, Sistema, Programas) cuando lo desees -->
+    <div class="item"><h3>Equipo</h3><p>Procesador, gráfica y memoria de tu PC.</p></div>
+    <div class="item"><h3>Sistema</h3><p>Tu sistema operativo y entorno de trabajo.</p></div>
+    <div class="item"><h3>Programas</h3><p>Editor de código y herramientas de grabación y edición.</p></div></div>
+  </section>
+ </div>
+
+ <div class="bar bot"><span class="osd">AUX</span><span class="osd hide" id="d"></span><span class="osd" id="t">TIME 0:00:00</span></div>
+</main>
+
+<script type="module" src="./main.js"></script>
+</body>
+</html>
