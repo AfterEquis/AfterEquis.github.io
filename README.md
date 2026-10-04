@@ -1,6 +1,6 @@
 # AfterX — Web Personal
 
-Sitio web personal y portfolio de **AfterX** («After»), estudiante de informática en Valencia y creador de contenido en español.
+Sitio web personal y portfolio de **AfterX** («After»), estudiante de informática y creador de contenido en español.
 
 Diseñado con una estética retro-futurista estilo **VHS / CRT / Cyberpunk / Glitch**, con efectos de aberración cromática, refracción de lente translúcida (*glassmorphism*), scanlines, grano analógico y controles interactivos tipo OSD.
 
