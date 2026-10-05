@@ -1469,6 +1469,12 @@ function switchTab(targetTab, isInteractive) {
   ps.forEach(function (p) {
     p.classList.toggle('on', p.id === 'p' + targetTab.dataset.ch);
   });
+  if (isInteractive && window.innerWidth <= 780) {
+    var rightSection = document.querySelector('.right');
+    if (rightSection) {
+      rightSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  }
 }
 
 tabs.forEach(function (b) {
