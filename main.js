@@ -1,3 +1,5 @@
+import glitchGifUrl from './assets/glitch-bg.gif';
+
 // --- Authentic CRT Datamosh Glitch Engine (Matching User Reference) ---
 var bgCanvas = document.getElementById('bg-canvas');
 var bgCtx = bgCanvas ? bgCanvas.getContext('2d') : null;
@@ -6,7 +8,12 @@ var bgFallback = document.querySelector('.bg-glitch-fallback');
 var bgIsPaused = false;
 var bgTrackingGlitch = { active: false, intensity: 0, timer: 0, scanlines: [] };
 var mouseGlitchSparks = [];
-var currentTheme = localStorage.getItem('afterx_theme') || 'vhs';
+var urlParams = new URLSearchParams(window.location.search);
+var queryTheme = urlParams.get('theme');
+var currentTheme =
+  queryTheme === 'marathon' || queryTheme === 'vhs'
+    ? queryTheme
+    : localStorage.getItem('afterx_theme') || 'vhs';
 var refreshGlitchPalette = null;
 
 var GLITCH_COLORS_VHS = [
@@ -25,14 +32,21 @@ var GLITCH_COLORS_MARATHON = [
   '#ffe600',
 ];
 
-// Autoplay handling with fallback
+// Autoplay handling with fallback (only load the 2.3MB GIF if video fails to play)
+function showFallbackGif() {
+  if (bgFallback) {
+    if (!bgFallback.src) {
+      bgFallback.src = glitchGifUrl;
+    }
+    bgFallback.style.display = 'block';
+  }
+}
 if (bgVideo) {
   var playPromise = bgVideo.play();
   if (playPromise !== undefined) {
-    playPromise.catch(function () {
-      if (bgFallback) bgFallback.style.display = 'block';
-    });
+    playPromise.catch(showFallbackGif);
   }
+  bgVideo.addEventListener('error', showFallbackGif);
 }
 
 function triggerBackgroundGlitch(intensity) {
@@ -314,30 +328,44 @@ function setBackgroundPaused(paused) {
   var marathonMouseActive = false;
   var mouseInactiveTimer = null;
 
+  function handlePointer(clientX, clientY) {
+    marathonMouseX = clientX;
+    marathonMouseY = clientY;
+    marathonMouseActive = true;
+    clearTimeout(mouseInactiveTimer);
+    mouseInactiveTimer = setTimeout(function () {
+      marathonMouseActive = false;
+    }, 3500);
+
+    if (bgIsPaused) return;
+    if (Math.random() < 0.35 && mouseGlitchSparks.length < 16) {
+      mouseGlitchSparks.push({
+        x: clientX + (Math.random() * 80 - 40),
+        y: clientY + (Math.random() * 24 - 12),
+        w: 15 + Math.random() * 55,
+        h: 1 + Math.random() * 2.5,
+        color:
+          currentTheme === 'marathon'
+            ? (Math.random() > 0.5 ? '#dfff00' : '#ff3b00')
+            : (Math.random() > 0.5 ? '#00e5ff' : '#ff0055'),
+        life: 1.0,
+      });
+    }
+  }
+
   window.addEventListener(
     'mousemove',
     function (e) {
-      marathonMouseX = e.clientX;
-      marathonMouseY = e.clientY;
-      marathonMouseActive = true;
-      clearTimeout(mouseInactiveTimer);
-      mouseInactiveTimer = setTimeout(function () {
-        marathonMouseActive = false;
-      }, 3500);
+      handlePointer(e.clientX, e.clientY);
+    },
+    { passive: true }
+  );
 
-      if (bgIsPaused) return;
-      if (Math.random() < 0.35 && mouseGlitchSparks.length < 16) {
-        mouseGlitchSparks.push({
-          x: e.clientX + (Math.random() * 80 - 40),
-          y: e.clientY + (Math.random() * 24 - 12),
-          w: 15 + Math.random() * 55,
-          h: 1 + Math.random() * 2.5,
-          color:
-            currentTheme === 'marathon'
-              ? (Math.random() > 0.5 ? '#dfff00' : '#ff3b00')
-              : (Math.random() > 0.5 ? '#00e5ff' : '#ff0055'),
-          life: 1.0,
-        });
+  window.addEventListener(
+    'touchmove',
+    function (e) {
+      if (e.touches && e.touches[0]) {
+        handlePointer(e.touches[0].clientX, e.touches[0].clientY);
       }
     },
     { passive: true }
@@ -346,10 +374,12 @@ function setBackgroundPaused(paused) {
   function resizeCanvas() {
     width = window.innerWidth;
     height = window.innerHeight;
+    dpr = width < 768 ? Math.min(window.devicePixelRatio || 1, 1.5) : Math.min(window.devicePixelRatio || 1, 2);
     bgCanvas.width = Math.floor(width * dpr);
     bgCanvas.height = Math.floor(height * dpr);
     bgCtx.setTransform(1, 0, 0, 1, 0, 0);
     bgCtx.scale(dpr, dpr);
+    NEEDLE_COUNT = width < 780 ? 20 : 45;
     initNeedles();
     initMarathonGrid();
   }
@@ -1371,15 +1401,17 @@ function resumeMusic() {
 var tabs = document.querySelectorAll('.tab'),
   ps = document.querySelectorAll('.panel');
 
-function switchTab(targetTab) {
-  playBlip();
-  var isReduced = matchMedia('(prefers-reduced-motion:reduce)').matches;
-  if (!isReduced) {
-    tear();
-    document.body.classList.add('zap');
-    setTimeout(function () {
-      document.body.classList.remove('zap');
-    }, 280);
+function switchTab(targetTab, isInteractive) {
+  if (isInteractive) {
+    playBlip();
+    var isReduced = matchMedia('(prefers-reduced-motion:reduce)').matches;
+    if (!isReduced) {
+      tear();
+      document.body.classList.add('zap');
+      setTimeout(function () {
+        document.body.classList.remove('zap');
+      }, 280);
+    }
   }
   tabs.forEach(function (x) {
     var isSelected = x === targetTab;
@@ -1393,7 +1425,7 @@ function switchTab(targetTab) {
 
 tabs.forEach(function (b) {
   b.addEventListener('click', function () {
-    switchTab(b);
+    switchTab(b, true);
   });
 });
 
@@ -1416,7 +1448,7 @@ if (tabsContainer) {
       e.preventDefault();
       var n = tabs[nextIndex];
       n.focus();
-      switchTab(n);
+      switchTab(n, true);
     }
   });
 }
@@ -1802,6 +1834,12 @@ function applyTheme(theme, isUserClick) {
 
 // Initial theme setup on page load
 applyTheme(currentTheme, false);
+
+var queryTab = urlParams.get('tab');
+if (queryTab && (queryTab === '1' || queryTab === '2' || queryTab === '3')) {
+  var tBtn = document.getElementById('tab-' + queryTab);
+  if (tBtn) switchTab(tBtn);
+}
 
 if (btnTracking) {
   btnTracking.addEventListener('click', function () {
