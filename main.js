@@ -1126,27 +1126,43 @@ function scheduleLofiStep(step, time) {
   }
 }
 
-// --- Trap Beat Sound Generators (Theme 2 - Marathon Gaming) ---
-function playTrap808(freq, time, duration) {
+// --- Trap Beat Sound Generators (Theme 2 - Marathon Gaming: Hard Tactical / Dark Phonk Drill) ---
+var distortionCurveHard808 = null;
+
+function playTrap808(freq, time, duration, slideToFreq) {
   if (!audioCtx || !musicMasterGain) return;
-  if (!distortionCurve808) distortionCurve808 = makeDistortionCurve(22);
+  if (!distortionCurveHard808) distortionCurveHard808 = makeDistortionCurve(72);
 
   var osc = audioCtx.createOscillator();
   var gain = audioCtx.createGain();
   osc.type = 'sine';
-  osc.frequency.setValueAtTime(freq * 2.3, time);
-  osc.frequency.exponentialRampToValueAtTime(freq, time + 0.035);
 
-  gain.gain.setValueAtTime(0.42, time);
-  gain.gain.setValueAtTime(0.38, time + 0.05);
+  // Hard punch transient drop
+  osc.frequency.setValueAtTime(freq * 3.4, time);
+  osc.frequency.exponentialRampToValueAtTime(freq, time + 0.04);
+
+  // Optional 808 pitch glide / slide
+  if (slideToFreq) {
+    osc.frequency.setValueAtTime(freq, time + 0.18);
+    osc.frequency.exponentialRampToValueAtTime(slideToFreq, time + 0.38);
+  }
+
+  // Heavy, sustained envelope with growl
+  gain.gain.setValueAtTime(0.55, time);
+  gain.gain.setValueAtTime(0.48, time + 0.06);
   gain.gain.exponentialRampToValueAtTime(0.001, time + duration);
 
   var shaper = audioCtx.createWaveShaper();
-  shaper.curve = distortionCurve808;
+  shaper.curve = distortionCurveHard808;
   shaper.oversample = '4x';
 
+  var lowPass = audioCtx.createBiquadFilter();
+  lowPass.type = 'lowpass';
+  lowPass.frequency.setValueAtTime(1400, time);
+
   osc.connect(shaper);
-  shaper.connect(gain);
+  shaper.connect(lowPass);
+  lowPass.connect(gain);
   gain.connect(musicMasterGain);
   osc.start(time);
   osc.stop(time + duration);
@@ -1156,57 +1172,61 @@ function playTrapKick(time) {
   if (!audioCtx || !musicMasterGain) return;
   var osc = audioCtx.createOscillator();
   var gain = audioCtx.createGain();
-  osc.type = 'triangle';
-  osc.frequency.setValueAtTime(175, time);
-  osc.frequency.exponentialRampToValueAtTime(45, time + 0.08);
-  gain.gain.setValueAtTime(0.45, time);
-  gain.gain.exponentialRampToValueAtTime(0.001, time + 0.15);
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(260, time);
+  osc.frequency.exponentialRampToValueAtTime(42, time + 0.055);
+  gain.gain.setValueAtTime(0.58, time);
+  gain.gain.exponentialRampToValueAtTime(0.001, time + 0.18);
   osc.connect(gain);
   gain.connect(musicMasterGain);
   osc.start(time);
-  osc.stop(time + 0.15);
+  osc.stop(time + 0.18);
 }
 
 function playTrapSnare(time) {
   if (!audioCtx || !musicMasterGain) return;
-  var bufferSize = audioCtx.sampleRate * 0.15;
+  // Layer 1: Sharp whip clap noise
+  var bufferSize = audioCtx.sampleRate * 0.18;
   var buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
   var data = buffer.getChannelData(0);
   for (var i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
   var noise = audioCtx.createBufferSource();
   noise.buffer = buffer;
+
   var filter = audioCtx.createBiquadFilter();
   filter.type = 'bandpass';
-  filter.frequency.setValueAtTime(2200, time);
-  filter.Q.value = 1.4;
+  filter.frequency.setValueAtTime(1800, time);
+  filter.Q.value = 1.8;
 
-  var gain = audioCtx.createGain();
-  gain.gain.setValueAtTime(0.12, time);
-  gain.gain.setValueAtTime(0.32, time + 0.012);
-  gain.gain.exponentialRampToValueAtTime(0.001, time + 0.15);
+  var noiseGain = audioCtx.createGain();
+  // Pre-transient micro clap flam
+  noiseGain.gain.setValueAtTime(0.18, time);
+  noiseGain.gain.setValueAtTime(0.44, time + 0.015);
+  noiseGain.gain.exponentialRampToValueAtTime(0.001, time + 0.18);
 
   noise.connect(filter);
-  filter.connect(gain);
-  gain.connect(musicMasterGain);
+  filter.connect(noiseGain);
+  noiseGain.connect(musicMasterGain);
   noise.start(time);
-  noise.stop(time + 0.15);
+  noise.stop(time + 0.18);
 
+  // Layer 2: Tight body thud
   var osc = audioCtx.createOscillator();
   var oscGain = audioCtx.createGain();
-  osc.type = 'sine';
-  osc.frequency.setValueAtTime(235, time);
-  osc.frequency.exponentialRampToValueAtTime(140, time + 0.06);
-  oscGain.gain.setValueAtTime(0.24, time);
-  oscGain.gain.exponentialRampToValueAtTime(0.001, time + 0.06);
+  osc.type = 'triangle';
+  osc.frequency.setValueAtTime(280, time);
+  osc.frequency.exponentialRampToValueAtTime(125, time + 0.05);
+  oscGain.gain.setValueAtTime(0.36, time);
+  oscGain.gain.exponentialRampToValueAtTime(0.001, time + 0.07);
   osc.connect(oscGain);
   oscGain.connect(musicMasterGain);
   osc.start(time);
-  osc.stop(time + 0.06);
+  osc.stop(time + 0.07);
 }
 
 function playTrapHat(time, vol, pitchMult) {
   if (!audioCtx || !musicMasterGain) return;
-  var bufferSize = audioCtx.sampleRate * 0.035;
+  var bufferSize = audioCtx.sampleRate * 0.038;
   var buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
   var data = buffer.getChannelData(0);
   for (var i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
@@ -1214,85 +1234,113 @@ function playTrapHat(time, vol, pitchMult) {
   noise.buffer = buffer;
   var filter = audioCtx.createBiquadFilter();
   filter.type = 'highpass';
-  filter.frequency.setValueAtTime(8500 * (pitchMult || 1), time);
+  filter.frequency.setValueAtTime(9200 * (pitchMult || 1), time);
   var gain = audioCtx.createGain();
-  gain.gain.setValueAtTime(vol || 0.11, time);
-  gain.gain.exponentialRampToValueAtTime(0.001, time + 0.032);
+  gain.gain.setValueAtTime(vol || 0.13, time);
+  gain.gain.exponentialRampToValueAtTime(0.001, time + 0.036);
   noise.connect(filter);
   filter.connect(gain);
   gain.connect(musicMasterGain);
   noise.start(time);
-  noise.stop(time + 0.035);
+  noise.stop(time + 0.038);
 }
 
-function playTrapSynth(freq, time, duration) {
+// Dark Phonk / Reese Menacing Stab
+function playTrapDarkHorn(freq, time, duration) {
   if (!audioCtx || !musicMasterGain) return;
-  var osc = audioCtx.createOscillator();
-  var filter = audioCtx.createBiquadFilter();
+  var osc1 = audioCtx.createOscillator();
+  var osc2 = audioCtx.createOscillator();
   var gain = audioCtx.createGain();
-  osc.type = 'sawtooth';
-  osc.frequency.setValueAtTime(freq, time);
+  var filter = audioCtx.createBiquadFilter();
+
+  osc1.type = 'sawtooth';
+  osc2.type = 'sawtooth';
+  osc1.frequency.setValueAtTime(freq, time);
+  osc2.frequency.setValueAtTime(freq * 1.012, time); // Detuned for fat aggressive buzz
 
   filter.type = 'lowpass';
-  filter.frequency.setValueAtTime(1750, time);
-  filter.frequency.exponentialRampToValueAtTime(450, time + duration);
-  filter.Q.value = 3.5;
+  filter.frequency.setValueAtTime(2200, time);
+  filter.frequency.exponentialRampToValueAtTime(580, time + duration);
+  filter.Q.value = 4.2;
 
-  gain.gain.setValueAtTime(0.07, time);
+  gain.gain.setValueAtTime(0.09, time);
+  gain.gain.setValueAtTime(0.12, time + 0.04);
   gain.gain.exponentialRampToValueAtTime(0.001, time + duration);
 
-  osc.connect(filter);
+  osc1.connect(filter);
+  osc2.connect(filter);
   filter.connect(gain);
   gain.connect(musicMasterGain);
-  osc.start(time);
-  osc.stop(time + duration);
+
+  osc1.start(time);
+  osc2.start(time);
+  osc1.stop(time + duration);
+  osc2.stop(time + duration);
 }
 
-var TRAP_SYNTH_NOTES = [174.61, 207.65, 261.63, 311.13, 349.23, 415.30];
+var TRAP_DARK_RIFF = [
+  138.59, // C#3 (Dark tonic)
+  130.81, // C3 (Dissonant Phrygian lead)
+  164.81, // E3
+  123.47, // B2
+];
 
 function scheduleTrapStep(step, time) {
   var bar = Math.floor(step / 16);
   var stepInBar = step % 16;
 
-  // 808 Bass Line in F minor
+  // Heavy 808 Bass Line with Slides (C# Minor / Phonk Drive)
+  var cSharp = 34.65; // C#1
+  var e1 = 41.20;     // E1
+  var d1 = 36.71;     // D1
+  var b0 = 30.87;     // B0
+
   if (stepInBar === 0) {
-    var f808 = 43.65; // F1
-    if (bar === 1) f808 = 51.91; // Ab1
-    else if (bar === 2) f808 = 38.89; // Eb1
-    else if (bar === 3) f808 = 34.65; // Db1
-    playTrap808(f808, time, 0.75);
-  } else if (stepInBar === 8 && (bar === 0 || bar === 2)) {
-    playTrap808(43.65, time, 0.65);
+    if (bar === 0) playTrap808(cSharp, time, 0.72);
+    else if (bar === 1) playTrap808(e1, time, 0.72);
+    else if (bar === 2) playTrap808(cSharp, time, 0.72);
+    else if (bar === 3) playTrap808(d1, time, 0.65, cSharp); // Slide down
+  } else if (stepInBar === 6 && (bar === 0 || bar === 2)) {
+    playTrap808(cSharp, time, 0.42);
+  } else if (stepInBar === 11 && bar === 1) {
+    // Aggressive octave slide
+    playTrap808(cSharp, time, 0.62, cSharp * 2);
   } else if (stepInBar === 10 && bar === 3) {
-    playTrap808(32.70, time, 0.65); // C1
+    playTrap808(b0, time, 0.55);
   }
 
-  // Punchy Trap Kick
-  if (stepInBar === 0 || stepInBar === 5 || stepInBar === 10 || (bar % 2 === 1 && stepInBar === 13)) {
+  // Heavy Punch Kick Pattern (Syncopated drill/trap)
+  if (stepInBar === 0 || stepInBar === 6 || (bar % 2 === 1 && stepInBar === 10) || stepInBar === 13) {
     playTrapKick(time);
   }
 
-  // Snare on beat 3 (halftime: step 8)
+  // Crisp Hard Snare (Halftime: step 8 + roll ghost on step 15 bar 3)
   if (stepInBar === 8) {
+    playTrapSnare(time);
+  } else if (bar === 3 && (stepInBar === 14 || stepInBar === 15)) {
     playTrapSnare(time);
   }
 
-  // Trap Hi-Hats: Regular 8th notes + rolls
+  // Rapid Hi-Hat Sizzles & Triplets
   if (bar === 1 && stepInBar >= 12) {
-    playTrapHat(time, 0.1, 1.2);
-    playTrapHat(time + 0.054, 0.09, 1.4);
-  } else if (bar === 3 && stepInBar >= 14) {
-    playTrapHat(time, 0.11, 1.3);
-    playTrapHat(time + 0.036, 0.1, 1.5);
-    playTrapHat(time + 0.072, 0.09, 1.7);
+    // 32nd triplet sizzle
+    playTrapHat(time, 0.14, 1.2);
+    playTrapHat(time + 0.034, 0.12, 1.4);
+    playTrapHat(time + 0.068, 0.11, 1.6);
+  } else if (bar === 3 && stepInBar >= 12) {
+    // Ascending pitch roll
+    playTrapHat(time, 0.13, 1.1);
+    playTrapHat(time + 0.028, 0.13, 1.3);
+    playTrapHat(time + 0.056, 0.12, 1.5);
+    playTrapHat(time + 0.084, 0.11, 1.8);
   } else if (stepInBar % 2 === 0) {
-    playTrapHat(time, stepInBar % 4 === 0 ? 0.12 : 0.08, 1.0);
+    playTrapHat(time, stepInBar % 4 === 0 ? 0.15 : 0.09, 1.0);
   }
 
-  // Dark Synth Arp
-  if (stepInBar === 0 || stepInBar === 3 || stepInBar === 6 || stepInBar === 9 || stepInBar === 12) {
-    var noteIdx = (bar * 2 + Math.floor(stepInBar / 3)) % TRAP_SYNTH_NOTES.length;
-    playTrapSynth(TRAP_SYNTH_NOTES[noteIdx], time, 0.22);
+  // Menacing Dark Reese/Horn Stab (Heavy dark tactical theme)
+  if (stepInBar === 0 || stepInBar === 4 || stepInBar === 9) {
+    var riffIdx = (bar + (stepInBar === 9 ? 1 : 0)) % TRAP_DARK_RIFF.length;
+    playTrapDarkHorn(TRAP_DARK_RIFF[riffIdx], time, 0.38);
   }
 }
 
