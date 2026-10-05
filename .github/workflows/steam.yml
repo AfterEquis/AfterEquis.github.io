@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: write
+  actions: write
 
 jobs:
   update-games:
@@ -27,13 +28,16 @@ jobs:
         run: node scripts/fetch-steam.mjs
 
       - name: Commit updated games
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          git add data/games.json
-          if git diff --cached --quiet -- data/games.json; then
-            echo "No changes to data/games.json"
+          git add public/data/games.json
+          if git diff --cached --quiet -- public/data/games.json; then
+            echo "No changes to public/data/games.json"
           else
             git config user.name "github-actions[bot]"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
             git commit -m "chore: update Steam games"
             git push
+            gh workflow run deploy.yml
           fi

@@ -3,7 +3,7 @@ import { dirname } from 'node:path';
 
 const apiKey = process.env.STEAM_API_KEY;
 const steamId = process.env.STEAM_ID;
-const outputPath = new URL('../data/games.json', import.meta.url);
+const outputPath = new URL('../public/data/games.json', import.meta.url);
 const maxGames = 6;
 
 if (!apiKey || !steamId) {
@@ -37,10 +37,10 @@ try {
 }
 
 if (!Array.isArray(games) || games.length === 0) {
-  console.log('No recently played games returned; keeping existing data/games.json.');
+  console.log('No recently played games returned; keeping existing public/data/games.json.');
   process.exit(0);
 }
 
 await mkdir(dirname(outputPath.pathname), { recursive: true });
 await writeFile(outputPath, `${JSON.stringify(games, null, 2)}\n`, 'utf8');
-console.log(`Wrote ${games.length} games to data/games.json.`);
+console.log(`Wrote ${games.length} games to public/data/games.json.`);
