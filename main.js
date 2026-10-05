@@ -1757,6 +1757,84 @@ async function loadYouTubeVideos() {
 
 loadYouTubeVideos();
 
+// --- Steam Recent Games Loader (Marathon / Gaming Tab) ---
+async function loadSteamGames() {
+  var container = document.querySelector('#p3 .marathon-only');
+  if (!container) return;
+
+  try {
+    var response = await fetch('./data/games.json');
+    if (!response.ok) return;
+
+    var games = await response.json();
+    if (!Array.isArray(games) || games.length === 0) return;
+
+    var staticCards = container.querySelectorAll('.item.marathon-item');
+    staticCards.forEach(function (card) {
+      card.remove();
+    });
+
+    var fragment = document.createDocumentFragment();
+    games.forEach(function (game, index) {
+      var card = document.createElement(game.appid ? 'a' : 'div');
+      card.className = 'item marathon-item vid';
+      if (game.appid) {
+        card.href = 'https://store.steampowered.com/app/' + encodeURIComponent(game.appid);
+        card.target = '_blank';
+        card.rel = 'noopener noreferrer';
+      }
+
+      if (game.image) {
+        var thumb = document.createElement('div');
+        thumb.className = 'thumb';
+        thumb.style.aspectRatio = '460 / 215';
+
+        var img = document.createElement('img');
+        img.src = game.image;
+        img.alt = game.name || 'Juego Steam';
+        img.loading = 'lazy';
+        img.style.position = 'absolute';
+        img.style.inset = '0';
+        img.style.width = '100%';
+        img.style.height = '100%';
+        img.style.objectFit = 'cover';
+
+        thumb.appendChild(img);
+        card.appendChild(thumb);
+      }
+
+      var info = document.createElement('div');
+      info.style.minWidth = '0';
+      info.style.flex = '1';
+
+      if (index === 0) {
+        var tag = document.createElement('div');
+        tag.className = 'item-tag';
+        tag.textContent = 'MAIN TACTICAL';
+        info.appendChild(tag);
+      }
+
+      var h3 = document.createElement('h3');
+      h3.textContent = game.name || '';
+      info.appendChild(h3);
+
+      var p = document.createElement('p');
+      var hoursVal = typeof game.hours === 'number' ? game.hours : parseFloat(game.hours) || 0;
+      p.textContent = hoursVal + ' H // 2 SEM';
+      info.appendChild(p);
+
+      card.appendChild(info);
+      fragment.appendChild(card);
+    });
+
+    container.appendChild(fragment);
+  } catch (err) {
+    console.warn('Could not load Steam games from ./data/games.json:', err);
+  }
+}
+
+loadSteamGames();
+
 // --- Interactive VHS Controls ---
 var btnPlay = document.getElementById('btn-play');
 if (btnPlay) {

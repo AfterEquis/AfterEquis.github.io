@@ -125,6 +125,7 @@ h1:not(.glitch)::after{color:#00e5ff;text-shadow:-2px 0 #2979ff;transform:transl
 @keyframes zap{0%{opacity:0;transform:translateX(14px) skewX(6deg);filter:hue-rotate(60deg)}50%{opacity:.7;transform:translateX(-8px)}100%{opacity:1;transform:none;filter:none}}
 h2{margin:0 0 4px;font-size:30px;font-weight:700;letter-spacing:-.02em;text-shadow:2px 0 rgba(255,59,47,.8),-2px 0 rgba(47,75,255,.8)}
 .item{display:block;text-decoration:none;color:inherit;padding:14px 18px;border-radius:18px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);box-shadow:inset 0 1px 0 rgba(255,255,255,.18);transition:background .2s,border-color .2s,transform .15s}
+.item + .item{margin-top:10px}
 a.item:active{transform:scale(0.98)}
 .item h3{margin:0 0 4px;font-size:18px}.item p{margin:0 0 8px;color:var(--muted);font-size:15px;line-height:1.4}
 .row{display:flex;justify-content:space-between;align-items:center;font-size:14px;color:var(--muted)}
