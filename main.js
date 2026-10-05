@@ -1567,6 +1567,15 @@ const LANG_COLORS = {
   Lua: '#000080',
 };
 
+function sanitizeUrl(url) {
+  if (!url) return '#';
+  var trimmed = String(url).trim();
+  if (/^https?:\/\//i.test(trimmed)) {
+    return trimmed;
+  }
+  return '#';
+}
+
 function escapeHTML(str) {
   if (!str) return '';
   return str.replace(/[&<>'"]/g, function (tag) {
@@ -1583,54 +1592,71 @@ function escapeHTML(str) {
 }
 
 function renderRepos(repos, container) {
+  container.textContent = '';
   if (!repos || repos.length === 0) {
-    container.innerHTML =
-      '<div class="item"><p>No hay repositorios públicos disponibles.</p></div>';
+    var emptyItem = document.createElement('div');
+    emptyItem.className = 'item';
+    var emptyP = document.createElement('p');
+    emptyP.textContent = 'No hay repositorios públicos disponibles.';
+    emptyItem.appendChild(emptyP);
+    container.appendChild(emptyItem);
     return;
   }
-  container.innerHTML = repos
-    .map(function (repo) {
-      var lang = repo.language;
-      var color = lang && LANG_COLORS[lang] ? LANG_COLORS[lang] : '#58a6ff';
-      var starsHtml =
-        repo.stargazers_count > 0
-          ? '<span class="stat-badge">⭐ ' + repo.stargazers_count + '</span>'
-          : '';
-      var langPart = lang
-        ? '<span class="lang" style="--c:' +
-          color +
-          '">' +
-          escapeHTML(lang) +
-          '</span>'
-        : '<span></span>';
-      var desc = repo.description
-        ? escapeHTML(repo.description)
-        : 'Sin descripción disponible.';
-      return (
-        '<a class="item" href="' +
-        escapeHTML(repo.html_url) +
-        '" target="_blank" rel="noopener noreferrer">' +
-        '<h3>' +
-        escapeHTML(repo.name) +
-        '</h3>' +
-        '<p>' +
-        desc +
-        '</p>' +
-        '<div class="row">' +
-        langPart +
-        '<div>' +
-        starsHtml +
-        '</div>' +
-        '</div>' +
-        '</a>'
-      );
-    })
-    .join('');
+
+  var fragment = document.createDocumentFragment();
+  repos.forEach(function (repo) {
+    var a = document.createElement('a');
+    a.className = 'item';
+    a.href = sanitizeUrl(repo.html_url);
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer';
+
+    var h3 = document.createElement('h3');
+    h3.textContent = repo.name || '';
+    a.appendChild(h3);
+
+    var p = document.createElement('p');
+    p.textContent = repo.description || 'Sin descripción disponible.';
+    a.appendChild(p);
+
+    var row = document.createElement('div');
+    row.className = 'row';
+
+    var lang = repo.language;
+    if (lang) {
+      var color = LANG_COLORS[lang] || '#58a6ff';
+      var langSpan = document.createElement('span');
+      langSpan.className = 'lang';
+      langSpan.style.setProperty('--c', color);
+      langSpan.textContent = lang;
+      row.appendChild(langSpan);
+    } else {
+      row.appendChild(document.createElement('span'));
+    }
+
+    var statsDiv = document.createElement('div');
+    if (repo.stargazers_count > 0) {
+      var starSpan = document.createElement('span');
+      starSpan.className = 'stat-badge';
+      starSpan.textContent = '⭐ ' + repo.stargazers_count;
+      statsDiv.appendChild(starSpan);
+    }
+    row.appendChild(statsDiv);
+
+    a.appendChild(row);
+    fragment.appendChild(a);
+  });
+  container.appendChild(fragment);
 }
 
 function renderError(container, message) {
-  container.innerHTML =
-    '<div class="item"><p>' + escapeHTML(message) + '</p></div>';
+  container.textContent = '';
+  var item = document.createElement('div');
+  item.className = 'item';
+  var p = document.createElement('p');
+  p.textContent = message || '';
+  item.appendChild(p);
+  container.appendChild(item);
 }
 
 async function loadGitHubRepos() {
@@ -1746,64 +1772,94 @@ async function loadYouTubeVideos() {
         : '';
     }
 
-    var mainThumb = latest.thumbnail
-      ? '<img src="' +
-        escapeHTML(latest.thumbnail) +
-        '" alt="' +
-        escapeHTML(latest.title) +
-        '" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;"><span class="play">▶</span>'
-      : '<span class="play">▶</span>';
+    container.textContent = '';
+    var frag = document.createDocumentFragment();
 
-    var mainHtml =
-      '<a class="item vid" href="' +
-      escapeHTML(latest.url) +
-      '" target="_blank" rel="noopener noreferrer">' +
-      '<div class="thumb">' +
-      mainThumb +
-      '</div>' +
-      '<div>' +
-      '<h3>' +
-      escapeHTML(latest.title) +
-      '</h3>' +
-      '<p>Canal AfterXEsp_' +
-      formatPubDate(latest.published) +
-      '</p>' +
-      '</div></a>';
+    var mainCard = document.createElement('a');
+    mainCard.className = 'item vid';
+    mainCard.href = sanitizeUrl(latest.url);
+    mainCard.target = '_blank';
+    mainCard.rel = 'noopener noreferrer';
 
-    var secondaryHtml = '';
+    var thumb = document.createElement('div');
+    thumb.className = 'thumb';
+    if (latest.thumbnail) {
+      var img = document.createElement('img');
+      img.src = sanitizeUrl(latest.thumbnail);
+      img.alt = latest.title || 'Miniatura de vídeo';
+      img.loading = 'lazy';
+      img.style.position = 'absolute';
+      img.style.inset = '0';
+      img.style.width = '100%';
+      img.style.height = '100%';
+      img.style.objectFit = 'cover';
+      thumb.appendChild(img);
+    }
+    var play = document.createElement('span');
+    play.className = 'play';
+    play.textContent = '▶';
+    thumb.appendChild(play);
+    mainCard.appendChild(thumb);
+
+    var info = document.createElement('div');
+    var h3 = document.createElement('h3');
+    h3.textContent = latest.title || '';
+    info.appendChild(h3);
+
+    var p = document.createElement('p');
+    p.textContent = 'Canal AfterXEsp_' + formatPubDate(latest.published);
+    info.appendChild(p);
+
+    mainCard.appendChild(info);
+    frag.appendChild(mainCard);
+
     if (videos.length >= 3) {
-      var extra = [videos[1], videos[2]];
-      secondaryHtml =
-        '<div class="yt-mini-grid">' +
-        extra
-          .map(function (v) {
-            return (
-              '<a class="yt-mini-card" href="' +
-              escapeHTML(v.url) +
-              '" target="_blank" rel="noopener noreferrer">' +
-              '<div class="thumb" style="aspect-ratio:16/9">' +
-              (v.thumbnail
-                ? '<img src="' +
-                  escapeHTML(v.thumbnail) +
-                  '" alt="' +
-                  escapeHTML(v.title) +
-                  '" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;"><span class="play" style="font-size:18px;padding:0 12px">▶</span>'
-                : '<span class="play">▶</span>') +
-              '</div>' +
-              '<h4>' +
-              escapeHTML(v.title) +
-              '</h4>' +
-              '<p>AfterXEsp_' +
-              formatPubDate(v.published) +
-              '</p>' +
-              '</a>'
-            );
-          })
-          .join('') +
-        '</div>';
+      var grid = document.createElement('div');
+      grid.className = 'yt-mini-grid';
+      [videos[1], videos[2]].forEach(function (v) {
+        var card = document.createElement('a');
+        card.className = 'yt-mini-card';
+        card.href = sanitizeUrl(v.url);
+        card.target = '_blank';
+        card.rel = 'noopener noreferrer';
+
+        var miniThumb = document.createElement('div');
+        miniThumb.className = 'thumb';
+        miniThumb.style.aspectRatio = '16/9';
+        if (v.thumbnail) {
+          var miniImg = document.createElement('img');
+          miniImg.src = sanitizeUrl(v.thumbnail);
+          miniImg.alt = v.title || 'Miniatura';
+          miniImg.loading = 'lazy';
+          miniImg.style.position = 'absolute';
+          miniImg.style.inset = '0';
+          miniImg.style.width = '100%';
+          miniImg.style.height = '100%';
+          miniImg.style.objectFit = 'cover';
+          miniThumb.appendChild(miniImg);
+        }
+        var miniPlay = document.createElement('span');
+        miniPlay.className = 'play';
+        miniPlay.style.fontSize = '18px';
+        miniPlay.style.padding = '0 12px';
+        miniPlay.textContent = '▶';
+        miniThumb.appendChild(miniPlay);
+        card.appendChild(miniThumb);
+
+        var h4 = document.createElement('h4');
+        h4.textContent = v.title || '';
+        card.appendChild(h4);
+
+        var cardP = document.createElement('p');
+        cardP.textContent = 'AfterXEsp_' + formatPubDate(v.published);
+        card.appendChild(cardP);
+
+        grid.appendChild(card);
+      });
+      frag.appendChild(grid);
     }
 
-    container.innerHTML = mainHtml + secondaryHtml;
+    container.appendChild(frag);
   } catch (err) {
     console.warn('Could not load latest YouTube videos from videos.json:', err);
   }
@@ -1830,10 +1886,11 @@ async function loadSteamGames() {
 
     var fragment = document.createDocumentFragment();
     games.forEach(function (game, index) {
-      var card = document.createElement(game.appid ? 'a' : 'div');
+      var appIdNum = parseInt(game.appid, 10);
+      var card = document.createElement(appIdNum > 0 ? 'a' : 'div');
       card.className = 'item marathon-item vid';
-      if (game.appid) {
-        card.href = 'https://store.steampowered.com/app/' + encodeURIComponent(game.appid);
+      if (appIdNum > 0) {
+        card.href = 'https://store.steampowered.com/app/' + appIdNum;
         card.target = '_blank';
         card.rel = 'noopener noreferrer';
       }
@@ -1844,7 +1901,7 @@ async function loadSteamGames() {
         thumb.style.aspectRatio = '460 / 215';
 
         var img = document.createElement('img');
-        img.src = game.image;
+        img.src = sanitizeUrl(game.image);
         img.alt = game.name || 'Juego Steam';
         img.loading = 'lazy';
         img.style.position = 'absolute';
