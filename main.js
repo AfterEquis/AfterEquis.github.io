@@ -1918,10 +1918,20 @@ async function loadSteamGames() {
       info.style.minWidth = '0';
       info.style.flex = '1';
 
+      var tag = document.createElement('div');
+      tag.className = 'item-tag';
       if (index === 0) {
-        var tag = document.createElement('div');
-        tag.className = 'item-tag';
         tag.textContent = 'MAIN TACTICAL';
+        info.appendChild(tag);
+      } else if (index === 1 || index === 2) {
+        tag.textContent = 'EN ROTACIÓN';
+        tag.style.color = '#ff6b35';
+        tag.style.background = 'rgba(255, 107, 53, 0.15)';
+        info.appendChild(tag);
+      } else {
+        tag.textContent = 'ACTIVO';
+        tag.style.color = '#00f0ff';
+        tag.style.background = 'rgba(0, 240, 255, 0.12)';
         info.appendChild(tag);
       }
 
