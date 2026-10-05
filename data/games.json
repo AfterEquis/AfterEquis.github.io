@@ -1,0 +1,38 @@
+[
+  {
+    "appid": 359550,
+    "name": "Tom Clancy's Rainbow Six Siege",
+    "hours": 22.3,
+    "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/359550/header.jpg"
+  },
+  {
+    "appid": 2807960,
+    "name": "Battlefield™ 6",
+    "hours": 9.1,
+    "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/2807960/header.jpg"
+  },
+  {
+    "appid": 730,
+    "name": "Counter-Strike 2",
+    "hours": 3.8,
+    "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/730/header.jpg"
+  },
+  {
+    "appid": 346900,
+    "name": "AdVenture Capitalist",
+    "hours": 0.9,
+    "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/346900/header.jpg"
+  },
+  {
+    "appid": 460920,
+    "name": "Steep",
+    "hours": 0.8,
+    "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/460920/header.jpg"
+  },
+  {
+    "appid": 2231380,
+    "name": "Ghost Recon Breakpoint",
+    "hours": 0.7,
+    "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/2231380/header.jpg"
+  }
+]
