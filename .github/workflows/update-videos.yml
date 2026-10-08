@@ -22,6 +22,8 @@ jobs:
           node-version: 20
 
       - name: Ejecutar script de actualización de YouTube
+        env:
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
         run: node scripts/fetch-youtube.js
 
       - name: Comprobar cambios y hacer commit

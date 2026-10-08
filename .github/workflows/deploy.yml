@@ -35,6 +35,8 @@ jobs:
         run: npm ci || npm install
 
       - name: Compilar proyecto (genera videos.json y bundle de Vite)
+        env:
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
         run: npm run build
 
       - name: Subir artefacto de GitHub Pages
