@@ -6,7 +6,9 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const rootDir = path.resolve(__dirname, '..');
 
-// Cargar variables de entorno desde .env o .env.local sin requerir dependencias externas
+const BLOCKED_ENV_KEYS = new Set(['__proto__', 'constructor', 'prototype']);
+
+// Cargar variables de entorno desde .env o .env.local de forma segura (sin prototype pollution)
 function loadEnv() {
   const envFiles = [path.join(rootDir, '.env'), path.join(rootDir, '.env.local')];
   for (const envFile of envFiles) {
@@ -19,6 +21,8 @@ function loadEnv() {
           const eqIdx = trimmed.indexOf('=');
           if (eqIdx !== -1) {
             const key = trimmed.slice(0, eqIdx).trim();
+            if (BLOCKED_ENV_KEYS.has(key)) continue;
+
             let val = trimmed.slice(eqIdx + 1).trim();
             if (
               (val.startsWith('"') && val.endsWith('"')) ||
@@ -49,23 +53,45 @@ const publicDir = path.join(rootDir, 'public');
 const publicVideosFile = path.join(publicDir, 'videos.json');
 const rootVideosFile = path.join(rootDir, 'videos.json');
 
+function isValidVideoId(id) {
+  return typeof id === 'string' && /^[a-zA-Z0-9_-]{11}$/.test(id);
+}
+
+function sanitizeText(text, maxLen = 200) {
+  if (typeof text !== 'string') return '';
+  return text.replace(/[\u0000-\u001F\u007F-\u009F]/g, '').trim().slice(0, maxLen);
+}
+
+function escapeRegex(str) {
+  return typeof str === 'string' ? str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') : '';
+}
+
 function saveVideos(videos) {
+  if (!Array.isArray(videos) || videos.length === 0) {
+    console.warn('[YouTube] Se intentó guardar una lista vacía de vídeos; omitiendo para proteger datos existentes.');
+    return;
+  }
+
   if (!fs.existsSync(publicDir)) {
     fs.mkdirSync(publicDir, { recursive: true });
   }
+
   const outputData = JSON.stringify(videos, null, 2);
   fs.writeFileSync(publicVideosFile, outputData, 'utf-8');
   fs.writeFileSync(rootVideosFile, outputData, 'utf-8');
-  console.log(`[YouTube] Guardados ${videos.length} vídeos en videos.json.`);
+  console.log(`[YouTube] Guardados ${videos.length} vídeos válidos en videos.json.`);
 }
 
 function extractTag(entry, tag) {
-  const match = entry.match(new RegExp(`<${tag}[^>]*>([\\s\\S]*?)<\\/${tag}>`, 'i'));
+  const safeTag = escapeRegex(tag);
+  const match = entry.match(new RegExp(`<${safeTag}[^>]*>([\\s\\S]*?)<\\/${safeTag}>`, 'i'));
   return match ? match[1].trim() : '';
 }
 
 function extractAttr(entry, tag, attr) {
-  const match = entry.match(new RegExp(`<${tag}[^>]*\\s+${attr}=["']([^"']+)["'][^>]*>`, 'i'));
+  const safeTag = escapeRegex(tag);
+  const safeAttr = escapeRegex(attr);
+  const match = entry.match(new RegExp(`<${safeTag}[^>]*\\s+${safeAttr}=["']([^"']+)["'][^>]*>`, 'i'));
   return match ? match[1].trim() : '';
 }
 
@@ -75,6 +101,7 @@ async function fetchFromRss() {
     headers: {
       'User-Agent': 'Mozilla/5.0 (compatible; AfterXPortfolioBot/1.0)',
     },
+    signal: AbortSignal.timeout(8000),
   });
 
   if (!response.ok) {
@@ -84,25 +111,29 @@ async function fetchFromRss() {
   const xml = await response.text();
   const entryMatches = xml.match(/<entry>[\s\S]*?<\/entry>/gi) || [];
 
-  return entryMatches.map((entry) => {
-    const id = extractTag(entry, 'yt:videoId');
-    const title = extractTag(entry, 'title');
-    const published = extractTag(entry, 'published');
-    const updated = extractTag(entry, 'updated');
-    const link = extractAttr(entry, 'link', 'href') || (id ? `https://www.youtube.com/watch?v=${id}` : '');
-    const thumbnail =
-      extractAttr(entry, 'media:thumbnail', 'url') ||
-      (id ? `https://i.ytimg.com/vi/${id}/hqdefault.jpg` : '');
+  return entryMatches
+    .map((entry) => {
+      const id = extractTag(entry, 'yt:videoId');
+      if (!isValidVideoId(id)) return null;
 
-    return {
-      id,
-      title,
-      url: link,
-      published,
-      updated,
-      thumbnail,
-    };
-  });
+      const title = sanitizeText(extractTag(entry, 'title'));
+      const published = extractTag(entry, 'published');
+      const updated = extractTag(entry, 'updated');
+      const link = `https://www.youtube.com/watch?v=${id}`;
+      const thumbnail =
+        extractAttr(entry, 'media:thumbnail', 'url') ||
+        `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
+
+      return {
+        id,
+        title,
+        url: link,
+        published,
+        updated,
+        thumbnail,
+      };
+    })
+    .filter(Boolean);
 }
 
 async function fetchFromYouTubeApi(apiKey) {
@@ -117,6 +148,7 @@ async function fetchFromYouTubeApi(apiKey) {
     headers: {
       'Accept': 'application/json',
     },
+    signal: AbortSignal.timeout(8000),
   });
 
   if (!response.ok) {
@@ -135,23 +167,25 @@ async function fetchFromYouTubeApi(apiKey) {
     .map((item) => {
       const snippet = item.snippet;
       const videoId = snippet.resourceId?.videoId;
+      if (!isValidVideoId(videoId)) return null;
+
       const thumb =
         snippet.thumbnails?.maxres?.url ||
         snippet.thumbnails?.high?.url ||
         snippet.thumbnails?.medium?.url ||
         snippet.thumbnails?.default?.url ||
-        (videoId ? `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg` : '');
+        `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
 
       return {
         id: videoId,
-        title: snippet.title,
-        url: videoId ? `https://www.youtube.com/watch?v=${videoId}` : '',
+        title: sanitizeText(snippet.title),
+        url: `https://www.youtube.com/watch?v=${videoId}`,
         published: snippet.publishedAt,
         updated: snippet.publishedAt,
         thumbnail: thumb,
       };
     })
-    .filter((v) => v.id);
+    .filter(Boolean);
 }
 
 async function updateVideos() {

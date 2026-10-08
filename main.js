@@ -8,12 +8,31 @@ var bgFallback = document.querySelector('.bg-glitch-fallback');
 var bgIsPaused = false;
 var bgTrackingGlitch = { active: false, intensity: 0, timer: 0, scanlines: [] };
 var mouseGlitchSparks = [];
+var safeStorage = {
+  getItem: function (key) {
+    try {
+      return localStorage.getItem(key);
+    } catch (e) {
+      return null;
+    }
+  },
+  setItem: function (key, val) {
+    try {
+      localStorage.setItem(key, val);
+    } catch (e) {}
+  },
+  removeItem: function (key) {
+    try {
+      localStorage.removeItem(key);
+    } catch (e) {}
+  },
+};
 var urlParams = new URLSearchParams(window.location.search);
 var queryTheme = urlParams.get('theme');
 var currentTheme =
   queryTheme === 'marathon' || queryTheme === 'vhs'
     ? queryTheme
-    : localStorage.getItem('afterx_theme') || 'vhs';
+    : safeStorage.getItem('afterx_theme') || 'vhs';
 var refreshGlitchPalette = null;
 
 var GLITCH_COLORS_VHS = [
@@ -846,7 +865,7 @@ function tear() {
 }
 
 // --- Retro Web Audio Synthesizer & Procedural Music Engine ---
-var sfxEnabled = localStorage.getItem('afterx_sfx') === 'true';
+var sfxEnabled = safeStorage.getItem('afterx_sfx') === 'true';
 var audioCtx = null;
 var musicMasterGain = null;
 var sfxMasterGain = null;
@@ -1568,12 +1587,20 @@ const LANG_COLORS = {
 };
 
 function sanitizeUrl(url) {
-  if (!url) return '#';
-  var trimmed = String(url).trim();
-  if (/^https?:\/\//i.test(trimmed)) {
-    return trimmed;
-  }
+  if (!url || typeof url !== 'string') return '#';
+  var trimmed = url.trim();
+  try {
+    var parsed = new URL(trimmed, window.location.origin);
+    if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
+      return parsed.href;
+    }
+  } catch (e) {}
   return '#';
+}
+
+function sanitizeImageUrl(url) {
+  var safe = sanitizeUrl(url);
+  return safe === '#' ? '' : safe;
 }
 
 function escapeHTML(str) {
@@ -1663,8 +1690,8 @@ async function loadGitHubRepos() {
   var container = document.getElementById('gh-repos');
   if (!container) return;
 
-  var cachedData = localStorage.getItem(GITHUB_CACHE_KEY);
-  var cachedTime = localStorage.getItem(GITHUB_CACHE_TIME_KEY);
+  var cachedData = safeStorage.getItem(GITHUB_CACHE_KEY);
+  var cachedTime = safeStorage.getItem(GITHUB_CACHE_TIME_KEY);
   var now = Date.now();
 
   var hasValidCache = false;
@@ -1679,8 +1706,8 @@ async function loadGitHubRepos() {
         }
       }
     } catch (e) {
-      localStorage.removeItem(GITHUB_CACHE_KEY);
-      localStorage.removeItem(GITHUB_CACHE_TIME_KEY);
+      safeStorage.removeItem(GITHUB_CACHE_KEY);
+      safeStorage.removeItem(GITHUB_CACHE_TIME_KEY);
     }
   }
 
@@ -1725,10 +1752,8 @@ async function loadGitHubRepos() {
         return dateB - dateA;
       });
 
-    try {
-      localStorage.setItem(GITHUB_CACHE_KEY, JSON.stringify(filteredRepos));
-      localStorage.setItem(GITHUB_CACHE_TIME_KEY, now.toString());
-    } catch (storageErr) {}
+    safeStorage.setItem(GITHUB_CACHE_KEY, JSON.stringify(filteredRepos));
+    safeStorage.setItem(GITHUB_CACHE_TIME_KEY, now.toString());
 
     renderRepos(filteredRepos, container);
   } catch (err) {
@@ -1784,16 +1809,19 @@ async function loadYouTubeVideos() {
     var thumb = document.createElement('div');
     thumb.className = 'thumb';
     if (latest.thumbnail) {
-      var img = document.createElement('img');
-      img.src = sanitizeUrl(latest.thumbnail);
-      img.alt = latest.title || 'Miniatura de vídeo';
-      img.loading = 'lazy';
-      img.style.position = 'absolute';
-      img.style.inset = '0';
-      img.style.width = '100%';
-      img.style.height = '100%';
-      img.style.objectFit = 'cover';
-      thumb.appendChild(img);
+      var safeLatestImg = sanitizeImageUrl(latest.thumbnail);
+      if (safeLatestImg) {
+        var img = document.createElement('img');
+        img.src = safeLatestImg;
+        img.alt = latest.title || 'Miniatura de vídeo';
+        img.loading = 'lazy';
+        img.style.position = 'absolute';
+        img.style.inset = '0';
+        img.style.width = '100%';
+        img.style.height = '100%';
+        img.style.objectFit = 'cover';
+        thumb.appendChild(img);
+      }
     }
     var play = document.createElement('span');
     play.className = 'play';
@@ -1827,16 +1855,19 @@ async function loadYouTubeVideos() {
         miniThumb.className = 'thumb';
         miniThumb.style.aspectRatio = '16/9';
         if (v.thumbnail) {
-          var miniImg = document.createElement('img');
-          miniImg.src = sanitizeUrl(v.thumbnail);
-          miniImg.alt = v.title || 'Miniatura';
-          miniImg.loading = 'lazy';
-          miniImg.style.position = 'absolute';
-          miniImg.style.inset = '0';
-          miniImg.style.width = '100%';
-          miniImg.style.height = '100%';
-          miniImg.style.objectFit = 'cover';
-          miniThumb.appendChild(miniImg);
+          var safeMiniImg = sanitizeImageUrl(v.thumbnail);
+          if (safeMiniImg) {
+            var miniImg = document.createElement('img');
+            miniImg.src = safeMiniImg;
+            miniImg.alt = v.title || 'Miniatura';
+            miniImg.loading = 'lazy';
+            miniImg.style.position = 'absolute';
+            miniImg.style.inset = '0';
+            miniImg.style.width = '100%';
+            miniImg.style.height = '100%';
+            miniImg.style.objectFit = 'cover';
+            miniThumb.appendChild(miniImg);
+          }
         }
         var miniPlay = document.createElement('span');
         miniPlay.className = 'play';
@@ -1896,22 +1927,25 @@ async function loadSteamGames() {
       }
 
       if (game.image) {
-        var thumb = document.createElement('div');
-        thumb.className = 'thumb';
-        thumb.style.aspectRatio = '460 / 215';
+        var safeGameImg = sanitizeImageUrl(game.image);
+        if (safeGameImg) {
+          var thumb = document.createElement('div');
+          thumb.className = 'thumb';
+          thumb.style.aspectRatio = '460 / 215';
 
-        var img = document.createElement('img');
-        img.src = sanitizeUrl(game.image);
-        img.alt = game.name || 'Juego Steam';
-        img.loading = 'lazy';
-        img.style.position = 'absolute';
-        img.style.inset = '0';
-        img.style.width = '100%';
-        img.style.height = '100%';
-        img.style.objectFit = 'cover';
+          var img = document.createElement('img');
+          img.src = safeGameImg;
+          img.alt = game.name || 'Juego Steam';
+          img.loading = 'lazy';
+          img.style.position = 'absolute';
+          img.style.inset = '0';
+          img.style.width = '100%';
+          img.style.height = '100%';
+          img.style.objectFit = 'cover';
 
-        thumb.appendChild(img);
-        card.appendChild(thumb);
+          thumb.appendChild(img);
+          card.appendChild(thumb);
+        }
       }
 
       var info = document.createElement('div');
@@ -2043,7 +2077,7 @@ if (queryTab && (queryTab === '1' || queryTab === '2' || queryTab === '3')) {
 if (btnTracking) {
   btnTracking.addEventListener('click', function () {
     var nextTheme = currentTheme === 'marathon' ? 'vhs' : 'marathon';
-    localStorage.setItem('afterx_theme', nextTheme);
+    safeStorage.setItem('afterx_theme', nextTheme);
     applyTheme(nextTheme, true);
   });
 }
@@ -2052,7 +2086,7 @@ if (sfxToggle) {
   updateSfxButton();
   sfxToggle.addEventListener('click', function () {
     sfxEnabled = !sfxEnabled;
-    localStorage.setItem('afterx_sfx', sfxEnabled.toString());
+    safeStorage.setItem('afterx_sfx', sfxEnabled.toString());
     updateSfxButton();
     if (sfxEnabled) {
       getAudioContext();
