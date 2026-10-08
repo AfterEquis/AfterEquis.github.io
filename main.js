@@ -1,5 +1,16 @@
 import glitchGifUrl from './assets/glitch-bg.gif';
 
+// Clickjacking / Framing Protection (permits same-origin & local dev)
+try {
+  if (window.self !== window.top && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+    if (window.top.location.origin !== window.self.location.origin) {
+      document.documentElement.style.display = 'none';
+    }
+  }
+} catch (e) {
+  document.documentElement.style.display = 'none';
+}
+
 // --- Authentic CRT Datamosh Glitch Engine (Matching User Reference) ---
 var bgCanvas = document.getElementById('bg-canvas');
 var bgCtx = bgCanvas ? bgCanvas.getContext('2d') : null;
@@ -910,8 +921,12 @@ function getAudioContext() {
   return audioCtx;
 }
 
+var lastBlipTime = 0;
 function playBlip() {
   if (!sfxEnabled || bgIsPaused) return;
+  var now = performance.now();
+  if (now - lastBlipTime < 45) return;
+  lastBlipTime = now;
   var ctx = getAudioContext();
   if (!ctx || !sfxMasterGain) return;
   var osc = ctx.createOscillator();
@@ -927,8 +942,12 @@ function playBlip() {
   osc.stop(ctx.currentTime + 0.045);
 }
 
+var lastGlitchSfxTime = 0;
 function playGlitchSfx() {
   if (!sfxEnabled || bgIsPaused) return;
+  var now = performance.now();
+  if (now - lastGlitchSfxTime < 120) return;
+  lastGlitchSfxTime = now;
   var ctx = getAudioContext();
   if (!ctx || !sfxMasterGain) return;
   var bufferSize = ctx.sampleRate * 0.12;
@@ -1749,16 +1768,31 @@ async function loadGitHubRepos() {
     }
   }
 
+  var GITHUB_COOLDOWN_KEY = 'afterx_gh_cooldown';
+  var cooldownUntil = Number(safeStorage.getItem(GITHUB_COOLDOWN_KEY) || 0);
+  if (now < cooldownUntil) {
+    if (!hasValidCache) {
+      renderError(
+        container,
+        'Límite de peticiones de GitHub alcanzado temporalmente. Puedes ver mis repositorios directamente en GitHub.',
+      );
+    }
+    return;
+  }
+
   try {
     var response = await fetch(GITHUB_API_URL, {
       headers: {
         Accept: 'application/vnd.github.v3+json',
       },
+      signal: AbortSignal.timeout(6000),
     });
 
     if (!response.ok) {
       if (hasValidCache) return;
       if (response.status === 403 || response.status === 429) {
+        // Enfriamiento de 5 minutos para no saturar la IP del cliente
+        safeStorage.setItem(GITHUB_COOLDOWN_KEY, (now + 5 * 60 * 1000).toString());
         renderError(
           container,
           'Límite de peticiones de GitHub alcanzado temporalmente. Puedes ver mis repositorios directamente en GitHub.',
@@ -1813,7 +1847,7 @@ async function loadYouTubeVideos() {
   if (!container) return;
 
   try {
-    var response = await fetch('./videos.json');
+    var response = await fetch('./videos.json', { signal: AbortSignal.timeout(5000) });
     if (!response.ok) return;
 
     var videos = await response.json();
@@ -1944,7 +1978,7 @@ async function loadSteamGames() {
   if (!container) return;
 
   try {
-    var response = await fetch('./data/games.json');
+    var response = await fetch('./data/games.json', { signal: AbortSignal.timeout(5000) });
     if (!response.ok) return;
 
     var games = await response.json();
@@ -2114,8 +2148,12 @@ if (queryTab && (queryTab === '1' || queryTab === '2' || queryTab === '3')) {
   if (tBtn) switchTab(tBtn);
 }
 
+var lastThemeToggleTime = 0;
 if (btnTracking) {
   btnTracking.addEventListener('click', function () {
+    var now = performance.now();
+    if (now - lastThemeToggleTime < 250) return;
+    lastThemeToggleTime = now;
     var nextTheme = currentTheme === 'marathon' ? 'vhs' : 'marathon';
     safeStorage.setItem('afterx_theme', nextTheme);
     applyTheme(nextTheme, true);
