@@ -1598,9 +1598,34 @@ function sanitizeUrl(url) {
   return '#';
 }
 
+var ALLOWED_IMAGE_HOSTS = [
+  'i.ytimg.com',
+  'i1.ytimg.com',
+  'i2.ytimg.com',
+  'i3.ytimg.com',
+  'i4.ytimg.com',
+  'cdn.cloudflare.steamstatic.com',
+  'steamcdn-a.akamaihd.net',
+  'avatars.githubusercontent.com',
+];
+
 function sanitizeImageUrl(url) {
-  var safe = sanitizeUrl(url);
-  return safe === '#' ? '' : safe;
+  if (!url || typeof url !== 'string') return '';
+  var trimmed = url.trim();
+  try {
+    var parsed = new URL(trimmed, window.location.origin);
+    if (parsed.origin === window.location.origin) {
+      return parsed.href;
+    }
+    if (parsed.protocol === 'https:') {
+      var hostname = parsed.hostname.toLowerCase();
+      var isAllowed = ALLOWED_IMAGE_HOSTS.some(function (allowed) {
+        return hostname === allowed || hostname.endsWith('.' + allowed);
+      });
+      if (isAllowed) return parsed.href;
+    }
+  } catch (e) {}
+  return '';
 }
 
 function escapeHTML(str) {
@@ -1632,9 +1657,12 @@ function renderRepos(repos, container) {
 
   var fragment = document.createDocumentFragment();
   repos.forEach(function (repo) {
+    if (!repo || typeof repo !== 'object') return;
+
     var a = document.createElement('a');
     a.className = 'item';
-    a.href = sanitizeUrl(repo.html_url);
+    var safeHref = sanitizeUrl(repo.html_url);
+    a.href = safeHref === '#' ? 'https://github.com/AfterEquis' : safeHref;
     a.target = '_blank';
     a.rel = 'noopener noreferrer';
 
@@ -1699,13 +1727,23 @@ async function loadGitHubRepos() {
     try {
       var parsed = JSON.parse(cachedData);
       if (Array.isArray(parsed) && parsed.length > 0) {
-        renderRepos(parsed, container);
-        if (now - Number(cachedTime) < CACHE_TTL_MS) {
-          hasValidCache = true;
-          return;
+        var isValidSchema = parsed.every(function (item) {
+          return item && typeof item === 'object' && typeof item.name === 'string';
+        });
+        if (isValidSchema) {
+          renderRepos(parsed, container);
+          if (now - Number(cachedTime) < CACHE_TTL_MS) {
+            hasValidCache = true;
+            return;
+          }
+        } else {
+          console.warn('[Security] Caché corrupta o inválida en localStorage, descartando.');
+          safeStorage.removeItem(GITHUB_CACHE_KEY);
+          safeStorage.removeItem(GITHUB_CACHE_TIME_KEY);
         }
       }
     } catch (e) {
+      console.warn('[Security] Error al procesar caché de GitHub:', e.message);
       safeStorage.removeItem(GITHUB_CACHE_KEY);
       safeStorage.removeItem(GITHUB_CACHE_TIME_KEY);
     }
@@ -1802,7 +1840,8 @@ async function loadYouTubeVideos() {
 
     var mainCard = document.createElement('a');
     mainCard.className = 'item vid';
-    mainCard.href = sanitizeUrl(latest.url);
+    var safeLatestUrl = sanitizeUrl(latest.url);
+    mainCard.href = safeLatestUrl === '#' ? 'https://youtube.com/@afterxesp' : safeLatestUrl;
     mainCard.target = '_blank';
     mainCard.rel = 'noopener noreferrer';
 
@@ -1847,7 +1886,8 @@ async function loadYouTubeVideos() {
       [videos[1], videos[2]].forEach(function (v) {
         var card = document.createElement('a');
         card.className = 'yt-mini-card';
-        card.href = sanitizeUrl(v.url);
+        var safeMiniUrl = sanitizeUrl(v.url);
+        card.href = safeMiniUrl === '#' ? 'https://youtube.com/@afterxesp' : safeMiniUrl;
         card.target = '_blank';
         card.rel = 'noopener noreferrer';
 
