@@ -453,13 +453,14 @@ body[data-theme="marathon"] .vhs-lines,
 body[data-theme="marathon"] .track{
   display:none!important
 }
-body[data-theme="marathon"]:not([data-gaming-style="dedsec"]):not([data-gaming-style="arcane"]) .bg-glitch-video,
-body[data-theme="marathon"]:not([data-gaming-style="dedsec"]):not([data-gaming-style="arcane"]) .bg-glitch-fallback{
-  display:none!important
-}
 body[data-gaming-style="dedsec"] .bg-glitch-video,
-body[data-gaming-style="arcane"] .bg-glitch-video{
+body[data-gaming-style="arcane"] .bg-glitch-video,
+body[data-gaming-style="marathon"] .bg-glitch-video,
+body[data-theme="marathon"] .bg-glitch-video{
   display:block!important;
+}
+body[data-gaming-style="marathon"] .bg-glitch-video{
+  filter: contrast(1.22) brightness(0.88) saturate(1.28);
 }
 body[data-theme="marathon"] .bg-glitch-vignette{
   background:radial-gradient(ellipse at 50% 50%,rgba(5,7,10,0.12) 0%,rgba(5,7,10,0.55) 75%,#05070a 100%)

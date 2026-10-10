@@ -4,6 +4,8 @@ import dedsecGifUrl from './assets/dedsec-bg.gif';
 import dedsecVideoUrl from './assets/dedsec-bg.mp4';
 import arcaneGifUrl from './assets/arcane-bg.gif';
 import arcaneVideoUrl from './assets/arcane-bg.mp4';
+import marathonGifUrl from './assets/marathon-bg.gif';
+import marathonVideoUrl from './assets/marathon-bg.mp4';
 
 // Clickjacking / Framing Protection (permits same-origin & local dev)
 try {
@@ -90,13 +92,13 @@ var GLITCH_COLORS_ARCANE = [
   '#00f59b',
 ];
 
-// Dynamic background media handler (Video loops with GIF fallbacks for VHS, DedSec, Arcane)
+// Dynamic background media handler (Video loops with GIF fallbacks for VHS, DedSec, Arcane, Marathon)
 function showFallbackGif(targetGif) {
   if (bgFallback) {
     var gif = targetGif;
     if (!gif) {
       if (currentTheme === 'marathon') {
-        gif = currentGamingStyle === 'dedsec' ? dedsecGifUrl : (currentGamingStyle === 'arcane' ? arcaneGifUrl : null);
+        gif = currentGamingStyle === 'dedsec' ? dedsecGifUrl : (currentGamingStyle === 'arcane' ? arcaneGifUrl : marathonGifUrl);
       } else {
         gif = glitchGifUrl;
       }
@@ -127,8 +129,8 @@ function updateBackgroundMedia() {
       targetVideo = arcaneVideoUrl;
       targetGif = arcaneGifUrl;
     } else {
-      targetVideo = null;
-      targetGif = null;
+      targetVideo = marathonVideoUrl;
+      targetGif = marathonGifUrl;
     }
   }
 
@@ -363,71 +365,54 @@ function setBackgroundPaused(paused) {
 
     for (var r = 0; r < mRows; r++) {
       for (var c = 0; c < mCols; c++) {
-        var xn = (c * M_CELL) / width;
-        var yn = (r * M_CELL) / height;
-
-        var inCutout = isInsideBoxes(xn, yn, MONOLITH_CUTOUTS);
-        var inMonolith = !inCutout && isInsideBoxes(xn, yn, MONOLITHS);
-
         var glyph = 0;
         var colorRow = 0; // 0: Volt, 1: Black, 2: Orange, 3: Cyan
-        var alpha = 0.75;
+        var alpha = 0.25;
 
-        if (inMonolith) {
-          // Inside solid yellow monolith: black glyphs on yellow
-          if (Math.random() < 0.38) {
-            glyph = Math.floor(1 + Math.random() * 9);
-            colorRow = 1; // Black
-            alpha = 0.9;
-          } else {
-            glyph = 0;
-          }
+        // Tactical AR cluster patterns & runner stripes
+        if (c % 14 === 2) {
+          glyph = r % 2 === 0 ? 4 : 2; // ◎ and ✕
+          alpha = 0.42;
+        } else if (c % 14 === 3) {
+          glyph = r % 2 === 0 ? 5 : 3; // □ and ○
+          alpha = 0.38;
+        } else if (c % 14 === 8) {
+          glyph = 6; // +
+          alpha = 0.35;
         } else {
-          // In dark field: Image 1 cluster patterns & runner stripes
-          if (c % 14 === 2) {
-            glyph = r % 2 === 0 ? 4 : 2; // ◎ and ✕
-            alpha = 0.85;
-          } else if (c % 14 === 3) {
-            glyph = r % 2 === 0 ? 5 : 3; // □ and ○
-            alpha = 0.8;
-          } else if (c % 14 === 8) {
-            glyph = 6; // +
-            alpha = 0.7;
-          } else {
-            var cluster =
-              Math.sin(c * 0.28) * Math.cos(r * 0.22) +
-              Math.sin((c + r) * 0.16);
+          var cluster =
+            Math.sin(c * 0.28) * Math.cos(r * 0.22) +
+            Math.sin((c + r) * 0.16);
 
-            if (cluster > 0.55) {
-              var gPool = [2, 3, 4, 5, 10];
-              glyph = gPool[Math.floor(Math.random() * gPool.length)];
-              alpha = 0.65 + Math.random() * 0.3;
-            } else if (cluster > 0.0) {
-              var gPool2 = [6, 7, 8, 9];
-              glyph = gPool2[Math.floor(Math.random() * gPool2.length)];
-              alpha = 0.5 + Math.random() * 0.3;
-            } else if (cluster > -0.65) {
-              glyph = 1; // Dot ·
-              alpha = 0.22 + Math.random() * 0.28;
-            } else {
-              glyph = 0; // Negative space
-            }
-          }
-
-          var colRand = Math.random();
-          if (colRand < 0.82) {
-            colorRow = 0; // Volt Yellow
-          } else if (colRand < 0.92) {
-            colorRow = 2; // Safety Orange
+          if (cluster > 0.6) {
+            var gPool = [2, 3, 4, 5, 10];
+            glyph = gPool[Math.floor(Math.random() * gPool.length)];
+            alpha = 0.3 + Math.random() * 0.2;
+          } else if (cluster > 0.2) {
+            var gPool2 = [6, 7, 8, 9];
+            glyph = gPool2[Math.floor(Math.random() * gPool2.length)];
+            alpha = 0.2 + Math.random() * 0.15;
+          } else if (cluster > -0.4) {
+            glyph = 1; // Dot ·
+            alpha = 0.1 + Math.random() * 0.14;
           } else {
-            colorRow = 3; // Electric Cyan
+            glyph = 0; // Clean space
           }
+        }
+
+        var colRand = Math.random();
+        if (colRand < 0.78) {
+          colorRow = 0; // Volt Yellow
+        } else if (colRand < 0.9) {
+          colorRow = 2; // Safety Orange
+        } else {
+          colorRow = 3; // Electric Cyan
         }
 
         mGrid.push({
           c: c,
           r: r,
-          isSolid: inMonolith,
+          isSolid: false,
           glyph: glyph,
           baseGlyph: glyph,
           colorRow: colorRow,
@@ -628,35 +613,10 @@ function setBackgroundPaused(paused) {
 
   // --- Theme 2 Frame Renderer: Marathon Tactical Glyphs & Telemetry Matrix ---
   function drawMarathonFrame(now, dt) {
-    // 1. Clear to void black
-    bgCtx.fillStyle = '#05070a';
-    bgCtx.fillRect(0, 0, width, height);
+    // 1. Clear transparently so background video shows through cleanly
+    bgCtx.clearRect(0, 0, width, height);
 
-    // 2. Solid Volt Monoliths (Image 1)
-    bgCtx.fillStyle = '#dfff00';
-    for (var m = 0; m < MONOLITHS.length; m++) {
-      var mono = MONOLITHS[m];
-      bgCtx.fillRect(
-        mono.x1 * width,
-        mono.y1 * height,
-        (mono.x2 - mono.x1) * width,
-        (mono.y2 - mono.y1) * height
-      );
-    }
-
-    // 3. Inverted Black Cutout Windows (Image 1)
-    bgCtx.fillStyle = '#05070a';
-    for (var k = 0; k < MONOLITH_CUTOUTS.length; k++) {
-      var cut = MONOLITH_CUTOUTS[k];
-      bgCtx.fillRect(
-        cut.x1 * width,
-        cut.y1 * height,
-        (cut.x2 - cut.x1) * width,
-        (cut.y2 - cut.y1) * height
-      );
-    }
-
-    // 4. Update and Draw Scanline Laser Sweep (Image 2)
+    // 2. Update and Draw Scanline Laser Sweep (Image 2)
     marathonScanY = (marathonScanY + dt * 115) % (height + 250);
     var currentLaserY = marathonScanY - 100;
     if (currentLaserY >= 0 && currentLaserY <= height) {
