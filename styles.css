@@ -521,6 +521,222 @@ body[data-theme="marathon"] .btns.marathon-only .btn{
   background:rgba(223,255,0,.06);
 }
 
+/* --- Gaming Style Selector HUD Subbar --- */
+.gaming-subbar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:8px 24px;
+  background:rgba(5,7,14,0.4);
+  border-bottom:1px solid rgba(255,255,255,0.08);
+  font-family:var(--osd);
+  transition:background .25s,border-color .25s;
+}
+.gaming-subbar-title{
+  font-size:16px;
+  letter-spacing:.08em;
+  color:var(--muted);
+  white-space:nowrap;
+}
+.gaming-styles-pills{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+}
+.gaming-style-btn{
+  font-family:var(--osd);
+  font-size:15px;
+  letter-spacing:.06em;
+  padding:4px 14px;
+  border-radius:10px;
+  background:rgba(255,255,255,0.06);
+  color:var(--muted);
+  border:1px solid rgba(255,255,255,0.14);
+  cursor:pointer;
+  transition:all .2s cubic-bezier(0.16,1,0.3,1);
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+}
+.style-bullet{
+  width:6px;
+  height:6px;
+  border-radius:50%;
+  background:currentColor;
+  opacity:.6;
+  transition:transform .2s,opacity .2s;
+}
+.gaming-style-btn:hover{
+  background:rgba(255,255,255,0.14);
+  color:#fff;
+  transform:translateY(-1px);
+}
+.gaming-style-btn.active{
+  font-weight:700;
+  color:#05070a;
+}
+.gaming-style-btn.active .style-bullet{
+  opacity:1;
+  transform:scale(1.25);
+}
+
+/* Marathon Style Active Button */
+body[data-gaming-style="marathon"] .gaming-style-btn[data-style="marathon"]{
+  background:#dfff00;
+  color:#05070a;
+  border-color:#dfff00;
+  box-shadow:0 0 14px rgba(223,255,0,0.55);
+}
+body[data-gaming-style="marathon"] .gaming-style-btn[data-style="marathon"] .style-bullet{
+  background:#ff3b00;
+}
+
+/* --- DEDSEC Cyber-Hacker Aesthetic (Watch Dogs) --- */
+body[data-gaming-style="dedsec"]{
+  --blue:#00e5ff;
+  --violet:#00ff66;
+  --red:#ff0055;
+  --glow:#00ff66;
+}
+body[data-gaming-style="dedsec"] .card::before{
+  background:linear-gradient(135deg,#00ff66,transparent 38%,transparent 62%,#ff0055);
+}
+body[data-gaming-style="dedsec"] .card{
+  border-color:rgba(0,255,102,0.25);
+  box-shadow:inset 3px 3px 4px -2px rgba(0,255,102,0.6),inset -3px -3px 4px -2px rgba(255,0,85,0.5),inset 0 0 0 1px rgba(0,255,102,0.16),inset 0 0 50px rgba(0,255,102,0.08),0 30px 90px rgba(0,0,0,0.7);
+}
+body[data-gaming-style="dedsec"] .tab[aria-selected=true]{
+  color:#05070a;
+  background:#00ff66;
+  border-color:#00ff66;
+  font-weight:700;
+  box-shadow:0 0 0 1px #ff0055,0 0 18px rgba(0,255,102,0.55);
+}
+body[data-gaming-style="dedsec"] h1 b{
+  background:repeating-linear-gradient(90deg,#00ff66 0 2px,#00e5ff 2px 4px,#ff0055 4px 6px);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  filter:drop-shadow(2px 0 0 #ff0055) drop-shadow(-2px 0 0 #00e5ff);
+}
+body[data-gaming-style="dedsec"] .cta{
+  background:linear-gradient(135deg,#00ff66,#00e5ff);
+  color:#05070a;
+  box-shadow:0 6px 20px rgba(0,255,102,0.4);
+}
+body[data-gaming-style="dedsec"] .status .dot{
+  background:#00ff66;
+  box-shadow:0 0 10px #00ff66;
+}
+body[data-gaming-style="dedsec"] .status .ok{
+  color:#00ff66;
+}
+body[data-gaming-style="dedsec"] .btn-osd.active-track{
+  color:#00ff66;
+  text-shadow:0 0 10px rgba(0,255,102,0.8);
+  border:1px solid rgba(0,255,102,0.3);
+}
+body[data-gaming-style="dedsec"] .stat-pill{
+  background:rgba(0,255,102,0.06);
+  border-color:rgba(0,255,102,0.22);
+}
+body[data-gaming-style="dedsec"] .stat-pill .k{
+  color:#00ff66;
+}
+body[data-gaming-style="dedsec"] .marathon-item{
+  border-left-color:#00ff66!important;
+}
+body[data-gaming-style="dedsec"] .item-tag{
+  color:#00ff66;
+  background:rgba(0,255,102,0.12);
+}
+body[data-gaming-style="dedsec"] .gaming-style-btn[data-style="dedsec"]{
+  background:#00ff66;
+  color:#05070a;
+  border-color:#00ff66;
+  box-shadow:0 0 14px rgba(0,255,102,0.6);
+}
+body[data-gaming-style="dedsec"] .gaming-style-btn[data-style="dedsec"] .style-bullet{
+  background:#ff0055;
+}
+body[data-gaming-style="dedsec"] .btns.marathon-only .btn{
+  border-color:rgba(0,255,102,0.25);
+  background:rgba(0,255,102,0.06);
+}
+
+/* --- ARCANE Hextech & Shimmer Aesthetic (Netflix Series) --- */
+body[data-gaming-style="arcane"]{
+  --blue:#00d4ff;
+  --violet:#d9027d;
+  --red:#ffb703;
+  --glow:#00d4ff;
+}
+body[data-gaming-style="arcane"] .card::before{
+  background:linear-gradient(135deg,#00d4ff,#ffb703 35%,transparent 45%,transparent 55%,#d9027d);
+}
+body[data-gaming-style="arcane"] .card{
+  border-color:rgba(0,212,255,0.28);
+  box-shadow:inset 3px 3px 4px -2px rgba(0,212,255,0.6),inset -3px -3px 4px -2px rgba(217,2,125,0.5),inset 0 0 0 1px rgba(255,183,3,0.18),inset 0 0 50px rgba(0,212,255,0.09),0 30px 90px rgba(4,5,16,0.75);
+}
+body[data-gaming-style="arcane"] .tab[aria-selected=true]{
+  color:#ffffff;
+  background:linear-gradient(135deg,#00d4ff,#7209b7);
+  border-color:#ffb703;
+  font-weight:700;
+  box-shadow:0 0 0 1px #ffb703,0 0 20px rgba(0,212,255,0.6);
+}
+body[data-gaming-style="arcane"] h1 b{
+  background:linear-gradient(135deg,#00d4ff 0%,#ffb703 50%,#d9027d 100%);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  filter:drop-shadow(2px 0 0 #d9027d) drop-shadow(-2px 0 0 #00d4ff);
+}
+body[data-gaming-style="arcane"] .cta{
+  background:linear-gradient(135deg,#00d4ff,#d9027d);
+  color:#ffffff;
+  box-shadow:0 6px 20px rgba(0,212,255,0.45);
+}
+body[data-gaming-style="arcane"] .status .dot{
+  background:#00d4ff;
+  box-shadow:0 0 10px #00d4ff,0 0 20px #d9027d;
+}
+body[data-gaming-style="arcane"] .status .ok{
+  color:#00d4ff;
+}
+body[data-gaming-style="arcane"] .btn-osd.active-track{
+  color:#00d4ff;
+  text-shadow:0 0 10px rgba(0,212,255,0.8),0 0 16px rgba(217,2,125,0.6);
+  border:1px solid rgba(0,212,255,0.4);
+}
+body[data-gaming-style="arcane"] .stat-pill{
+  background:rgba(0,212,255,0.06);
+  border-color:rgba(255,183,3,0.25);
+}
+body[data-gaming-style="arcane"] .stat-pill .k{
+  color:#ffb703;
+}
+body[data-gaming-style="arcane"] .marathon-item{
+  border-left-color:#00d4ff!important;
+}
+body[data-gaming-style="arcane"] .item-tag{
+  color:#ffb703;
+  background:rgba(217,2,125,0.18);
+  border:1px solid rgba(255,183,3,0.25);
+}
+body[data-gaming-style="arcane"] .gaming-style-btn[data-style="arcane"]{
+  background:linear-gradient(135deg,#00d4ff,#d9027d);
+  color:#ffffff;
+  border-color:#ffb703;
+  box-shadow:0 0 14px rgba(0,212,255,0.55);
+}
+body[data-gaming-style="arcane"] .gaming-style-btn[data-style="arcane"] .style-bullet{
+  background:#ffb703;
+}
+body[data-gaming-style="arcane"] .btns.marathon-only .btn{
+  border-color:rgba(0,212,255,0.3);
+  background:rgba(0,212,255,0.08);
+}
+
 /* Desktop Hover Effects (Guarded to prevent sticky hover states on mobile touchscreens) */
 @media(hover:hover) and (pointer:fine){
   .btn-osd:hover{background:rgba(255,255,255,.1);color:#fff}
@@ -537,5 +753,35 @@ body[data-theme="marathon"] .btns.marathon-only .btn{
   body[data-theme="marathon"] .marathon-item:hover{border-left-color:#ff3b00!important}
   body[data-theme="marathon"] .btns.marathon-only .btn:hover{border-color:#dfff00;background:rgba(223,255,0,.15);box-shadow:0 0 15px rgba(223,255,0,.35);color:#dfff00}
   body[data-theme="marathon"] .icons.marathon-only .ic:hover{background:rgba(223,255,0,.18);color:#dfff00;box-shadow:0 0 12px rgba(223,255,0,.35)}
+  
+  body[data-gaming-style="dedsec"] .cta:hover{box-shadow:0 8px 28px rgba(0,255,102,.55)}
+  body[data-gaming-style="dedsec"] .marathon-item:hover{border-left-color:#ff0055!important}
+  body[data-gaming-style="dedsec"] .btns.marathon-only .btn:hover{border-color:#00ff66;background:rgba(0,255,102,.15);box-shadow:0 0 15px rgba(0,255,102,.35);color:#00ff66}
+  body[data-gaming-style="dedsec"] .icons.marathon-only .ic:hover{background:rgba(0,255,102,.18);color:#00ff66;box-shadow:0 0 12px rgba(0,255,102,.35)}
+
+  body[data-gaming-style="arcane"] .cta:hover{box-shadow:0 8px 28px rgba(0,212,255,.55)}
+  body[data-gaming-style="arcane"] .marathon-item:hover{border-left-color:#ffb703!important}
+  body[data-gaming-style="arcane"] .btns.marathon-only .btn:hover{border-color:#ffb703;background:rgba(0,212,255,.18);box-shadow:0 0 15px rgba(0,212,255,.45);color:#00d4ff}
+  body[data-gaming-style="arcane"] .icons.marathon-only .ic:hover{background:rgba(217,2,125,.22);color:#00d4ff;box-shadow:0 0 12px rgba(217,2,125,.45)}
 }
+
+@media(max-width:780px){
+  .gaming-subbar{
+    flex-direction:column;
+    align-items:stretch;
+    gap:6px;
+    padding:8px 16px;
+  }
+  .gaming-styles-pills{
+    justify-content:center;
+  }
+  .gaming-style-btn{
+    flex:1 1 auto;
+    text-align:center;
+    justify-content:center;
+    padding:6px 10px;
+    font-size:14px;
+  }
+}
+
 

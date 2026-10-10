@@ -13,6 +13,10 @@ Diseñado con una estética retro-futurista estilo **VHS / CRT / Cyberpunk / Gli
   * Filtros SVG procedurales para desgarro de señal (*tear*), aberración cromática y refracción de lente en escritorio.
   * Scanlines, líneas de ruido y partículas dinámicas de fondo.
   * Transición con efecto glitch al conmutar entre canales.
+  * **Modo Gaming con múltiples estilos de fondo interactivos**:
+    * **Marathon**: Estética de Runner táctico de alta visibilidad (amarillo/rojo, glifos tácticos, barrido láser y telemetría).
+    * **DedSec**: Estética cyber-hacker inspirada en Watch Dogs (lluvia de código ASCII/hexadecimal, calavera procedural animada, crosshair ctOS y verde ácido/cian neón).
+    * **Arcane**: Estética inspirada en la serie de Netflix (núcleo Hextech celestial y anillos Art Deco, partículas y ascuas de Shimmer violeta/esmeralda de Zaun, rayos arcanos y relámpagos inestables).
 * **Integración con GitHub API**:
   * Carga dinámica de repositorios públicos de [@AfterEquis](https://github.com/AfterEquis).
   * Exclusión automática de forks y ordenación por actividad reciente.

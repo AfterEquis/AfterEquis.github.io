@@ -65,17 +65,32 @@
   <button class="osd btn-osd" id="btn-tracking" title="Ajuste de tracking analógico" aria-label="Ajuste de tracking">TRACKING</button>
  </div>
 
+ <div class="bar gaming-subbar marathon-only" role="toolbar" aria-label="Estilos visuales Gaming">
+  <span class="gaming-subbar-title osd">SECTOR // ESTILO:</span>
+  <div class="gaming-styles-pills" role="radiogroup" aria-label="Selector de estilo visual de fondo">
+   <button type="button" class="gaming-style-btn active" data-style="marathon" role="radio" aria-checked="true" title="Marathon: Runner Sci-Fi Táctico">
+    <span class="style-bullet"></span> MARATHON
+   </button>
+   <button type="button" class="gaming-style-btn" data-style="dedsec" role="radio" aria-checked="false" title="DedSec: Watch Dogs Cyber-Hacker & Glitch">
+    <span class="style-bullet"></span> DEDSEC
+   </button>
+   <button type="button" class="gaming-style-btn" data-style="arcane" role="radio" aria-checked="false" title="Arcane: Hextech Piltover & Shimmer Zaun">
+    <span class="style-bullet"></span> ARCANE
+   </button>
+  </div>
+ </div>
+
  <div class="main">
   <section class="left">
    <div class="avatar" id="avatar-box" role="button" tabindex="0" title="AfterX" aria-label="AfterX"><img id="avatar-img" alt="Smiley glitch de AfterX" src="./assets/avatar.jpg"></div>
    <h1 class="glitch vhs-only" data-text="AfterX">AfterX</h1>
-   <h1 class="marathon-only" data-t="AfterX">After<b>X</b></h1>
+   <h1 class="marathon-only" id="gaming-title" data-t="AfterX">After<b>X</b></h1>
    <p class="bio vhs-only">Estudiante de informática y creador de contenido en español.</p>
-   <p class="bio marathon-only">Runner táctico, creador de contenido y piloto de extracción.</p>
+   <p class="bio marathon-only" id="gaming-bio">Estudiante de informática y creador de contenido en español.</p>
    <div class="meta vhs-only">Linux · Hardware · Programación</div>
-   <div class="meta marathon-only">OPERACIÓN TÁCTICA · COMBATE · 180Hz</div>
+   <div class="meta marathon-only" id="gaming-meta">OPERACIÓN TÁCTICA · COMBATE · 180Hz</div>
    <div class="status vhs-only"><span class="dot"></span><span class="ok">SEÑAL OK</span><span>En línea</span></div>
-   <div class="status marathon-only"><span class="dot"></span><span class="ok">STATUS: DESPLEGADO</span><span>En línea</span></div>
+   <div class="status marathon-only"><span class="dot"></span><span class="ok" id="gaming-status">STATUS: DESPLEGADO</span><span>En línea</span></div>
    <div class="icons vhs-only">
     <a class="ic" href="https://github.com/AfterEquis" target="_blank" rel="noopener noreferrer" aria-label="GitHub"><svg><use href="#gh"/></svg></a>
     <a class="ic" href="https://youtube.com/@afterxesp" target="_blank" rel="noopener noreferrer" aria-label="YouTube"><svg><use href="#yt"/></svg></a>
@@ -94,13 +109,13 @@
      <p class="txt">En YouTube hago vídeos de opinión y comentario en español, en el canal AfterXEsp_. Esta página reúne lo que hago: mis proyectos y mi canal.</p>
     </div>
     <div class="marathon-only">
-     <h2>// ARCHIVO: RUNNER AFTERX</h2>
-     <p class="txt">Especializado en combate táctico a alta velocidad, shooters y partidas de pura tensión. En YouTube comparto anécdotas, victorias in extremis y esos momentos donde el juego decide trolearme por completo.</p>
-     <p class="txt">Mi estilo en el escuadrón: flanqueo rápido, reconocimiento con francotirador y comunicación directa. Si hay un tiroteo en marcha, voy de cabeza.</p>
+     <h2 id="gaming-p1-title">// ARCHIVO: RUNNER AFTERX</h2>
+     <p class="txt" id="gaming-p1-desc1">Especializado en combate táctico a alta velocidad, shooters y partidas de pura tensión. En YouTube comparto anécdotas, victorias in extremis y esos momentos donde el juego decide trolearme por completo.</p>
+     <p class="txt" id="gaming-p1-desc2">Mi estilo en el escuadrón: flanqueo rápido, reconocimiento con francotirador y comunicación directa. Si hay un tiroteo en marcha, voy de cabeza.</p>
      <div class="runner-stats">
-      <div class="stat-pill"><span class="k">SISTEMA</span><span class="v">LINUX RIG</span></div>
-      <div class="stat-pill"><span class="k">ROL</span><span class="v">FLANKER / SNIPER</span></div>
-      <div class="stat-pill"><span class="k">EXTRACCIÓN</span><span class="v">99.4% ÉXITO</span></div>
+      <div class="stat-pill"><span class="k" id="gaming-stat-k1">SISTEMA</span><span class="v" id="gaming-stat-v1">LINUX RIG</span></div>
+      <div class="stat-pill"><span class="k" id="gaming-stat-k2">ROL</span><span class="v" id="gaming-stat-v2">FLANKER / SNIPER</span></div>
+      <div class="stat-pill"><span class="k" id="gaming-stat-k3">EXTRACCIÓN</span><span class="v" id="gaming-stat-v3">99.4% ÉXITO</span></div>
      </div>
     </div>
    </div>
@@ -115,8 +130,8 @@
      <div class="sub">YouTube</div>
     </div>
     <div class="marathon-only">
-     <h2>Transmisiones // Logs</h2>
-     <div class="sub">Grabaciones de Campo // YouTube</div>
+     <h2 id="gaming-p2-title">Transmisiones // Logs</h2>
+     <div class="sub" id="gaming-p2-sub">Grabaciones de Campo // YouTube</div>
     </div>
     <div id="yt-list" class="yt-container">
      <a class="item vid" id="yt-video" href="https://www.youtube.com/watch?v=4iT_sjNgHt8" target="_blank" rel="noopener noreferrer"><div class="thumb"><img src="https://i1.ytimg.com/vi/4iT_sjNgHt8/hqdefault.jpg" alt="Miniatura de vídeo" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;"><span class="play">▶</span></div><div><h3>Intente jugar WARZONE y ME PASO ESTO...</h3><p>Canal AfterXEsp_ · 27 oct 2024</p></div></a>
@@ -139,8 +154,8 @@
      <div class="item"><h3>Programas</h3><p>VSCodium para desarrollo · OBS Studio para grabación · Kdenlive para edición de vídeo</p></div>
     </div>
     <div class="marathon-only">
-     <h2>Juegos en Rotación // Arsenal</h2>
-     <div class="sub">Actividad Reciente // Steam API</div>
+     <h2 id="gaming-arsenal-title">Juegos en Rotación // Arsenal</h2>
+     <div class="sub" id="gaming-arsenal-sub">Actividad Reciente // Steam API</div>
      <div class="item marathon-item">
       <div class="item-tag">MAIN TACTICAL</div>
       <h3>Call of Duty: Warzone</h3>

@@ -44,6 +44,13 @@ var currentTheme =
   queryTheme === 'marathon' || queryTheme === 'vhs'
     ? queryTheme
     : safeStorage.getItem('afterx_theme') || 'vhs';
+
+var queryGaming = urlParams.get('gaming') || urlParams.get('style');
+var currentGamingStyle =
+  queryGaming === 'dedsec' || queryGaming === 'arcane' || queryGaming === 'marathon'
+    ? queryGaming
+    : safeStorage.getItem('afterx_gaming_style') || 'marathon';
+
 var refreshGlitchPalette = null;
 
 var GLITCH_COLORS_VHS = [
@@ -60,6 +67,22 @@ var GLITCH_COLORS_MARATHON = [
   '#00f0ff',
   '#ffffff',
   '#ffe600',
+];
+var GLITCH_COLORS_DEDSEC = [
+  '#00ff66',
+  '#00e5ff',
+  '#ff0055',
+  '#f1f3fb',
+  '#00ffaa',
+  '#113311',
+];
+var GLITCH_COLORS_ARCANE = [
+  '#00d4ff',
+  '#d9027d',
+  '#ffb703',
+  '#ffffff',
+  '#7209b7',
+  '#00f59b',
 ];
 
 // Autoplay handling with fallback (only load the 2.3MB GIF if video fails to play)
@@ -412,12 +435,17 @@ function setBackgroundPaused(paused) {
     NEEDLE_COUNT = width < 780 ? 20 : 45;
     initNeedles();
     initMarathonGrid();
+    initDedsec();
+    initArcane();
   }
   resizeCanvas();
   window.addEventListener('resize', resizeCanvas, { passive: true });
 
   function getGlitchPalette() {
-    return currentTheme === 'marathon' ? GLITCH_COLORS_MARATHON : GLITCH_COLORS_VHS;
+    if (currentTheme !== 'marathon') return GLITCH_COLORS_VHS;
+    if (currentGamingStyle === 'dedsec') return GLITCH_COLORS_DEDSEC;
+    if (currentGamingStyle === 'arcane') return GLITCH_COLORS_ARCANE;
+    return GLITCH_COLORS_MARATHON;
   }
 
   // --- VHS Needle Streaks & Datamosh ---
@@ -779,6 +807,688 @@ function setBackgroundPaused(paused) {
     bgCtx.restore();
   }
 
+  // --- Theme 2.1 Frame Renderer: DEDSEC Webpunk, Dither Matrix & Reaper Skull ---
+  var dedsecDrops = [];
+  var dedsecDatamoshTimer = 0;
+  var dedsecDatamosh = { active: false, y: 0, h: 0, shift: 0, timer: 0 };
+  var dedsecGlitchBurst = 0;
+  var DEDSEC_WORDS = [
+    '0x7FFD', 'CTOS_2.0', 'ROOT_SHELL', 'JOIN_DEDSEC', 'PWN3D',
+    'EXPLOIT_PAYLOAD', 'NO_SYSTEM_IS_SAFE', 'NET_OVERRIDE', 'ACCESS_GRANTED',
+    'SIGSEGV', '1011001', 'ANONYMOUS', 'BYPASS_FW', 'BUFFER_OVF',
+    'KEYLOG_ACTIVE', 'PAYLOAD_INIT', 'SYS_COMPROMISED', '010101', 'KILL_-9',
+    'VALENCIA_GRID', 'BACKDOOR', 'DEDSEC_REAPER', 'WEBPUNK_02', '404_ANARCHY'
+  ];
+
+  function initDedsec() {
+    dedsecDrops = [];
+    var colWidth = width < 780 ? 22 : 28;
+    var colCount = Math.floor(width / colWidth);
+    for (var c = 0; c < colCount; c++) {
+      dedsecDrops.push({
+        x: c * colWidth + 6,
+        y: Math.random() * height,
+        speed: 85 + Math.random() * 170,
+        length: 8 + Math.floor(Math.random() * 12),
+        chars: [],
+        stepTimer: 0,
+        colorType: Math.random() > 0.35 ? 'green' : (Math.random() > 0.5 ? 'cyan' : 'magenta')
+      });
+    }
+  }
+
+  function drawBigDedsecSkull(cx, cy, scale, glitchShift) {
+    bgCtx.save();
+    bgCtx.translate(cx, cy);
+
+    function drawSkullLayers(color, alpha, ox, oy) {
+      bgCtx.save();
+      bgCtx.translate(ox, oy);
+      bgCtx.scale(scale, scale);
+      bgCtx.fillStyle = color;
+      bgCtx.strokeStyle = color;
+      bgCtx.globalAlpha = alpha;
+      bgCtx.lineWidth = 3.5;
+
+      // Crossed Lightning Daggers / Bones
+      bgCtx.beginPath();
+      bgCtx.moveTo(-95, -90); bgCtx.lineTo(95, 90);
+      bgCtx.moveTo(-90, -95); bgCtx.lineTo(90, 95);
+      bgCtx.moveTo(-95, 90); bgCtx.lineTo(95, -90);
+      bgCtx.moveTo(-90, 95); bgCtx.lineTo(90, -95);
+      bgCtx.stroke();
+
+      // Bold Angular Cranium Dome
+      bgCtx.beginPath();
+      bgCtx.moveTo(-65, -30);
+      bgCtx.lineTo(-65, -75);
+      bgCtx.lineTo(-45, -102);
+      bgCtx.lineTo(0, -112);
+      bgCtx.lineTo(45, -102);
+      bgCtx.lineTo(65, -75);
+      bgCtx.lineTo(65, -30);
+      // Angular Cheekbones
+      bgCtx.lineTo(82, -5);
+      bgCtx.lineTo(58, 22);
+      // Temple & Square Jaw
+      bgCtx.lineTo(38, 26);
+      bgCtx.lineTo(34, 70);
+      bgCtx.lineTo(-34, 70);
+      bgCtx.lineTo(-38, 26);
+      bgCtx.lineTo(-58, 22);
+      bgCtx.lineTo(-82, -5);
+      bgCtx.closePath();
+      bgCtx.fill();
+
+      // Cutout: Triangular Nose Cavity
+      bgCtx.fillStyle = '#04060a';
+      bgCtx.beginPath();
+      bgCtx.moveTo(0, 6);
+      bgCtx.lineTo(-11, 28);
+      bgCtx.lineTo(11, 28);
+      bgCtx.closePath();
+      bgCtx.fill();
+
+      // Cutout: Teeth Grate (Vertical Slits)
+      for (var t = -26; t <= 26; t += 13) {
+        bgCtx.fillRect(t - 2.5, 44, 5, 20);
+      }
+
+      // Cutout: Polygonal Eye Sockets with Glowing [ X ] Marks
+      // Left eye cavity
+      bgCtx.beginPath();
+      bgCtx.moveTo(-52, -44); bgCtx.lineTo(-14, -44); bgCtx.lineTo(-18, -10); bgCtx.lineTo(-48, -10);
+      bgCtx.closePath(); bgCtx.fill();
+      // Right eye cavity
+      bgCtx.beginPath();
+      bgCtx.moveTo(14, -44); bgCtx.lineTo(52, -44); bgCtx.lineTo(48, -10); bgCtx.lineTo(18, -10);
+      bgCtx.closePath(); bgCtx.fill();
+
+      // Glowing [ X ] [ X ] marks inside sockets
+      bgCtx.strokeStyle = color;
+      bgCtx.lineWidth = 4;
+      bgCtx.beginPath();
+      bgCtx.moveTo(-45, -38); bgCtx.lineTo(-21, -16);
+      bgCtx.moveTo(-21, -38); bgCtx.lineTo(-45, -16);
+      bgCtx.moveTo(21, -38); bgCtx.lineTo(45, -16);
+      bgCtx.moveTo(45, -38); bgCtx.lineTo(21, -16);
+      bgCtx.stroke();
+
+      bgCtx.restore();
+    }
+
+    // Chromatic RGB displacement slices (Watch Dogs glitch signature)
+    if (Math.abs(glitchShift) > 0.5) {
+      drawSkullLayers('#ff0055', 0.65, -glitchShift, 0); // Red-shifted ghost
+      drawSkullLayers('#00e5ff', 0.65, glitchShift, 0);  // Cyan-shifted ghost
+    }
+    // Main Solid Webpunk Reaper Skull
+    drawSkullLayers('#00ff66', 0.82, 0, 0);
+
+    bgCtx.restore();
+  }
+
+  function drawDedsecFrame(now, dt) {
+    // 1. Dark Cyber Terminal Void
+    bgCtx.fillStyle = '#04060a';
+    bgCtx.fillRect(0, 0, width, height);
+
+    // 2. Watch Dogs 2 Halftone Dither Grid Texture (Pin 1)
+    bgCtx.save();
+    bgCtx.fillStyle = 'rgba(0, 255, 102, 0.055)';
+    var ditherStep = 18;
+    for (var dx = 0; dx < width; dx += ditherStep) {
+      for (var dy = 0; dy < height; dy += ditherStep) {
+        if ((dx + dy) % (ditherStep * 2) === 0) {
+          bgCtx.fillRect(dx, dy, 1.5, 1.5);
+        }
+      }
+    }
+    bgCtx.restore();
+
+    // 3. Giant Brutalist Background Watermark (Pin 3 & 4)
+    bgCtx.save();
+    bgCtx.font = 'bold ' + Math.min(150, Math.floor(width * 0.16)) + 'px VT323, monospace';
+    bgCtx.textAlign = 'center';
+    bgCtx.fillStyle = 'rgba(0, 255, 102, 0.04)';
+    bgCtx.strokeStyle = 'rgba(0, 229, 255, 0.07)';
+    bgCtx.lineWidth = 1.5;
+    bgCtx.fillText('DEDSEC', width * 0.5, height * 0.48);
+    bgCtx.strokeText('DEDSEC', width * 0.5, height * 0.48);
+    bgCtx.restore();
+
+    // 4. Bold Webpunk Hazard Caution Strips (Pin 4)
+    bgCtx.save();
+    var tapeY = Math.max(64, Math.floor(height * 0.09));
+    bgCtx.fillStyle = 'rgba(4, 8, 14, 0.9)';
+    bgCtx.fillRect(0, tapeY, width, 24);
+    bgCtx.strokeStyle = 'rgba(0, 255, 102, 0.4)';
+    bgCtx.lineWidth = 1;
+    bgCtx.strokeRect(0, tapeY, width, 24);
+
+    // Diagonal hazard stripes in tape
+    bgCtx.strokeStyle = 'rgba(0, 255, 102, 0.25)';
+    bgCtx.lineWidth = 2;
+    for (var hz = 0; hz < width; hz += 22) {
+      bgCtx.beginPath();
+      bgCtx.moveTo(hz, tapeY + 24);
+      bgCtx.lineTo(hz + 14, tapeY);
+      bgCtx.stroke();
+    }
+
+    // Monospace ticker in tape
+    bgCtx.font = 'bold 12px VT323, monospace';
+    bgCtx.fillStyle = '#00ff66';
+    var bannerText = '/// DEDSEC_REAPER_PROTOCOL /// CTOS_BREACH_DETECTED /// 0x8F94 /// JOIN_THE_RESISTANCE /// WEBPUNK_02 /// NO_SYSTEM_IS_SAFE ';
+    bgCtx.fillText(bannerText + bannerText, (width * 0.5) - ((now * 0.05) % (width * 0.5)), tapeY + 16);
+    bgCtx.restore();
+
+    // 5. Massive DedSec Reaper Skull (Pin 2 & 4)
+    var skullScale = width > 780 ? 1.4 : 0.95;
+    var skullX = width > 900 ? width * 0.72 : width * 0.5;
+    var skullY = height * 0.44;
+
+    dedsecGlitchBurst -= dt;
+    var glitchShift = 0;
+    if (dedsecGlitchBurst <= 0) {
+      if (Math.random() < 0.12) {
+        dedsecGlitchBurst = 0.18;
+        glitchShift = (Math.random() * 22 + 8) * (Math.random() > 0.5 ? 1 : -1);
+      }
+    } else {
+      glitchShift = (Math.random() * 16 + 6) * (Math.random() > 0.5 ? 1 : -1);
+    }
+    drawBigDedsecSkull(skullX, skullY, skullScale, glitchShift);
+
+    // 6. High-Density Matrix & Terminal Code Rain Streams
+    bgCtx.save();
+    bgCtx.font = '13px VT323, monospace';
+    for (var d = 0; d < dedsecDrops.length; d++) {
+      var drop = dedsecDrops[d];
+      drop.y += drop.speed * dt;
+      if (drop.y > height + 120) {
+        drop.y = -70;
+        drop.speed = 85 + Math.random() * 170;
+        drop.colorType = Math.random() > 0.35 ? 'green' : (Math.random() > 0.5 ? 'cyan' : 'magenta');
+      }
+
+      drop.stepTimer -= dt;
+      if (drop.stepTimer <= 0) {
+        drop.stepTimer = 0.07 + Math.random() * 0.1;
+        var rWord = DEDSEC_WORDS[Math.floor(Math.random() * DEDSEC_WORDS.length)];
+        drop.chars.unshift(rWord.charAt(Math.floor(Math.random() * rWord.length)));
+        if (drop.chars.length > drop.length) drop.chars.pop();
+      }
+
+      var headColor = '#ffffff';
+      var trailColor = drop.colorType === 'green' ? '#00ff66' : (drop.colorType === 'cyan' ? '#00e5ff' : '#ff0055');
+
+      for (var ch = 0; ch < drop.chars.length; ch++) {
+        var cy = drop.y - ch * 15;
+        if (cy < -20 || cy > height + 20) continue;
+        var alpha = Math.max(0.1, 1 - ch / drop.length);
+        bgCtx.fillStyle = ch === 0 ? headColor : trailColor;
+        bgCtx.globalAlpha = ch === 0 ? 0.98 : alpha * 0.72;
+        bgCtx.fillText(drop.chars[ch], drop.x, cy);
+      }
+    }
+    bgCtx.restore();
+
+    // 7. DedSec CTOS Telemetry Badge (Webpunk Sticker)
+    drawDedsecTelemetry(now);
+
+    // 8. Datamosh Horizontal Slices with RGB split
+    dedsecDatamoshTimer -= dt;
+    if (dedsecDatamoshTimer <= 0) {
+      dedsecDatamoshTimer = 2.4 + Math.random() * 3.0;
+      dedsecDatamosh = {
+        active: true,
+        y: Math.random() * (height - 80),
+        h: 22 + Math.random() * 45,
+        shift: (Math.random() * 34 + 14) * (Math.random() > 0.5 ? 1 : -1),
+        timer: 0.16,
+      };
+    }
+    if (dedsecDatamosh.active) {
+      dedsecDatamosh.timer -= dt;
+      if (dedsecDatamosh.timer <= 0) {
+        dedsecDatamosh.active = false;
+      } else {
+        bgCtx.save();
+        var dsy = dedsecDatamosh.y;
+        var dsh = dedsecDatamosh.h;
+        var dshift = dedsecDatamosh.shift;
+        bgCtx.drawImage(
+          bgCanvas,
+          0,
+          Math.floor(dsy * dpr),
+          Math.floor(width * dpr),
+          Math.floor(dsh * dpr),
+          dshift,
+          dsy,
+          width,
+          dsh
+        );
+        bgCtx.fillStyle = '#00ff66';
+        bgCtx.globalAlpha = 0.65;
+        bgCtx.fillRect(0, dsy, width, 2.5);
+        bgCtx.fillStyle = '#ff0055';
+        bgCtx.fillRect(0, dsy + dsh - 2.5, width, 2.5);
+        bgCtx.restore();
+      }
+    }
+
+    // 9. Interactive Mouse CTOS Reticle
+    if (marathonMouseActive && marathonMouseX > 0 && marathonMouseY > 0) {
+      drawDedsecReticle(now);
+    }
+  }
+
+  function drawDedsecTelemetry(now) {
+    if (width <= 680) return;
+    bgCtx.save();
+    var bx = Math.max(20, Math.floor(width * 0.035));
+    var by = Math.max(28, Math.floor(height * 0.12));
+
+    // Webpunk Sticker Frame
+    bgCtx.fillStyle = 'rgba(4, 7, 14, 0.88)';
+    bgCtx.strokeStyle = 'rgba(0, 255, 102, 0.55)';
+    bgCtx.lineWidth = 1.5;
+    bgCtx.fillRect(bx, by, 205, 120);
+    bgCtx.strokeRect(bx, by, 205, 120);
+
+    // Inverted Top Badge
+    bgCtx.fillStyle = '#00ff66';
+    bgCtx.fillRect(bx, by, 205, 22);
+    bgCtx.font = 'bold 13px VT323, monospace';
+    bgCtx.fillStyle = '#05070a';
+    bgCtx.fillText('[!] DEDSEC // WEBPUNK REAPER', bx + 8, by + 16);
+
+    bgCtx.font = '12px VT323, monospace';
+    bgCtx.fillStyle = '#f1f3fb';
+    bgCtx.fillText('NODE: ROOT_VALENCIA_GRID', bx + 8, by + 42);
+    bgCtx.fillStyle = '#00e5ff';
+    bgCtx.fillText('CTOS OVERRIDE: 100% UNGOVERNED', bx + 8, by + 60);
+    bgCtx.fillStyle = '#ff0055';
+    bgCtx.fillText('PAYLOAD: ZERO_DAY_EXPLOIT', bx + 8, by + 78);
+    bgCtx.fillStyle = '#00ff66';
+    bgCtx.fillText('STATUS: RESISTANCE ACTIVE · 180Hz', bx + 8, by + 96);
+
+    // Bottom Barcode Stripe
+    for (var bc = 0; bc < 185; bc += 6) {
+      if (Math.sin(bc) > 0) {
+        bgCtx.fillRect(bx + 10 + bc, by + 106, 3, 8);
+      }
+    }
+    bgCtx.restore();
+  }
+
+  function drawDedsecReticle(now) {
+    bgCtx.save();
+    var r = 20;
+    bgCtx.strokeStyle = 'rgba(0, 255, 102, 0.9)';
+    bgCtx.lineWidth = 2;
+
+    // Heavy corner brackets
+    bgCtx.beginPath();
+    bgCtx.moveTo(marathonMouseX - r, marathonMouseY - r + 9);
+    bgCtx.lineTo(marathonMouseX - r, marathonMouseY - r);
+    bgCtx.lineTo(marathonMouseX - r + 9, marathonMouseY - r);
+
+    bgCtx.moveTo(marathonMouseX + r - 9, marathonMouseY - r);
+    bgCtx.lineTo(marathonMouseX + r, marathonMouseY - r);
+    bgCtx.lineTo(marathonMouseX + r, marathonMouseY - r + 9);
+
+    bgCtx.moveTo(marathonMouseX - r, marathonMouseY + r - 9);
+    bgCtx.lineTo(marathonMouseX - r, marathonMouseY + r);
+    bgCtx.lineTo(marathonMouseX - r + 9, marathonMouseY + r);
+
+    bgCtx.moveTo(marathonMouseX + r - 9, marathonMouseY + r);
+    bgCtx.lineTo(marathonMouseX + r, marathonMouseY + r);
+    bgCtx.lineTo(marathonMouseX + r, marathonMouseY + r - 9);
+    bgCtx.stroke();
+
+    // Crosshair lines
+    bgCtx.strokeStyle = 'rgba(0, 229, 255, 0.8)';
+    bgCtx.lineWidth = 1;
+    bgCtx.beginPath();
+    bgCtx.moveTo(marathonMouseX - 6, marathonMouseY);
+    bgCtx.lineTo(marathonMouseX + 6, marathonMouseY);
+    bgCtx.moveTo(marathonMouseX, marathonMouseY - 6);
+    bgCtx.lineTo(marathonMouseX, marathonMouseY + 6);
+    bgCtx.stroke();
+
+    bgCtx.font = 'bold 12px VT323, monospace';
+    bgCtx.fillStyle = '#00ff66';
+    bgCtx.fillText(
+      'CTOS_TARGET [' + Math.floor(marathonMouseX) + ',' + Math.floor(marathonMouseY) + '] // EXPLOIT',
+      marathonMouseX + r + 8,
+      marathonMouseY - 4
+    );
+    bgCtx.restore();
+  }
+
+  // --- Theme 2.2 Frame Renderer: ARCANE Risograph Astrolabe & Jinx Graffiti Clouds ---
+  var arcaneEmbers = [];
+  var arcaneLightningTimer = 1.8;
+  var arcaneLightningActive = false;
+  var arcaneLightningBolts = [];
+  var arcaneRuneAngle = 0;
+
+  function initArcane() {
+    arcaneEmbers = [];
+    var count = width < 780 ? 35 : 70;
+    for (var i = 0; i < count; i++) {
+      arcaneEmbers.push({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        vx: (Math.random() - 0.5) * 18,
+        vy: -(20 + Math.random() * 42),
+        size: 2 + Math.random() * 4,
+        alpha: 0.3 + Math.random() * 0.65,
+        swaySpeed: 1.2 + Math.random() * 2.4,
+        swayOffset: Math.random() * Math.PI * 2,
+        type: Math.random() > 0.4 ? 'shimmer' : (Math.random() > 0.5 ? 'hextech' : 'gold')
+      });
+    }
+  }
+
+  function drawJinxGraffitiSmoke(now, dt) {
+    bgCtx.save();
+    // Flowing Jinx graffiti clouds and ribbons inspired by Jinx's cloud tattoos (Pin 1 & 2)
+    var clouds = [
+      { x: width * 0.12, y: height * 0.72, r: 160, hue: '#ff007f', speed: 1.0 },
+      { x: width * 0.86, y: height * 0.32, r: 180, hue: '#00f0ff', speed: 0.8 },
+      { x: width * 0.45, y: height * 0.88, r: 130, hue: '#ff007f', speed: 1.1 },
+      { x: width * 0.76, y: height * 0.82, r: 160, hue: '#00f0ff', speed: 0.9 }
+    ];
+
+    for (var c = 0; c < clouds.length; c++) {
+      var cld = clouds[c];
+      var cx = cld.x + Math.sin(now * 0.001 * cld.speed + c) * 25;
+      var cy = cld.y + Math.cos(now * 0.0012 * cld.speed + c * 2) * 18;
+
+      bgCtx.save();
+      bgCtx.translate(cx, cy);
+
+      // Glowing Volumetric Aura
+      var radGrad = bgCtx.createRadialGradient(0, 0, 10, 0, 0, cld.r);
+      radGrad.addColorStop(0, cld.hue === '#ff007f' ? 'rgba(255, 0, 127, 0.35)' : 'rgba(0, 240, 255, 0.3)');
+      radGrad.addColorStop(0.6, cld.hue === '#ff007f' ? 'rgba(114, 9, 183, 0.15)' : 'rgba(0, 120, 255, 0.12)');
+      radGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+      bgCtx.fillStyle = radGrad;
+      bgCtx.beginPath();
+      bgCtx.arc(0, 0, cld.r, 0, Math.PI * 2);
+      bgCtx.fill();
+
+      // Stylized Graffiti Cloud Swirl Ribbon (Jinx signature curly cloud motif)
+      bgCtx.strokeStyle = cld.hue;
+      bgCtx.lineWidth = 3.5;
+      bgCtx.shadowColor = cld.hue;
+      bgCtx.shadowBlur = 14;
+
+      bgCtx.beginPath();
+      var loopScale = cld.r * 0.45;
+      bgCtx.arc(0, 0, loopScale * 0.8, 0, Math.PI * 1.5);
+      bgCtx.arc(loopScale * 0.6, -loopScale * 0.6, loopScale * 0.5, Math.PI * 0.5, Math.PI * 2);
+      bgCtx.arc(-loopScale * 0.5, -loopScale * 0.4, loopScale * 0.6, Math.PI, Math.PI * 0.3, true);
+      bgCtx.stroke();
+
+      // Spray Paint Splatter Motes & Dots
+      bgCtx.fillStyle = cld.hue;
+      for (var sp = 0; sp < 7; sp++) {
+        var sAngle = sp * 0.9 + c;
+        var sDist = loopScale * 1.2 + (sp * 8);
+        var sx = Math.cos(sAngle) * sDist;
+        var sy = Math.sin(sAngle) * sDist;
+        bgCtx.beginPath();
+        bgCtx.arc(sx, sy, 2 + (sp % 3), 0, Math.PI * 2);
+        bgCtx.fill();
+      }
+
+      bgCtx.restore();
+    }
+    bgCtx.restore();
+  }
+
+  function drawMonumentalHextechWheel(now, dt) {
+    arcaneRuneAngle += dt * 0.12;
+    var coreX = width > 780 ? width * 0.72 : width * 0.5;
+    var coreY = height * 0.42;
+
+    bgCtx.save();
+    bgCtx.translate(coreX, coreY);
+
+    var outerR = width > 780 ? 220 : 150;
+
+    // 1. Giant Astrolabe Outer Gold / Amber Gear Ring (Risograph Pin 3)
+    bgCtx.strokeStyle = 'rgba(255, 183, 3, 0.35)';
+    bgCtx.lineWidth = 2.5;
+    bgCtx.beginPath();
+    bgCtx.arc(0, 0, outerR, 0, Math.PI * 2);
+    bgCtx.stroke();
+
+    // 24 Dividing Celestial Teeth & Ray Chords
+    for (var a = 0; a < 24; a++) {
+      var angle = a * (Math.PI / 12) - arcaneRuneAngle * 0.4;
+      var cosA = Math.cos(angle);
+      var sinA = Math.sin(angle);
+      bgCtx.beginPath();
+      var tickLen = a % 2 === 0 ? 14 : 7;
+      bgCtx.moveTo(cosA * (outerR - tickLen), sinA * (outerR - tickLen));
+      bgCtx.lineTo(cosA * (outerR + tickLen), sinA * (outerR + tickLen));
+      bgCtx.stroke();
+
+      // Geometric inscribed chords
+      if (a % 4 === 0) {
+        var nextAngle = (a + 8) * (Math.PI / 12) - arcaneRuneAngle * 0.4;
+        bgCtx.strokeStyle = 'rgba(255, 183, 3, 0.08)';
+        bgCtx.beginPath();
+        bgCtx.moveTo(cosA * outerR, sinA * outerR);
+        bgCtx.lineTo(Math.cos(nextAngle) * outerR, Math.sin(nextAngle) * outerR);
+        bgCtx.stroke();
+        bgCtx.strokeStyle = 'rgba(255, 183, 3, 0.35)';
+      }
+    }
+
+    // 2. Middle Sapphire Hextech Ring with Diamond Runes
+    var midR = outerR * 0.65;
+    bgCtx.strokeStyle = 'rgba(0, 240, 255, 0.55)';
+    bgCtx.lineWidth = 2;
+    bgCtx.shadowColor = '#00f0ff';
+    bgCtx.shadowBlur = 10;
+    bgCtx.beginPath();
+    bgCtx.arc(0, 0, midR, 0, Math.PI * 2);
+    bgCtx.stroke();
+
+    for (var r = 0; r < 8; r++) {
+      var rAngle = r * (Math.PI / 4) + arcaneRuneAngle;
+      var rx = Math.cos(rAngle) * midR;
+      var ry = Math.sin(rAngle) * midR;
+      bgCtx.fillStyle = '#00f0ff';
+      bgCtx.beginPath();
+      bgCtx.moveTo(rx, ry - 6);
+      bgCtx.lineTo(rx + 6, ry);
+      bgCtx.lineTo(rx, ry + 6);
+      bgCtx.lineTo(rx - 6, ry);
+      bgCtx.closePath();
+      bgCtx.fill();
+    }
+
+    // 3. Inner Hextech Radiant Core Sphere & Shimmer Corona
+    var coreR = 36 + Math.sin(now * 0.003) * 5;
+    var coreOrb = bgCtx.createRadialGradient(0, 0, 4, 0, 0, coreR * 2.2);
+    coreOrb.addColorStop(0, 'rgba(255, 255, 255, 0.98)');
+    coreOrb.addColorStop(0.25, 'rgba(0, 240, 255, 0.85)');
+    coreOrb.addColorStop(0.65, 'rgba(217, 2, 125, 0.45)');
+    coreOrb.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    bgCtx.fillStyle = coreOrb;
+    bgCtx.shadowColor = '#00f0ff';
+    bgCtx.shadowBlur = 25;
+    bgCtx.beginPath();
+    bgCtx.arc(0, 0, coreR * 2.2, 0, Math.PI * 2);
+    bgCtx.fill();
+
+    bgCtx.restore();
+  }
+
+  function drawArcaneFrame(now, dt) {
+    // 1. Deep Midnight Sapphire Void
+    bgCtx.fillStyle = '#03040e';
+    bgCtx.fillRect(0, 0, width, height);
+
+    // 2. Risograph / Overprint Duotone Aura (Pin 3)
+    var hextechGrad = bgCtx.createRadialGradient(width * 0.2, height * 0.25, 30, width * 0.2, height * 0.25, width * 0.75);
+    hextechGrad.addColorStop(0, 'rgba(0, 240, 255, 0.18)');
+    hextechGrad.addColorStop(0.5, 'rgba(114, 9, 183, 0.12)');
+    hextechGrad.addColorStop(1, 'rgba(3, 4, 14, 0)');
+    bgCtx.fillStyle = hextechGrad;
+    bgCtx.fillRect(0, 0, width, height);
+
+    var shimmerGrad = bgCtx.createRadialGradient(width * 0.82, height * 0.75, 30, width * 0.82, height * 0.75, width * 0.7);
+    shimmerGrad.addColorStop(0, 'rgba(255, 0, 127, 0.22)');
+    shimmerGrad.addColorStop(0.55, 'rgba(114, 9, 183, 0.1)');
+    shimmerGrad.addColorStop(1, 'rgba(3, 4, 14, 0)');
+    bgCtx.fillStyle = shimmerGrad;
+    bgCtx.fillRect(0, 0, width, height);
+
+    // 3. Jinx Dynamic Graffiti Smoke Clouds & Swirls (Pin 1 & 2)
+    drawJinxGraffitiSmoke(now, dt);
+
+    // 4. Monumental Hextech Celestial Astrolabe Wheel (Pin 3)
+    drawMonumentalHextechWheel(now, dt);
+
+    // 5. Floating Zaun Shimmer Embers Storm
+    for (var e = 0; e < arcaneEmbers.length; e++) {
+      var emb = arcaneEmbers[e];
+      emb.y += emb.vy * dt;
+      emb.x += (emb.vx + Math.sin(now * 0.002 * emb.swaySpeed + emb.swayOffset) * 20) * dt;
+
+      if (emb.y < -20) {
+        emb.y = height + 10;
+        emb.x = Math.random() * width;
+      }
+
+      var embColor = emb.type === 'shimmer' ? '#ff007f' : (emb.type === 'hextech' ? '#00f0ff' : '#ffb703');
+      bgCtx.fillStyle = embColor;
+      bgCtx.globalAlpha = emb.alpha * (0.65 + Math.sin(now * 0.0035 + emb.swayOffset) * 0.35);
+      bgCtx.beginPath();
+      bgCtx.arc(emb.x, emb.y, emb.size, 0, Math.PI * 2);
+      bgCtx.fill();
+    }
+    bgCtx.globalAlpha = 1.0;
+
+    // 6. Powerful Crackling Hextech Plasma Lightning
+    arcaneLightningTimer -= dt;
+    if (arcaneLightningTimer <= 0) {
+      arcaneLightningTimer = 1.5 + Math.random() * 2.2;
+      arcaneLightningActive = true;
+      arcaneLightningBolts = [];
+      var coreX = width > 780 ? width * 0.72 : width * 0.5;
+      var coreY = height * 0.42;
+      var startX = coreX + (Math.random() * 80 - 40);
+      var startY = coreY + (Math.random() * 80 - 40);
+      var endX = startX + (Math.random() * 340 - 170);
+      var endY = startY + (Math.random() * 320 - 160);
+
+      var segs = 8;
+      var curX = startX, curY = startY;
+      arcaneLightningBolts.push({ x: curX, y: curY });
+      for (var s = 1; s <= segs; s++) {
+        var frac = s / segs;
+        var tx = startX + (endX - startX) * frac + (Math.random() * 48 - 24);
+        var ty = startY + (endY - startY) * frac + (Math.random() * 48 - 24);
+        arcaneLightningBolts.push({ x: tx, y: ty });
+      }
+    }
+
+    if (arcaneLightningActive && arcaneLightningBolts.length > 1) {
+      bgCtx.save();
+      bgCtx.strokeStyle = Math.random() > 0.5 ? 'rgba(0, 240, 255, 0.95)' : 'rgba(255, 0, 127, 0.95)';
+      bgCtx.shadowColor = '#00f0ff';
+      bgCtx.shadowBlur = 18;
+      bgCtx.lineWidth = 2.5;
+      bgCtx.beginPath();
+      bgCtx.moveTo(arcaneLightningBolts[0].x, arcaneLightningBolts[0].y);
+      for (var b = 1; b < arcaneLightningBolts.length; b++) {
+        bgCtx.lineTo(arcaneLightningBolts[b].x, arcaneLightningBolts[b].y);
+      }
+      bgCtx.stroke();
+      bgCtx.restore();
+      arcaneLightningActive = false;
+    }
+
+    // 7. Arcane Telemetry Badge
+    drawArcaneTelemetry(now);
+
+    // 8. Interactive Hextech Focus Cursor
+    if (marathonMouseActive && marathonMouseX > 0 && marathonMouseY > 0) {
+      drawArcaneReticle(now);
+    }
+  }
+
+  function drawArcaneTelemetry(now) {
+    if (width <= 680) return;
+    bgCtx.save();
+    var bx = Math.max(20, Math.floor(width * 0.035));
+    var by = Math.max(28, Math.floor(height * 0.12));
+
+    bgCtx.fillStyle = 'rgba(5, 7, 22, 0.88)';
+    bgCtx.strokeStyle = 'rgba(0, 240, 255, 0.55)';
+    bgCtx.lineWidth = 1.5;
+    bgCtx.fillRect(bx, by, 205, 120);
+    bgCtx.strokeRect(bx, by, 205, 120);
+
+    bgCtx.fillStyle = 'linear-gradient(90deg, #00f0ff, #ff007f)';
+    bgCtx.fillRect(bx, by, 205, 22);
+    bgCtx.font = 'bold 13px VT323, monospace';
+    bgCtx.fillStyle = '#05070a';
+    bgCtx.fillText('// HEXTECH CORE PROTOCOL', bx + 8, by + 16);
+
+    bgCtx.font = '12px VT323, monospace';
+    bgCtx.fillStyle = '#f1f3fb';
+    bgCtx.fillText('PILTOVER & ZAUN MATRIX', bx + 8, by + 42);
+    bgCtx.fillStyle = '#ffb703';
+    bgCtx.fillText('CELESTIAL RESONANCE: 99.4%', bx + 8, by + 60);
+    bgCtx.fillStyle = '#ff007f';
+    bgCtx.fillText('SHIMMER CONDUIT: ACTIVE', bx + 8, by + 78);
+    bgCtx.fillStyle = '#00f0ff';
+    bgCtx.fillText('HARMONIC FREQ: 180Hz PURITY', bx + 8, by + 96);
+    bgCtx.restore();
+  }
+
+  function drawArcaneReticle(now) {
+    bgCtx.save();
+    var r = 20;
+    bgCtx.strokeStyle = 'rgba(0, 240, 255, 0.9)';
+    bgCtx.lineWidth = 2;
+    bgCtx.shadowColor = '#00f0ff';
+    bgCtx.shadowBlur = 10;
+
+    bgCtx.beginPath();
+    bgCtx.arc(marathonMouseX, marathonMouseY, r, 0, Math.PI * 2);
+    bgCtx.stroke();
+
+    for (var sp = 0; sp < 3; sp++) {
+      var angle = now * 0.004 + sp * (Math.PI * 2 / 3);
+      var sx = marathonMouseX + Math.cos(angle) * (r + 8);
+      var sy = marathonMouseY + Math.sin(angle) * (r + 8);
+      bgCtx.fillStyle = sp === 0 ? '#ffb703' : (sp === 1 ? '#ff007f' : '#00f0ff');
+      bgCtx.beginPath();
+      bgCtx.arc(sx, sy, 3, 0, Math.PI * 2);
+      bgCtx.fill();
+    }
+
+    bgCtx.font = 'bold 12px VT323, monospace';
+    bgCtx.fillStyle = '#00f0ff';
+    bgCtx.fillText(
+      'HEXTECH [' + Math.floor(marathonMouseX) + ',' + Math.floor(marathonMouseY) + '] // RESONANCE',
+      marathonMouseX + r + 14,
+      marathonMouseY - 4
+    );
+    bgCtx.restore();
+  }
+
   var lastTime = performance.now();
 
   function drawGlitchFrame(now) {
@@ -791,7 +1501,13 @@ function setBackgroundPaused(paused) {
     lastTime = now;
 
     if (currentTheme === 'marathon') {
-      drawMarathonFrame(now, dt);
+      if (currentGamingStyle === 'dedsec') {
+        drawDedsecFrame(now, dt);
+      } else if (currentGamingStyle === 'arcane') {
+        drawArcaneFrame(now, dt);
+      } else {
+        drawMarathonFrame(now, dt);
+      }
     } else {
       drawVhsFrame(now, dt);
     }
@@ -2122,6 +2838,7 @@ function applyTheme(theme, isUserClick) {
 
   if (theme === 'marathon') {
     if (bgVideo) bgVideo.pause();
+    setGamingStyle(currentGamingStyle, false);
   } else {
     if (bgVideo && !bgIsPaused) bgVideo.play();
   }
@@ -2138,6 +2855,89 @@ function applyTheme(theme, isUserClick) {
     playGlitchSfx();
   }
 }
+
+// --- Gaming Style Switcher (Marathon, DedSec, Arcane) ---
+function setGamingStyle(style, isUserClick) {
+  if (style !== 'marathon' && style !== 'dedsec' && style !== 'arcane') {
+    style = 'marathon';
+  }
+  currentGamingStyle = style;
+  document.body.setAttribute('data-gaming-style', style);
+  safeStorage.setItem('afterx_gaming_style', style);
+
+  var btns = document.querySelectorAll('.gaming-style-btn');
+  btns.forEach(function (b) {
+    var isMatch = b.getAttribute('data-style') === style;
+    b.classList.toggle('active', isMatch);
+    b.setAttribute('aria-checked', isMatch ? 'true' : 'false');
+  });
+
+  var metaEl = document.getElementById('gaming-meta');
+  var statEl = document.getElementById('gaming-status');
+  var sk1 = document.getElementById('gaming-stat-k1'), sv1 = document.getElementById('gaming-stat-v1');
+  var sk2 = document.getElementById('gaming-stat-k2'), sv2 = document.getElementById('gaming-stat-v2');
+  var sk3 = document.getElementById('gaming-stat-k3'), sv3 = document.getElementById('gaming-stat-v3');
+  var p2Title = document.getElementById('gaming-p2-title');
+  var p2Sub = document.getElementById('gaming-p2-sub');
+  var arsTitle = document.getElementById('gaming-arsenal-title');
+  var arsSub = document.getElementById('gaming-arsenal-sub');
+
+  if (style === 'dedsec') {
+    if (metaEl) metaEl.textContent = 'CTOS EXPLOIT · CYBER-ANARCHY · 180Hz';
+    if (statEl) statEl.textContent = 'STATUS: ROOT BREACHED';
+    if (sk1 && sv1) { sk1.textContent = 'SISTEMA'; sv1.textContent = 'CTOS BACKDOOR'; }
+    if (sk2 && sv2) { sk2.textContent = 'ROL'; sv2.textContent = 'NETRUNNER'; }
+    if (sk3 && sv3) { sk3.textContent = 'BREACH'; sv3.textContent = '100% ROOT'; }
+    if (p2Title) p2Title.textContent = 'Infiltraciones // Logs';
+    if (p2Sub) p2Sub.textContent = 'Grabaciones Subversivas // YouTube';
+    if (arsTitle) arsTitle.textContent = 'Ciberarmamento // Exploits & Juegos';
+    if (arsSub) arsSub.textContent = 'Telemetría ctOS // Steam API';
+  } else if (style === 'arcane') {
+    if (metaEl) metaEl.textContent = 'HEXTECH RUNIC · SHIMMER FLOW · 180Hz';
+    if (statEl) statEl.textContent = 'STATUS: HEXTECH RESONANCE';
+    if (sk1 && sv1) { sk1.textContent = 'SISTEMA'; sv1.textContent = 'HEXTECH CORE'; }
+    if (sk2 && sv2) { sk2.textContent = 'ROL'; sv2.textContent = 'ARCANE PILOT'; }
+    if (sk3 && sv3) { sk3.textContent = 'RESONANCIA'; sv3.textContent = 'PURITY 180Hz'; }
+    if (p2Title) p2Title.textContent = 'Crónicas // Archivos';
+    if (p2Sub) p2Sub.textContent = 'Grabaciones de Progreso // YouTube';
+    if (arsTitle) arsTitle.textContent = 'Cámaras de Pruebas // Hextech & Zaun';
+    if (arsSub) arsSub.textContent = 'Registro de Resonancia // Steam API';
+  } else {
+    if (metaEl) metaEl.textContent = 'OPERACIÓN TÁCTICA · COMBATE · 180Hz';
+    if (statEl) statEl.textContent = 'STATUS: DESPLEGADO';
+    if (sk1 && sv1) { sk1.textContent = 'SISTEMA'; sv1.textContent = 'LINUX RIG'; }
+    if (sk2 && sv2) { sk2.textContent = 'ROL'; sv2.textContent = 'FLANKER / SNIPER'; }
+    if (sk3 && sv3) { sk3.textContent = 'EXTRACCIÓN'; sv3.textContent = '99.4% ÉXITO'; }
+    if (p2Title) p2Title.textContent = 'Transmisiones // Logs';
+    if (p2Sub) p2Sub.textContent = 'Grabaciones de Campo // YouTube';
+    if (arsTitle) arsTitle.textContent = 'Juegos en Rotación // Arsenal';
+    if (arsSub) arsSub.textContent = 'Actividad Reciente // Steam API';
+  }
+
+  if (typeof refreshGlitchPalette === 'function') {
+    refreshGlitchPalette();
+  }
+
+  if (isUserClick) {
+    tear();
+    triggerBackgroundGlitch(1.0);
+    playGlitchSfx();
+  }
+}
+
+// Wire gaming style button clicks
+var gamingStyleBtns = document.querySelectorAll('.gaming-style-btn');
+gamingStyleBtns.forEach(function (btn) {
+  btn.addEventListener('click', function () {
+    var targetStyle = btn.getAttribute('data-style');
+    if (targetStyle && targetStyle !== currentGamingStyle) {
+      setGamingStyle(targetStyle, true);
+    }
+  });
+});
+
+// Initialize gaming style
+setGamingStyle(currentGamingStyle, false);
 
 // Initial theme setup on page load
 applyTheme(currentTheme, false);
