@@ -984,9 +984,9 @@ function setBackgroundPaused(paused) {
     bgCtx.restore();
 
     // 5. Massive DedSec Reaper Skull (Pin 2 & 4)
-    var skullScale = width > 780 ? 1.4 : 0.95;
-    var skullX = width > 900 ? width * 0.72 : width * 0.5;
-    var skullY = height * 0.44;
+    var skullScale = width > 780 ? 1.6 : 1.0;
+    var skullX = width > 900 ? width * 0.76 : width * 0.5;
+    var skullY = height * 0.38;
 
     dedsecGlitchBurst -= dt;
     var glitchShift = 0;
@@ -999,6 +999,12 @@ function setBackgroundPaused(paused) {
       glitchShift = (Math.random() * 16 + 6) * (Math.random() > 0.5 ? 1 : -1);
     }
     drawBigDedsecSkull(skullX, skullY, skullScale, glitchShift);
+
+    // 5.5 Animated Dither Eyeballs tracking cursor (Pins 1 & 4)
+    drawDedsecEyeballs(now, dt);
+
+    // 5.6 Cascading Retro Error Windows (Pin 2)
+    drawDedsecErrorWindows(now);
 
     // 6. High-Density Matrix & Terminal Code Rain Streams
     bgCtx.save();
@@ -1165,6 +1171,132 @@ function setBackgroundPaused(paused) {
       marathonMouseX + r + 8,
       marathonMouseY - 4
     );
+    bgCtx.restore();
+  }
+
+  function drawDedsecEyeballs(now, dt) {
+    if (width < 720) return;
+    bgCtx.save();
+    var eyes = [
+      { x: width * 0.11, y: height * 0.38, r: 42, sway: 0.8 },
+      { x: width * 0.89, y: height * 0.65, r: 46, sway: 1.1 },
+      { x: width * 0.13, y: height * 0.78, r: 34, sway: 0.95 }
+    ];
+
+    for (var i = 0; i < eyes.length; i++) {
+      var eye = eyes[i];
+      var ex = eye.x + Math.sin(now * 0.001 * eye.sway + i) * 16;
+      var ey = eye.y + Math.cos(now * 0.0012 * eye.sway + i) * 12;
+
+      // Optic nerve tendrils
+      bgCtx.strokeStyle = '#ff0055';
+      bgCtx.lineWidth = 2.5;
+      bgCtx.beginPath();
+      bgCtx.moveTo(ex - eye.r, ey - 8);
+      bgCtx.quadraticCurveTo(ex - eye.r - 28, ey - 20, ex - eye.r - 46, ey - 32 + Math.sin(now * 0.003 + i) * 8);
+      bgCtx.moveTo(ex - eye.r + 4, ey);
+      bgCtx.quadraticCurveTo(ex - eye.r - 20, ey, ex - eye.r - 42, ey + Math.cos(now * 0.003 + i) * 6);
+      bgCtx.moveTo(ex - eye.r, ey + 8);
+      bgCtx.quadraticCurveTo(ex - eye.r - 26, ey + 22, ex - eye.r - 44, ey + 34 + Math.sin(now * 0.0025 + i) * 8);
+      bgCtx.stroke();
+
+      // Eyeball Sclera
+      bgCtx.fillStyle = '#f0f4fc';
+      bgCtx.strokeStyle = '#00ff66';
+      bgCtx.lineWidth = 2.5;
+      bgCtx.beginPath();
+      bgCtx.arc(ex, ey, eye.r, 0, Math.PI * 2);
+      bgCtx.fill();
+      bgCtx.stroke();
+
+      // Dither Halftone dots on eye edge
+      bgCtx.fillStyle = 'rgba(0, 0, 0, 0.4)';
+      for (var a = 0; a < Math.PI * 2; a += 0.28) {
+        var ddist = eye.r * 0.84;
+        bgCtx.fillRect(ex + Math.cos(a) * ddist, ey + Math.sin(a) * ddist, 2, 2);
+      }
+
+      // Pupil tracking mouse
+      var angle = Math.atan2(marathonMouseY - ey, marathonMouseX - ex);
+      var pupilDist = Math.min(eye.r * 0.42, Math.hypot(marathonMouseX - ex, marathonMouseY - ey) * 0.08);
+      var px = ex + Math.cos(angle) * pupilDist;
+      var py = ey + Math.sin(angle) * pupilDist;
+
+      // Cyan Iris
+      bgCtx.fillStyle = '#00e5ff';
+      bgCtx.beginPath();
+      bgCtx.arc(px, py, eye.r * 0.46, 0, Math.PI * 2);
+      bgCtx.fill();
+
+      // Black Pupil
+      bgCtx.fillStyle = '#05070a';
+      bgCtx.beginPath();
+      bgCtx.arc(px, py, eye.r * 0.24, 0, Math.PI * 2);
+      bgCtx.fill();
+
+      // Keyhole shape in pupil
+      bgCtx.fillStyle = '#05070a';
+      bgCtx.beginPath();
+      bgCtx.moveTo(px - 3, py + 2);
+      bgCtx.lineTo(px + 3, py + 2);
+      bgCtx.lineTo(px + 5, py + 12);
+      bgCtx.lineTo(px - 5, py + 12);
+      bgCtx.fill();
+
+      // White Glint
+      bgCtx.fillStyle = '#ffffff';
+      bgCtx.beginPath();
+      bgCtx.arc(px - 4, py - 4, eye.r * 0.09, 0, Math.PI * 2);
+      bgCtx.fill();
+    }
+    bgCtx.restore();
+  }
+
+  function drawDedsecErrorWindows(now) {
+    if (width < 960) return;
+    bgCtx.save();
+    var startX = 26;
+    var startY = height * 0.24;
+    var count = 3;
+
+    for (var w = 0; w < count; w++) {
+      var wx = startX + w * 20;
+      var wy = startY + w * 30;
+
+      // Window shadow
+      bgCtx.fillStyle = 'rgba(0, 0, 0, 0.65)';
+      bgCtx.fillRect(wx + 4, wy + 4, 182, 86);
+
+      // Window body
+      bgCtx.fillStyle = '#c0c0c0';
+      bgCtx.strokeStyle = '#ffffff';
+      bgCtx.lineWidth = 1.8;
+      bgCtx.fillRect(wx, wy, 182, 86);
+      bgCtx.strokeRect(wx, wy, 182, 86);
+
+      // Titlebar
+      bgCtx.fillStyle = '#000080';
+      bgCtx.fillRect(wx + 2, wy + 2, 178, 18);
+
+      bgCtx.font = 'bold 11px VT323, monospace';
+      bgCtx.fillStyle = '#ffffff';
+      bgCtx.fillText('[!] CTOS_ALERT_0' + (w + 1) + '.EXE', wx + 6, wy + 14);
+
+      // Close button
+      bgCtx.fillStyle = '#c0c0c0';
+      bgCtx.fillRect(wx + 164, wy + 3, 14, 14);
+      bgCtx.fillStyle = '#000000';
+      bgCtx.fillText('✕', wx + 168, wy + 14);
+
+      // Body text
+      bgCtx.fillStyle = '#05070a';
+      bgCtx.font = '11px VT323, monospace';
+      bgCtx.fillText('CRITICAL_ROOT_BREACH', wx + 10, wy + 40);
+      bgCtx.fillStyle = '#ff0055';
+      bgCtx.fillText('PID_0x' + (9480 + w * 14).toString(16) + ' // ACTIVE', wx + 10, wy + 56);
+      bgCtx.fillStyle = '#000080';
+      bgCtx.fillText('[ OK ]   [ CANCEL ]', wx + 36, wy + 74);
+    }
     bgCtx.restore();
   }
 
@@ -1355,6 +1487,9 @@ function setBackgroundPaused(paused) {
     // 3. Jinx Dynamic Graffiti Smoke Clouds & Swirls (Pin 1 & 2)
     drawJinxGraffitiSmoke(now, dt);
 
+    // 3.5 Celestial Light Beams sweeping through space (Pin 3)
+    drawArcaneCelestialBeams(now);
+
     // 4. Monumental Hextech Celestial Astrolabe Wheel (Pin 3)
     drawMonumentalHextechWheel(now, dt);
 
@@ -1486,6 +1621,32 @@ function setBackgroundPaused(paused) {
       marathonMouseX + r + 14,
       marathonMouseY - 4
     );
+    bgCtx.restore();
+  }
+
+  function drawArcaneCelestialBeams(now) {
+    bgCtx.save();
+    var coreX = width > 780 ? width * 0.72 : width * 0.5;
+    var coreY = height * 0.42;
+
+    var beamCount = 12;
+    var baseAngle = now * 0.0003;
+    for (var b = 0; b < beamCount; b++) {
+      var ang = baseAngle + b * (Math.PI * 2 / beamCount);
+      var beamLen = Math.max(width, height) * 1.25;
+
+      var beamGrad = bgCtx.createRadialGradient(coreX, coreY, 30, coreX, coreY, beamLen);
+      beamGrad.addColorStop(0, b % 2 === 0 ? 'rgba(0, 212, 255, 0.16)' : 'rgba(217, 2, 125, 0.12)');
+      beamGrad.addColorStop(0.4, b % 2 === 0 ? 'rgba(255, 183, 3, 0.07)' : 'rgba(114, 9, 183, 0.05)');
+      beamGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+
+      bgCtx.fillStyle = beamGrad;
+      bgCtx.beginPath();
+      bgCtx.moveTo(coreX, coreY);
+      bgCtx.arc(coreX, coreY, beamLen, ang - 0.09, ang + 0.09);
+      bgCtx.closePath();
+      bgCtx.fill();
+    }
     bgCtx.restore();
   }
 
@@ -2892,6 +3053,11 @@ function setGamingStyle(style, isUserClick) {
     if (p2Sub) p2Sub.textContent = 'Grabaciones Subversivas // YouTube';
     if (arsTitle) arsTitle.textContent = 'Ciberarmamento // Exploits & Juegos';
     if (arsSub) arsSub.textContent = 'Telemetría ctOS // Steam API';
+    if (currentTheme === 'marathon') {
+      if (tab1) tab1.textContent = '[01] RUNNER // ROOT';
+      if (tab2) tab2.textContent = '[02] LOGS // EXPLOITS';
+      if (tab3) tab3.textContent = '[03] CTOS // ARSENAL';
+    }
   } else if (style === 'arcane') {
     if (metaEl) metaEl.textContent = 'HEXTECH RUNIC · SHIMMER FLOW · 180Hz';
     if (statEl) statEl.textContent = 'STATUS: HEXTECH RESONANCE';
@@ -2902,6 +3068,11 @@ function setGamingStyle(style, isUserClick) {
     if (p2Sub) p2Sub.textContent = 'Grabaciones de Progreso // YouTube';
     if (arsTitle) arsTitle.textContent = 'Cámaras de Pruebas // Hextech & Zaun';
     if (arsSub) arsSub.textContent = 'Registro de Resonancia // Steam API';
+    if (currentTheme === 'marathon') {
+      if (tab1) tab1.textContent = 'I · RUNNER // HEXTECH';
+      if (tab2) tab2.textContent = 'II · CRÓNICAS // LOGS';
+      if (tab3) tab3.textContent = 'III · CÁMARA // ARSENAL';
+    }
   } else {
     if (metaEl) metaEl.textContent = 'OPERACIÓN TÁCTICA · COMBATE · 180Hz';
     if (statEl) statEl.textContent = 'STATUS: DESPLEGADO';
@@ -2912,6 +3083,11 @@ function setGamingStyle(style, isUserClick) {
     if (p2Sub) p2Sub.textContent = 'Grabaciones de Campo // YouTube';
     if (arsTitle) arsTitle.textContent = 'Juegos en Rotación // Arsenal';
     if (arsSub) arsSub.textContent = 'Actividad Reciente // Steam API';
+    if (currentTheme === 'marathon') {
+      if (tab1) tab1.textContent = 'CH 01 RUNNER';
+      if (tab2) tab2.textContent = 'CH 02 TRANSMISIONES';
+      if (tab3) tab3.textContent = 'CH 03 JUEGOS';
+    }
   }
 
   if (typeof refreshGlitchPalette === 'function') {
