@@ -2,7 +2,7 @@
   {
     "appid": 359550,
     "name": "Tom Clancy's Rainbow Six Siege",
-    "hours": 19.8,
+    "hours": 17.6,
     "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/359550/header.jpg"
   },
   {
@@ -18,6 +18,12 @@
     "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/730/header.jpg"
   },
   {
+    "appid": 1808500,
+    "name": "ARC Raiders",
+    "hours": 2.2,
+    "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/1808500/header.jpg"
+  },
+  {
     "appid": 346900,
     "name": "AdVenture Capitalist",
     "hours": 0.9,
@@ -28,11 +34,5 @@
     "name": "Ghost Recon Breakpoint",
     "hours": 0.7,
     "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/2231380/header.jpg"
-  },
-  {
-    "appid": 470220,
-    "name": "UNO",
-    "hours": 0.6,
-    "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/470220/header.jpg"
   }
 ]
