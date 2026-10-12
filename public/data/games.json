@@ -6,16 +6,16 @@
     "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/359550/header.jpg"
   },
   {
-    "appid": 2807960,
-    "name": "Battlefield™ 6",
-    "hours": 9.1,
-    "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/2807960/header.jpg"
-  },
-  {
     "appid": 1808500,
     "name": "ARC Raiders",
     "hours": 9,
     "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/1808500/header.jpg"
+  },
+  {
+    "appid": 2807960,
+    "name": "Battlefield™ 6",
+    "hours": 7.2,
+    "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/2807960/header.jpg"
   },
   {
     "appid": 730,
@@ -30,9 +30,9 @@
     "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/346900/header.jpg"
   },
   {
-    "appid": 2231380,
-    "name": "Ghost Recon Breakpoint",
-    "hours": 0.7,
-    "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/2231380/header.jpg"
+    "appid": 470220,
+    "name": "UNO",
+    "hours": 0.6,
+    "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/470220/header.jpg"
   }
 ]
