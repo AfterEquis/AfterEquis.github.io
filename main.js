@@ -52,12 +52,19 @@ var currentTheme =
     ? queryTheme
     : safeStorage.getItem('afterx_theme') || 'vhs';
 
-var queryGaming = urlParams.get('gaming') || urlParams.get('style');
+var queryGaming = urlParams.get('gaming') || (urlParams.get('style') !== 'nothing' ? urlParams.get('style') : null);
 var currentGamingStyle =
   queryGaming === 'dedsec' || queryGaming === 'arcane' || queryGaming === 'marathon'
     ? queryGaming
     : safeStorage.getItem('afterx_gaming_style') || 'marathon';
 
+var queryNormal = urlParams.get('normal') || (urlParams.get('style') === 'nothing' ? 'nothing' : null);
+var currentNormalStyle =
+  queryNormal === 'nothing' || queryNormal === 'vhs'
+    ? queryNormal
+    : safeStorage.getItem('afterx_normal_style') || 'vhs';
+
+var triggerNothingGlyphFlash = function () {};
 var refreshGlitchPalette = null;
 
 var GLITCH_COLORS_VHS = [
@@ -100,7 +107,7 @@ function showFallbackGif(targetGif) {
       if (currentTheme === 'marathon') {
         gif = currentGamingStyle === 'dedsec' ? dedsecGifUrl : (currentGamingStyle === 'arcane' ? arcaneGifUrl : marathonGifUrl);
       } else {
-        gif = glitchGifUrl;
+        gif = currentNormalStyle === 'nothing' ? null : glitchGifUrl;
       }
     }
     if (gif) {
@@ -119,8 +126,13 @@ function updateBackgroundMedia() {
   var targetGif = null;
 
   if (currentTheme === 'vhs') {
-    targetVideo = glitchVideoUrl;
-    targetGif = glitchGifUrl;
+    if (currentNormalStyle === 'nothing') {
+      targetVideo = null;
+      targetGif = null;
+    } else {
+      targetVideo = glitchVideoUrl;
+      targetGif = glitchGifUrl;
+    }
   } else if (currentTheme === 'marathon') {
     if (currentGamingStyle === 'dedsec') {
       targetVideo = dedsecVideoUrl;
@@ -457,6 +469,16 @@ function setBackgroundPaused(paused) {
     'mousemove',
     function (e) {
       handlePointer(e.clientX, e.clientY);
+    },
+    { passive: true }
+  );
+
+  window.addEventListener(
+    'pointerdown',
+    function () {
+      if (currentTheme !== 'marathon' && currentNormalStyle === 'nothing') {
+        triggerNothingGlyphFlash();
+      }
     },
     { passive: true }
   );
@@ -1195,6 +1217,253 @@ function setBackgroundPaused(paused) {
     bgCtx.restore();
   }
 
+  // --- Nothing OS & Glyph Interface Canvas Engine ---
+  var nothingGlyphFlashTimer = 0;
+  triggerNothingGlyphFlash = function () {
+    nothingGlyphFlashTimer = 0.55;
+  };
+
+  function drawNothingFrame(now, dt) {
+    bgCtx.clearRect(0, 0, width, height);
+
+    // 1. Interactive Dot-Matrix Grid
+    var dotSpacing = width < 780 ? 28 : 36;
+    bgCtx.fillStyle = 'rgba(255, 255, 255, 0.18)';
+    for (var x = dotSpacing / 2; x < width; x += dotSpacing) {
+      for (var y = dotSpacing / 2; y < height; y += dotSpacing) {
+        var r = 1.1;
+        var alpha = 0.15;
+        if (marathonMouseActive && marathonMouseX > 0) {
+          var dx = x - marathonMouseX;
+          var dy = y - marathonMouseY;
+          var dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 120) {
+            var factor = 1 - dist / 120;
+            r += factor * 1.8;
+            alpha += factor * 0.55;
+          }
+        }
+        bgCtx.globalAlpha = alpha;
+        bgCtx.beginPath();
+        bgCtx.arc(x, y, r, 0, Math.PI * 2);
+        bgCtx.fill();
+      }
+    }
+    bgCtx.globalAlpha = 1.0;
+
+    // 2. The Iconic Nothing Glyph Interface (Rear Transparent Chassis LEDs)
+    drawNothingGlyphs(now, dt);
+
+    // 3. Interactive Mouse Dot Matrix Halo
+    if (marathonMouseActive && marathonMouseX > 0 && marathonMouseY > 0) {
+      drawNothingMouseReticle(now);
+    }
+  }
+
+  function drawNothingGlyphs(now, dt) {
+    bgCtx.save();
+    var cx = width / 2;
+    var cy = height / 2;
+    var scale = Math.min(width / 1150, height / 900, 1.0);
+    if (scale < 0.6) scale = 0.6;
+
+    if (nothingGlyphFlashTimer > 0) {
+      nothingGlyphFlashTimer -= dt;
+    }
+
+    var flashBoost = nothingGlyphFlashTimer > 0 ? (nothingGlyphFlashTimer / 0.55) : 0;
+    var breathe = 0.82 + Math.sin(now * 0.0022) * 0.15 + flashBoost * 0.45;
+
+    function renderGlyphStrip(drawPathFn, customAlpha) {
+      var a = (customAlpha !== undefined ? customAlpha : 1.0) * breathe;
+      a = Math.min(1.0, Math.max(0.1, a));
+
+      // Layer 1: Ambient soft bloom
+      bgCtx.save();
+      bgCtx.shadowColor = 'rgba(255, 255, 255, 0.9)';
+      bgCtx.shadowBlur = 24 * scale + flashBoost * 22;
+      bgCtx.strokeStyle = 'rgba(255, 255, 255, ' + (0.28 * a) + ')';
+      bgCtx.lineWidth = 14 * scale;
+      bgCtx.lineCap = 'round';
+      bgCtx.lineJoin = 'round';
+      drawPathFn();
+      bgCtx.stroke();
+      bgCtx.restore();
+
+      // Layer 2: White diffused core
+      bgCtx.save();
+      bgCtx.shadowColor = '#ffffff';
+      bgCtx.shadowBlur = 10 * scale + flashBoost * 10;
+      bgCtx.strokeStyle = 'rgba(255, 255, 255, ' + (0.85 * a) + ')';
+      bgCtx.lineWidth = 6 * scale;
+      bgCtx.lineCap = 'round';
+      bgCtx.lineJoin = 'round';
+      drawPathFn();
+      bgCtx.stroke();
+      bgCtx.restore();
+
+      // Layer 3: Razor sharp center filament
+      bgCtx.save();
+      bgCtx.strokeStyle = 'rgba(255, 255, 255, ' + (0.98 * a) + ')';
+      bgCtx.lineWidth = 2 * scale;
+      bgCtx.lineCap = 'round';
+      bgCtx.lineJoin = 'round';
+      drawPathFn();
+      bgCtx.stroke();
+      bgCtx.restore();
+    }
+
+    // --- 1. Top Left Camera Module Strip ---
+    var camX = cx - 290 * scale;
+    var camY = cy - 250 * scale;
+    var camW = 120 * scale;
+    var camH = 175 * scale;
+    var camR = 30 * scale;
+
+    renderGlyphStrip(function () {
+      bgCtx.beginPath();
+      if (typeof bgCtx.roundRect === 'function') {
+        bgCtx.roundRect(camX, camY, camW, camH, camR);
+      } else {
+        bgCtx.rect(camX, camY, camW, camH);
+      }
+    }, 0.85);
+
+    // Inner dual camera rings
+    bgCtx.save();
+    bgCtx.strokeStyle = 'rgba(255, 255, 255, ' + (0.45 * breathe) + ')';
+    bgCtx.lineWidth = 2 * scale;
+    bgCtx.beginPath();
+    bgCtx.arc(camX + camW / 2, camY + camH * 0.3, 22 * scale, 0, Math.PI * 2);
+    bgCtx.stroke();
+    bgCtx.beginPath();
+    bgCtx.arc(camX + camW / 2, camY + camH * 0.7, 22 * scale, 0, Math.PI * 2);
+    bgCtx.stroke();
+    bgCtx.restore();
+
+    // --- 2. Top Right Diagonal Slash Strip ---
+    renderGlyphStrip(function () {
+      bgCtx.beginPath();
+      bgCtx.moveTo(cx + 210 * scale, cy - 250 * scale);
+      bgCtx.lineTo(cx + 310 * scale, cy - 150 * scale);
+    }, 0.9);
+
+    // --- 3. Central Wireless Charging Coil (Segmented Circle) ---
+    var coilR = 215 * scale;
+    var coilY = cy - 15 * scale;
+
+    // Segment A: Top Arc (-160 deg to -20 deg)
+    renderGlyphStrip(function () {
+      bgCtx.beginPath();
+      bgCtx.arc(cx, coilY, coilR, -Math.PI * 0.88, -Math.PI * 0.1);
+    }, 0.95);
+
+    // Segment B: Right Arc (15 deg to 75 deg)
+    renderGlyphStrip(function () {
+      bgCtx.beginPath();
+      bgCtx.arc(cx, coilY, coilR, Math.PI * 0.08, Math.PI * 0.42);
+    }, 0.88);
+
+    // Segment C: Bottom-Left Hook Arc (110 deg to 195 deg)
+    renderGlyphStrip(function () {
+      bgCtx.beginPath();
+      bgCtx.arc(cx, coilY, coilR, Math.PI * 0.6, Math.PI * 1.08);
+    }, 0.88);
+
+    // Segment D: Center Vertical Bar
+    renderGlyphStrip(function () {
+      bgCtx.beginPath();
+      bgCtx.moveTo(cx, coilY - 32 * scale);
+      bgCtx.lineTo(cx, coilY + 32 * scale);
+    }, 0.82);
+
+    // --- 4. Bottom Exclamation Mark Glyph (Progress / Battery Meter) ---
+    var exclTop = cy + 245 * scale;
+    var exclBot = cy + 345 * scale;
+
+    renderGlyphStrip(function () {
+      bgCtx.beginPath();
+      bgCtx.moveTo(cx, exclTop);
+      bgCtx.lineTo(cx, exclBot);
+    }, 0.92);
+
+    // Exclamation bottom dot LED
+    renderGlyphStrip(function () {
+      bgCtx.beginPath();
+      bgCtx.arc(cx, exclBot + 24 * scale, 6 * scale, 0, Math.PI * 2);
+    }, 0.95);
+
+    // Animated charging meter upward pulse along the exclamation bar
+    var chargeProgress = (now * 0.0006) % 1.0;
+    var chargeY = exclBot - chargeProgress * (exclBot - exclTop);
+    bgCtx.save();
+    bgCtx.fillStyle = '#ffffff';
+    bgCtx.shadowColor = '#ffffff';
+    bgCtx.shadowBlur = 14 * scale;
+    bgCtx.beginPath();
+    bgCtx.arc(cx, chargeY, 4 * scale, 0, Math.PI * 2);
+    bgCtx.fill();
+    bgCtx.restore();
+
+    // --- 5. Red Recording LED Dot (● REC) ---
+    var recX = cx + 180 * scale;
+    var recY = cy - 200 * scale;
+    var recPulse = 0.55 + Math.sin(now * 0.0035) * 0.45;
+    bgCtx.save();
+    bgCtx.fillStyle = '#d71920';
+    bgCtx.shadowColor = '#d71920';
+    bgCtx.shadowBlur = (14 + recPulse * 10) * scale;
+    bgCtx.globalAlpha = 0.7 + recPulse * 0.3;
+    bgCtx.beginPath();
+    bgCtx.arc(recX, recY, 5.5 * scale, 0, Math.PI * 2);
+    bgCtx.fill();
+    bgCtx.restore();
+
+    // Red REC tiny label next to dot
+    bgCtx.save();
+    bgCtx.font = 'bold ' + Math.max(9, Math.floor(10 * scale)) + 'px Doto, monospace';
+    bgCtx.fillStyle = '#d71920';
+    bgCtx.globalAlpha = 0.85;
+    bgCtx.fillText('● REC', recX + 10 * scale, recY + 3 * scale);
+    bgCtx.restore();
+
+    // --- 6. Hardware Micro-Typography on Canvas ---
+    if (width > 680) {
+      bgCtx.save();
+      bgCtx.font = '10px Doto, monospace';
+      bgCtx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+      bgCtx.fillText('NOTHING (R) // MODEL: NT-AFTERX', cx - 290 * scale, cy + 220 * scale);
+      bgCtx.fillText('GLYPH INTERFACE ACTIVE · 45W', cx + 110 * scale, cy + 220 * scale);
+      bgCtx.restore();
+    }
+
+    bgCtx.restore();
+  }
+
+  function drawNothingMouseReticle(now) {
+    bgCtx.save();
+    var r = 16;
+    bgCtx.strokeStyle = 'rgba(255, 255, 255, 0.75)';
+    bgCtx.lineWidth = 1.5;
+    bgCtx.beginPath();
+    bgCtx.arc(marathonMouseX, marathonMouseY, r, 0, Math.PI * 2);
+    bgCtx.stroke();
+
+    bgCtx.fillStyle = '#d71920';
+    bgCtx.beginPath();
+    bgCtx.arc(marathonMouseX, marathonMouseY, 2.5, 0, Math.PI * 2);
+    bgCtx.fill();
+
+    bgCtx.font = '9px Doto, monospace';
+    bgCtx.fillStyle = 'rgba(255, 255, 255, 0.75)';
+    bgCtx.fillText(
+      '[' + Math.floor(marathonMouseX) + ',' + Math.floor(marathonMouseY) + ']',
+      marathonMouseX + r + 8,
+      marathonMouseY + 3
+    );
+    bgCtx.restore();
+  }
+
   var lastTime = performance.now();
 
   function drawGlitchFrame(now) {
@@ -1215,11 +1484,15 @@ function setBackgroundPaused(paused) {
         drawMarathonFrame(now, dt);
       }
     } else {
-      drawVhsFrame(now, dt);
+      if (currentNormalStyle === 'nothing') {
+        drawNothingFrame(now, dt);
+      } else {
+        drawVhsFrame(now, dt);
+      }
     }
 
     // Tracking tear / Horizontal slice displacement
-    if (bgTrackingGlitch.active) {
+    if (bgTrackingGlitch.active && !(currentTheme !== 'marathon' && currentNormalStyle === 'nothing')) {
       bgTrackingGlitch.timer -= dt;
       if (bgTrackingGlitch.timer <= 0) {
         bgTrackingGlitch.active = false;
@@ -1406,6 +1679,23 @@ function playToggleSfx() {
   gain.connect(sfxMasterGain);
   osc.start();
   osc.stop(ctx.currentTime + 0.035);
+}
+
+function playNothingClickSfx() {
+  if (!sfxEnabled || bgIsPaused) return;
+  var ctx = getAudioContext();
+  if (!ctx || !sfxMasterGain) return;
+  var osc = ctx.createOscillator();
+  var gain = ctx.createGain();
+  osc.type = 'triangle';
+  osc.frequency.setValueAtTime(1400, ctx.currentTime);
+  osc.frequency.exponentialRampToValueAtTime(340, ctx.currentTime + 0.025);
+  gain.gain.setValueAtTime(0.08, ctx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.025);
+  osc.connect(gain);
+  gain.connect(sfxMasterGain);
+  osc.start();
+  osc.stop(ctx.currentTime + 0.025);
 }
 
 // --- Vinyl Texture for Lo-Fi ---
@@ -1911,14 +2201,21 @@ var tabs = document.querySelectorAll('.tab'),
 
 function switchTab(targetTab, isInteractive) {
   if (isInteractive) {
-    playBlip();
+    if (currentTheme !== 'marathon' && currentNormalStyle === 'nothing') {
+      triggerNothingGlyphFlash();
+      playNothingClickSfx();
+    } else {
+      playBlip();
+    }
     var isReduced = matchMedia('(prefers-reduced-motion:reduce)').matches;
     if (!isReduced) {
-      tear();
-      document.body.classList.add('zap');
-      setTimeout(function () {
-        document.body.classList.remove('zap');
-      }, 280);
+      if (!(currentTheme !== 'marathon' && currentNormalStyle === 'nothing')) {
+        tear();
+        document.body.classList.add('zap');
+        setTimeout(function () {
+          document.body.classList.remove('zap');
+        }, 280);
+      }
     }
   }
   tabs.forEach(function (x) {
@@ -2513,7 +2810,7 @@ var tab3 = document.getElementById('tab-3');
 var sfxToggle = document.getElementById('sfx-toggle');
 function updateSfxButton() {
   if (!sfxToggle) return;
-  var themeLabel = currentTheme === 'marathon' ? 'TRAP' : 'LO-FI';
+  var themeLabel = currentTheme === 'marathon' ? 'TRAP' : (currentNormalStyle === 'nothing' ? 'GLYPH' : 'LO-FI');
   sfxToggle.textContent = sfxEnabled ? 'SFX: ON [' + themeLabel + ']' : 'SFX: OFF';
   sfxToggle.classList.toggle('active', sfxEnabled);
   sfxToggle.title = sfxEnabled
@@ -2525,17 +2822,20 @@ function applyTheme(theme, isUserClick) {
   currentTheme = theme;
   document.body.setAttribute('data-theme', theme);
 
-  if (tab1) tab1.textContent = theme === 'marathon' ? 'CH 01 RUNNER' : 'CH 01 SOBRE MÍ';
-  if (tab2) tab2.textContent = theme === 'marathon' ? 'CH 02 TRANSMISIONES' : 'CH 02 PROYECTOS';
-  if (tab3) tab3.textContent = theme === 'marathon' ? 'CH 03 JUEGOS' : 'CH 03 SETUP';
+  if (tab1) tab1.textContent = theme === 'marathon' ? 'CH 01 RUNNER' : (currentNormalStyle === 'nothing' ? '(01) SOBRE MÍ' : 'CH 01 SOBRE MÍ');
+  if (tab2) tab2.textContent = theme === 'marathon' ? 'CH 02 TRANSMISIONES' : (currentNormalStyle === 'nothing' ? '(02) PROYECTOS' : 'CH 02 PROYECTOS');
+  if (tab3) tab3.textContent = theme === 'marathon' ? 'CH 03 JUEGOS' : (currentNormalStyle === 'nothing' ? '(03) SETUP' : 'CH 03 SETUP');
 
   if (btnTracking) {
-    btnTracking.textContent = theme === 'marathon' ? 'TRACKING [GAMING]' : 'TRACKING [VHS]';
-    btnTracking.classList.toggle('active-track', theme === 'marathon');
-    btnTracking.title =
-      theme === 'marathon'
-        ? 'Ajuste de tracking: cambiar a VHS Glitch'
-        : 'Ajuste de tracking: cambiar a Marathon Gaming';
+    if (theme === 'marathon') {
+      btnTracking.textContent = 'TRACKING [GAMING]';
+      btnTracking.classList.toggle('active-track', true);
+      btnTracking.title = 'Ajuste de tracking: cambiar a Portafolio Normal';
+    } else {
+      btnTracking.textContent = currentNormalStyle === 'nothing' ? 'TRACKING [NOTHING]' : 'TRACKING [VHS]';
+      btnTracking.classList.toggle('active-track', currentNormalStyle === 'nothing');
+      btnTracking.title = 'Ajuste de tracking: cambiar a Marathon Gaming';
+    }
   }
 
   if (typeof refreshGlitchPalette === 'function') {
@@ -2545,7 +2845,7 @@ function applyTheme(theme, isUserClick) {
   if (theme === 'marathon') {
     setGamingStyle(currentGamingStyle, false);
   } else {
-    updateBackgroundMedia();
+    setNormalStyle(currentNormalStyle, false);
   }
 
   if (typeof switchMusicTrack === 'function' && sfxEnabled && !bgIsPaused) {
@@ -2646,6 +2946,72 @@ function setGamingStyle(style, isUserClick) {
     playGlitchSfx();
   }
 }
+
+// --- Normal Style Switcher (VHS Glitch vs Nothing OS) ---
+function setNormalStyle(style, isUserClick) {
+  if (style !== 'nothing' && style !== 'vhs') {
+    style = 'vhs';
+  }
+  currentNormalStyle = style;
+  document.body.setAttribute('data-normal-style', style);
+  safeStorage.setItem('afterx_normal_style', style);
+
+  var btns = document.querySelectorAll('.normal-style-btn');
+  btns.forEach(function (b) {
+    var isMatch = b.getAttribute('data-normal-style') === style;
+    b.classList.toggle('active', isMatch);
+    b.setAttribute('aria-checked', isMatch ? 'true' : 'false');
+  });
+
+  if (currentTheme !== 'marathon') {
+    if (style === 'nothing') {
+      if (tab1) tab1.textContent = '(01) SOBRE MÍ';
+      if (tab2) tab2.textContent = '(02) PROYECTOS';
+      if (tab3) tab3.textContent = '(03) SETUP';
+      if (btnTracking) {
+        btnTracking.textContent = 'TRACKING [NOTHING]';
+        btnTracking.classList.toggle('active-track', true);
+      }
+    } else {
+      if (tab1) tab1.textContent = 'CH 01 SOBRE MÍ';
+      if (tab2) tab2.textContent = 'CH 02 PROYECTOS';
+      if (tab3) tab3.textContent = 'CH 03 SETUP';
+      if (btnTracking) {
+        btnTracking.textContent = 'TRACKING [VHS]';
+        btnTracking.classList.toggle('active-track', false);
+      }
+    }
+  }
+
+  updateBackgroundMedia();
+  if (typeof updateSfxButton === 'function') {
+    updateSfxButton();
+  }
+
+  if (isUserClick) {
+    if (style === 'nothing') {
+      triggerNothingGlyphFlash();
+      playNothingClickSfx();
+    } else {
+      triggerBackgroundGlitch(1.0);
+      playGlitchSfx();
+    }
+  }
+}
+
+// Wire normal style button clicks
+var normalStyleBtns = document.querySelectorAll('.normal-style-btn');
+normalStyleBtns.forEach(function (btn) {
+  btn.addEventListener('click', function () {
+    var targetStyle = btn.getAttribute('data-normal-style');
+    if (targetStyle && targetStyle !== currentNormalStyle) {
+      setNormalStyle(targetStyle, true);
+    }
+  });
+});
+
+// Initialize normal style
+setNormalStyle(currentNormalStyle, false);
 
 // Wire gaming style button clicks
 var gamingStyleBtns = document.querySelectorAll('.gaming-style-btn');

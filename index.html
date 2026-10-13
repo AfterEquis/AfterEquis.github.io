@@ -35,7 +35,7 @@
 <meta name="twitter:image" content="https://afterequis.github.io/assets/og-image.jpg">
 <meta name="twitter:image:alt" content="AfterX - Estudiante de informática y creador de contenido en español">
 
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=VT323&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Doto:wght@400;600;700;800;900&family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=VT323&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
@@ -65,6 +65,18 @@
   <button class="osd btn-osd" id="btn-tracking" title="Ajuste de tracking analógico" aria-label="Ajuste de tracking">TRACKING</button>
  </div>
 
+ <div class="bar normal-subbar vhs-only" role="toolbar" aria-label="Estilos visuales del portafolio">
+  <span class="normal-subbar-title osd">SISTEMA // ESTILO:</span>
+  <div class="normal-styles-pills" role="radiogroup" aria-label="Selector de estilo visual normal">
+   <button type="button" class="normal-style-btn active" data-normal-style="vhs" role="radio" aria-checked="true" title="VHS Glitch: Retro CRT Analógico">
+    <span class="style-bullet"></span> VHS GLITCH
+   </button>
+   <button type="button" class="normal-style-btn" data-normal-style="nothing" role="radio" aria-checked="false" title="Nothing OS: Glyph Interface & Dot Matrix Minimalist">
+    <span class="style-bullet"></span> NOTHING (R)
+   </button>
+  </div>
+ </div>
+
  <div class="bar gaming-subbar marathon-only" role="toolbar" aria-label="Estilos visuales Gaming">
   <span class="gaming-subbar-title osd">SECTOR // ESTILO:</span>
   <div class="gaming-styles-pills" role="radiogroup" aria-label="Selector de estilo visual de fondo">
@@ -88,6 +100,11 @@
    <p class="bio vhs-only">Estudiante de informática y creador de contenido en español.</p>
    <p class="bio marathon-only" id="gaming-bio">Estudiante de informática y creador de contenido en español.</p>
    <div class="meta vhs-only">Linux · Hardware · Programación</div>
+   <div class="nothing-only nothing-tags" aria-hidden="true">
+    <span class="nothing-pill"><span class="pill-dot"></span>NT-OS 2.5</span>
+    <span class="nothing-pill">GLYPH: ON</span>
+    <span class="nothing-pill">CACHY_LINUX</span>
+   </div>
    <div class="meta marathon-only" id="gaming-meta">OPERACIÓN TÁCTICA · COMBATE · PC GAMING</div>
    <div class="status vhs-only"><span class="dot"></span><span class="ok">SEÑAL OK</span><span>En línea</span></div>
    <div class="status marathon-only"><span class="dot"></span><span class="ok" id="gaming-status">STATUS: DESPLEGADO</span><span>En línea</span></div>
@@ -107,6 +124,16 @@
      <h2>Sobre mí</h2>
      <p class="txt">Soy After, estudiante de informática. Me interesan la programación, Linux y el hardware.</p>
      <p class="txt">En YouTube hago vídeos de opinión y comentario en español, en el canal AfterXEsp_. Esta página reúne lo que hago: mis proyectos y mi canal.</p>
+     <div class="nothing-only nothing-widgets" aria-hidden="true">
+      <div class="nothing-widget">
+       <span class="nw-label">HARDWARE // SPEC</span>
+       <span class="nw-val">AMD R7 7700X · RTX 5060 Ti</span>
+      </div>
+      <div class="nothing-widget">
+       <span class="nw-label">LIVE STATUS</span>
+       <span class="nw-val"><span class="nw-rec-dot"></span> ● REC // EN LÍNEA</span>
+      </div>
+     </div>
     </div>
     <div class="marathon-only">
      <h2 id="gaming-p1-title">// ARCHIVO: RUNNER AFTERX</h2>

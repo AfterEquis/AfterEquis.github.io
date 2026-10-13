@@ -597,6 +597,352 @@ body[data-theme="marathon"] .btns.marathon-only .btn{
   transform:scale(1.25);
 }
 
+/* --- Normal Style Selector Subbar --- */
+.normal-subbar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:8px 24px;
+  background:rgba(5,7,14,0.4);
+  border-bottom:1px solid rgba(255,255,255,0.08);
+  font-family:var(--osd);
+  transition:background .25s,border-color .25s;
+}
+body[data-theme="marathon"] .normal-subbar{
+  display:none!important;
+}
+.normal-subbar-title{
+  font-size:16px;
+  letter-spacing:.08em;
+  color:var(--muted);
+  white-space:nowrap;
+}
+.normal-styles-pills{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+}
+.normal-style-btn{
+  font-family:var(--osd);
+  font-size:15px;
+  letter-spacing:.06em;
+  padding:4px 14px;
+  border-radius:10px;
+  background:rgba(255,255,255,0.06);
+  color:var(--muted);
+  border:1px solid rgba(255,255,255,0.14);
+  cursor:pointer;
+  transition:all .2s cubic-bezier(0.16,1,0.3,1);
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+}
+.normal-style-btn:hover{
+  background:rgba(255,255,255,0.14);
+  color:#fff;
+  transform:translateY(-1px);
+}
+.normal-style-btn.active{
+  font-weight:700;
+  color:#05070a;
+  background:#fff;
+  border-color:#fff;
+  box-shadow:0 0 14px rgba(255,255,255,0.5);
+}
+.normal-style-btn.active .style-bullet{
+  opacity:1;
+  transform:scale(1.25);
+  background:#ff3b2f;
+}
+
+/* ========================================================
+   NOTHING OS & GLYPH INTERFACE REAL STYLES (Nothing Tech)
+   ======================================================== */
+.nothing-only{display:none!important}
+
+body[data-normal-style="nothing"]:not([data-theme="marathon"]) .nothing-only.nothing-tags{
+  display:flex!important;
+}
+body[data-normal-style="nothing"]:not([data-theme="marathon"]) .nothing-only.nothing-widgets{
+  display:grid!important;
+}
+
+body[data-normal-style="nothing"]:not([data-theme="marathon"]){
+  --bg:#030305;
+  --text:#f5f5f7;
+  --muted:#86868b;
+  --red:#d71920;
+  --blue:#ffffff;
+  --violet:#e5e5e7;
+  --glow:#ffffff;
+  --ui:'Space Grotesk',Inter,-apple-system,sans-serif;
+  --osd:'Doto',VT323,monospace;
+  background:#030305;
+}
+
+/* Hide VHS specific noise & scanlines in Nothing mode */
+body[data-normal-style="nothing"]:not([data-theme="marathon"]) .scan,
+body[data-normal-style="nothing"]:not([data-theme="marathon"]) .track,
+body[data-normal-style="nothing"]:not([data-theme="marathon"]) .vhs-lines,
+body[data-normal-style="nothing"]:not([data-theme="marathon"]) .vhs-head{
+  display:none!important;
+}
+
+/* Nothing Pure Dot-Matrix Grid Background */
+body[data-normal-style="nothing"]:not([data-theme="marathon"]) .bg-glitch-layer{
+  background:#030305;
+  background-image:radial-gradient(circle,rgba(255,255,255,0.16) 1.2px,transparent 1.2px);
+  background-size:24px 24px;
+}
+body[data-normal-style="nothing"]:not([data-theme="marathon"]) .bg-glitch-video,
+body[data-normal-style="nothing"]:not([data-theme="marathon"]) .bg-glitch-fallback{
+  display:none!important;
+}
+body[data-normal-style="nothing"]:not([data-theme="marathon"]) .bg-glitch-vignette{
+  background:radial-gradient(ellipse at 50% 50%,rgba(3,3,5,0.1) 0%,rgba(3,3,5,0.65) 65%,#030305 100%);
+}
+
+/* Nothing Phone Transparent Chassis & Smoked Polycarbonate Card */
+body[data-normal-style="nothing"]:not([data-theme="marathon"]) .card{
+  background:linear-gradient(165deg,rgba(18,18,22,0.84),rgba(10,10,14,0.92))!important;
+  backdrop-filter:blur(28px) saturate(1.15)!important;
+  -webkit-backdrop-filter:blur(28px) saturate(1.15)!important;
+  border:1px solid rgba(255,255,255,0.22)!important;
+  border-radius:28px!important;
+  box-shadow:0 0 0 1px rgba(255,255,255,0.06),0 25px 80px rgba(0,0,0,0.92),0 0 45px rgba(255,255,255,0.06)!important;
+}
+body[data-normal-style="nothing"]:not([data-theme="marathon"]) .card::before{
+  background:none!important;
+  border:1px solid rgba(255,255,255,0.12)!important;
+}
+body[data-normal-style="nothing"]:not([data-theme="marathon"]) .card::after{
+  background:radial-gradient(100% 50% at 50% 0%,rgba(255,255,255,0.12),transparent 60%)!important;
+}
+
+/* Nothing Top & Bottom Bars */
+body[data-normal-style="nothing"]:not([data-theme="marathon"]) .bar.top,
+body[data-normal-style="nothing"]:not([data-theme="marathon"]) .bar.bot,
+body[data-normal-style="nothing"]:not([data-theme="marathon"]) .normal-subbar{
+  border-color:rgba(255,255,255,0.14)!important;
+}
+
+/* Nothing Typography & Title */
+body[data-normal-style="nothing"]:not([data-theme="marathon"]) .glitch.vhs-only{
+  font-family:'Doto',monospace!important;
+  font-weight:900!important;
+  letter-spacing:-0.03em!important;
+  color:#ffffff!important;
+  text-shadow:0 0 24px rgba(255,255,255,0.8),0 0 4px #ffffff!important;
+  animation:none!important;
+}
+body[data-normal-style="nothing"]:not([data-theme="marathon"]) .glitch.vhs-only::before,
+body[data-normal-style="nothing"]:not([data-theme="marathon"]) .glitch.vhs-only::after{
+  display:none!important;
+}
+body[data-normal-style="nothing"]:not([data-theme="marathon"]) .meta.vhs-only{
+  font-family:'Doto',monospace!important;
+  font-size:13px!important;
+  letter-spacing:.08em!important;
+  color:#a1a1a6!important;
+}
+
+/* Nothing Tech Badges */
+.nothing-tags{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  margin-top:6px;
+  justify-content:center;
+}
+.nothing-pill{
+  font-family:'Doto',monospace;
+  font-size:11px;
+  font-weight:700;
+  letter-spacing:.08em;
+  padding:3px 9px;
+  border-radius:999px;
+  background:rgba(255,255,255,0.06);
+  border:1px solid rgba(255,255,255,0.18);
+  color:#e5e5e5;
+  display:inline-flex;
+  align-items:center;
+}
+.pill-dot{
+  display:inline-block;
+  width:6px;
+  height:6px;
+  border-radius:50%;
+  background:#d71920;
+  margin-right:6px;
+  box-shadow:0 0 6px #d71920;
+}
+
+/* Nothing Avatar with Glowing Glyph Ring */
+body[data-normal-style="nothing"]:not([data-theme="marathon"]) .avatar{
+  border-radius:50%!important;
+  border:2px solid #ffffff!important;
+  box-shadow:0 0 22px rgba(255,255,255,0.8),inset 0 0 16px rgba(255,255,255,0.3)!important;
+  background:#050505!important;
+  transition:all .3s ease!important;
+}
+body[data-normal-style="nothing"]:not([data-theme="marathon"]) .avatar:hover{
+  box-shadow:0 0 35px #ffffff,0 0 55px rgba(255,255,255,0.6),inset 0 0 20px rgba(255,255,255,0.5)!important;
+  transform:scale(1.06)!important;
+}
+
+/* Nothing Status Pill & Red REC Indicator */
+body[data-normal-style="nothing"]:not([data-theme="marathon"]) .status.vhs-only .dot{
+  background:#d71920!important;
+  box-shadow:0 0 10px #d71920,0 0 20px rgba(215,25,32,0.85)!important;
+  animation:nothing-rec-pulse 1.8s ease-in-out infinite!important;
+}
+body[data-normal-style="nothing"]:not([data-theme="marathon"]) .status.vhs-only .ok{
+  color:#ffffff!important;
+  font-family:'Doto',monospace!important;
+  font-weight:700!important;
+}
+
+/* Nothing OS Segmented Pill Tabs */
+body[data-normal-style="nothing"]:not([data-theme="marathon"]) .tab{
+  font-family:'Doto',var(--osd),monospace!important;
+  font-weight:700!important;
+  border-radius:999px!important;
+  border:1px solid rgba(255,255,255,0.18)!important;
+  background:rgba(255,255,255,0.05)!important;
+  color:#9e9ea3!important;
+}
+body[data-normal-style="nothing"]:not([data-theme="marathon"]) .tab[aria-selected=true]{
+  background:#ffffff!important;
+  color:#030305!important;
+  border-color:#ffffff!important;
+  box-shadow:0 0 18px rgba(255,255,255,0.65)!important;
+}
+
+/* Nothing OS Widgets Grid in Sobre Mí */
+.nothing-widgets{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  gap:10px;
+  margin-top:16px;
+}
+.nothing-widget{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+  padding:12px 14px;
+  border-radius:14px;
+  background:rgba(255,255,255,0.04);
+  border:1px solid rgba(255,255,255,0.14);
+  box-shadow:inset 0 0 14px rgba(255,255,255,0.02);
+}
+.nw-label{
+  font-family:'Doto',monospace;
+  font-size:11px;
+  font-weight:700;
+  color:#86868b;
+  letter-spacing:.08em;
+}
+.nw-val{
+  font-family:'Doto',monospace;
+  font-size:13px;
+  font-weight:700;
+  color:#ffffff;
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+.nw-rec-dot{
+  width:7px;
+  height:7px;
+  border-radius:50%;
+  background:#d71920;
+  box-shadow:0 0 8px #d71920;
+  animation:nothing-rec-pulse 1.8s infinite;
+}
+
+/* Nothing OS Transparent Hardware Items & Setup Blocks */
+body[data-normal-style="nothing"]:not([data-theme="marathon"]) .item{
+  border-radius:18px!important;
+  background:rgba(255,255,255,0.04)!important;
+  border:1px solid rgba(255,255,255,0.14)!important;
+  transition:all .2s ease!important;
+}
+body[data-normal-style="nothing"]:not([data-theme="marathon"]) .item:hover{
+  background:rgba(255,255,255,0.08)!important;
+  border-color:rgba(255,255,255,0.35)!important;
+  box-shadow:0 0 20px rgba(255,255,255,0.12)!important;
+  transform:translateY(-2px);
+}
+body[data-normal-style="nothing"]:not([data-theme="marathon"]) .item h3{
+  font-family:'Doto',var(--ui),sans-serif!important;
+  font-weight:700!important;
+  letter-spacing:.02em;
+}
+
+/* Nothing High-Contrast Buttons */
+body[data-normal-style="nothing"]:not([data-theme="marathon"]) .btns.vhs-only .btn{
+  border-radius:999px!important;
+  background:#ffffff!important;
+  color:#030305!important;
+  font-family:'Doto',var(--ui),sans-serif!important;
+  font-weight:700!important;
+  border:1px solid #ffffff!important;
+  box-shadow:0 0 16px rgba(255,255,255,0.35)!important;
+  transition:all .2s ease!important;
+}
+body[data-normal-style="nothing"]:not([data-theme="marathon"]) .btns.vhs-only .btn:hover{
+  background:#d71920!important;
+  border-color:#d71920!important;
+  color:#ffffff!important;
+  box-shadow:0 0 22px rgba(215,25,32,0.75)!important;
+}
+
+/* Nothing Icons */
+body[data-normal-style="nothing"]:not([data-theme="marathon"]) .icons.vhs-only .ic{
+  border-radius:50%!important;
+  border:1px solid rgba(255,255,255,0.2)!important;
+  background:rgba(255,255,255,0.06)!important;
+}
+body[data-normal-style="nothing"]:not([data-theme="marathon"]) .icons.vhs-only .ic:hover{
+  border-color:#ffffff!important;
+  background:#ffffff!important;
+  color:#030305!important;
+  box-shadow:0 0 16px rgba(255,255,255,0.6)!important;
+}
+
+/* Nothing OSD buttons */
+body[data-normal-style="nothing"]:not([data-theme="marathon"]) .btn-osd{
+  font-family:'Doto',monospace!important;
+  font-weight:700!important;
+  border-radius:999px!important;
+}
+body[data-normal-style="nothing"]:not([data-theme="marathon"]) .btn-osd.active-track{
+  background:#ffffff!important;
+  color:#030305!important;
+  border-color:#ffffff!important;
+  box-shadow:0 0 14px rgba(255,255,255,0.5)!important;
+}
+
+body[data-normal-style="nothing"] .normal-style-btn[data-normal-style="nothing"]{
+  background:#ffffff;
+  color:#000000;
+  border-color:#ffffff;
+  box-shadow:0 0 16px rgba(255,255,255,0.7);
+}
+body[data-normal-style="nothing"] .normal-style-btn[data-normal-style="nothing"] .style-bullet{
+  background:#d71920;
+}
+body[data-normal-style="vhs"] .normal-style-btn[data-normal-style="vhs"]{
+  background:rgba(255,255,255,0.92);
+  color:#05070a;
+  border-color:#fff;
+  box-shadow:0 0 14px rgba(255,59,47,0.4);
+}
+body[data-normal-style="vhs"] .normal-style-btn[data-normal-style="vhs"] .style-bullet{
+  background:#ff3b2f;
+}
+
 /* Marathon Style Active Button */
 body[data-gaming-style="marathon"] .gaming-style-btn[data-style="marathon"]{
   background:#dfff00;
@@ -855,15 +1201,18 @@ body[data-gaming-style="arcane"] .btns.marathon-only .btn{
 }
 
 @media(max-width:780px){
+  .normal-subbar,
   .gaming-subbar{
     flex-direction:column;
     align-items:stretch;
     gap:6px;
     padding:8px 16px;
   }
+  .normal-styles-pills,
   .gaming-styles-pills{
     justify-content:center;
   }
+  .normal-style-btn,
   .gaming-style-btn{
     flex:1 1 auto;
     text-align:center;
