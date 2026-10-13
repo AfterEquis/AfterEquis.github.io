@@ -2878,7 +2878,6 @@ function setGamingStyle(style, isUserClick) {
   });
 
   var metaEl = document.getElementById('gaming-meta');
-  var statEl = document.getElementById('gaming-status');
   var sk1 = document.getElementById('gaming-stat-k1'), sv1 = document.getElementById('gaming-stat-v1');
   var sk2 = document.getElementById('gaming-stat-k2'), sv2 = document.getElementById('gaming-stat-v2');
   var sk3 = document.getElementById('gaming-stat-k3'), sv3 = document.getElementById('gaming-stat-v3');
@@ -2889,7 +2888,6 @@ function setGamingStyle(style, isUserClick) {
 
   if (style === 'dedsec') {
     if (metaEl) metaEl.textContent = 'CTOS EXPLOIT · CYBER-ANARCHY · RESISTANCE';
-    if (statEl) statEl.textContent = 'STATUS: ROOT BREACHED';
     if (sk1 && sv1) { sk1.textContent = 'SISTEMA'; sv1.textContent = 'CTOS BACKDOOR'; }
     if (sk2 && sv2) { sk2.textContent = 'ROL'; sv2.textContent = 'NETRUNNER'; }
     if (sk3 && sv3) { sk3.textContent = 'BREACH'; sv3.textContent = '100% ROOT'; }
@@ -2904,7 +2902,6 @@ function setGamingStyle(style, isUserClick) {
     }
   } else if (style === 'arcane') {
     if (metaEl) metaEl.textContent = 'HEXTECH RUNIC · SHIMMER FLOW · ZAUN';
-    if (statEl) statEl.textContent = 'STATUS: HEXTECH RESONANCE';
     if (sk1 && sv1) { sk1.textContent = 'SISTEMA'; sv1.textContent = 'HEXTECH CORE'; }
     if (sk2 && sv2) { sk2.textContent = 'ROL'; sv2.textContent = 'ARCANE PILOT'; }
     if (sk3 && sv3) { sk3.textContent = 'RESONANCIA'; sv3.textContent = 'SHIMMER 100%'; }
@@ -2919,7 +2916,6 @@ function setGamingStyle(style, isUserClick) {
     }
   } else {
     if (metaEl) metaEl.textContent = 'OPERACIÓN TÁCTICA · COMBATE · PC GAMING';
-    if (statEl) statEl.textContent = 'STATUS: DESPLEGADO';
     if (sk1 && sv1) { sk1.textContent = 'SISTEMA'; sv1.textContent = 'LINUX RIG'; }
     if (sk2 && sv2) { sk2.textContent = 'ROL'; sv2.textContent = 'FLANKER / SNIPER'; }
     if (sk3 && sv3) { sk3.textContent = 'EXTRACCIÓN'; sv3.textContent = '99.4% ÉXITO'; }

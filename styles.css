@@ -108,10 +108,6 @@ h1:not(.glitch)::after{color:#00e5ff;text-shadow:-2px 0 #2979ff;transform:transl
 @keyframes vhs-glitch-c{0%,84%{clip-path:inset(0 0 0 0);transform:translate(3px,-1px);opacity:.85}85%{clip-path:inset(60% 0 18% 0);transform:translate(12px,2px);opacity:1}88%{clip-path:inset(25% 0 50% 0);transform:translate(-8px,-1px);opacity:.9}91%{clip-path:inset(80% 0 5% 0);transform:translate(10px,-2px);opacity:1}94%{clip-path:inset(35% 0 40% 0);transform:translate(-6px,1px);opacity:.7}97%,100%{clip-path:inset(0 0 0 0);transform:translate(3px,-1px);opacity:.85}}
 .bio{margin:0;color:#e9ecf6;font-size:17px;line-height:1.5;max-width:34ch}
 .meta{font-family:var(--osd);font-size:19px;text-wrap:balance;color:var(--muted);letter-spacing:.04em}
-.status{display:flex;align-items:center;gap:8px;font-size:15px}
-.dot{width:10px;height:10px;border-radius:50%;background:#22e06b;box-shadow:0 0 10px #22e06b}
-@keyframes blink{50%{opacity:.35}}
-.ok{color:#4dff94;font-weight:600}
 .cta{display:inline-flex;align-items:center;gap:8px;background:var(--red);color:#fff;font-weight:600;font-size:16px;padding:12px 24px;border-radius:999px;text-decoration:none;box-shadow:0 8px 26px rgba(255,59,47,.45),inset 0 1px 0 rgba(255,255,255,.35);transition:filter .2s,transform .15s}
 .cta:active{transform:scale(0.96)}
 .icons{display:flex;gap:12px}
@@ -242,14 +238,6 @@ body.paused .card::after{background:repeating-linear-gradient(0deg,rgba(0,0,0,.3
   .meta{
     font-size:14.5px;
     margin-top:-2px;
-  }
-  .status{
-    font-size:13.5px;
-    gap:6px;
-  }
-  .status .dot{
-    width:8px;
-    height:8px;
   }
   .icons{
     gap:10px;
@@ -509,13 +497,7 @@ body[data-theme="marathon"] .cta{
   font-weight:700;
   box-shadow:0 6px 20px rgba(223,255,0,.35);
 }
-body[data-theme="marathon"] .status .dot{
-  background:#dfff00;
-  box-shadow:0 0 8px #dfff00;
-}
-body[data-theme="marathon"] .status .ok{
-  color:#dfff00;
-}
+
 body[data-theme="marathon"] .btn-osd.active-track{
   color:#dfff00;
   text-shadow:0 0 10px rgba(223,255,0,.8);
@@ -752,17 +734,7 @@ body[data-normal-style="nothing"]:not([data-theme="marathon"]) .avatar:hover{
   transform:scale(1.06)!important;
 }
 
-/* Nothing Status Pill & Red REC Indicator */
-body[data-normal-style="nothing"]:not([data-theme="marathon"]) .status.vhs-only .dot{
-  background:#d71920!important;
-  box-shadow:0 0 10px #d71920,0 0 20px rgba(215,25,32,0.85)!important;
-  animation:nothing-rec-pulse 1.8s ease-in-out infinite!important;
-}
-body[data-normal-style="nothing"]:not([data-theme="marathon"]) .status.vhs-only .ok{
-  color:#ffffff!important;
-  font-family:'Doto',monospace!important;
-  font-weight:700!important;
-}
+
 
 /* Nothing OS Segmented Pill Tabs */
 body[data-normal-style="nothing"]:not([data-theme="marathon"]) .tab{
@@ -932,13 +904,7 @@ body[data-gaming-style="dedsec"] .cta{
   font-weight:700;
   box-shadow:0 6px 20px rgba(0,255,102,0.45);
 }
-body[data-gaming-style="dedsec"] .status .dot{
-  background:#00ff66;
-  box-shadow:0 0 10px #00ff66;
-}
-body[data-gaming-style="dedsec"] .status .ok{
-  color:#00ff66;
-}
+
 body[data-gaming-style="dedsec"] .btn-osd.active-track{
   color:#00ff66;
   text-shadow:0 0 10px rgba(0,255,102,0.8);
@@ -1029,13 +995,7 @@ body[data-gaming-style="arcane"] .cta{
   color:#ffffff;
   box-shadow:0 6px 20px rgba(0,212,255,0.5);
 }
-body[data-gaming-style="arcane"] .status .dot{
-  background:#00d4ff;
-  box-shadow:0 0 10px #00d4ff,0 0 20px #d9027d;
-}
-body[data-gaming-style="arcane"] .status .ok{
-  color:#00d4ff;
-}
+
 body[data-gaming-style="arcane"] .btn-osd.active-track{
   color:#00d4ff;
   text-shadow:0 0 10px rgba(0,212,255,0.8),0 0 16px rgba(217,2,125,0.6);
