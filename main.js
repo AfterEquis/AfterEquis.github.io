@@ -8,6 +8,8 @@ import marathonGifUrl from './assets/marathon-bg.gif';
 import marathonVideoUrl from './assets/marathon-bg.mp4';
 import nothingGifUrl from './assets/nothing-bg.gif';
 import nothingVideoUrl from './assets/nothing-bg.mp4';
+import macosGifUrl from './assets/macos-bg.gif';
+import macosVideoUrl from './assets/macos-bg.mp4';
 
 // Clickjacking / Framing Protection (permits same-origin & local dev)
 try {
@@ -60,9 +62,9 @@ var currentGamingStyle =
     ? queryGaming
     : safeStorage.getItem('afterx_gaming_style') || 'marathon';
 
-var queryNormal = urlParams.get('normal') || (urlParams.get('style') === 'nothing' ? 'nothing' : null);
+var queryNormal = urlParams.get('normal') || (urlParams.get('style') === 'nothing' ? 'nothing' : (urlParams.get('style') === 'macos' ? 'macos' : null));
 var currentNormalStyle =
-  queryNormal === 'nothing' || queryNormal === 'vhs'
+  queryNormal === 'nothing' || queryNormal === 'vhs' || queryNormal === 'macos'
     ? queryNormal
     : safeStorage.getItem('afterx_normal_style') || 'vhs';
 
@@ -108,8 +110,16 @@ var GLITCH_COLORS_NOTHING = [
   '#ffffff',
   '#ff3b2f',
 ];
+var GLITCH_COLORS_MACOS = [
+  '#0071e3',
+  '#5ac8fa',
+  '#af52de',
+  '#ffffff',
+  '#34c759',
+  '#ff9500',
+];
 
-// Dynamic background media handler (Video loops with GIF fallbacks for VHS, DedSec, Arcane, Marathon)
+// Dynamic background media handler (Video loops with GIF fallbacks for VHS, DedSec, Arcane, Marathon, Nothing, macOS)
 function showFallbackGif(targetGif) {
   if (bgFallback) {
     var gif = targetGif;
@@ -117,7 +127,13 @@ function showFallbackGif(targetGif) {
       if (currentTheme === 'marathon') {
         gif = currentGamingStyle === 'dedsec' ? dedsecGifUrl : (currentGamingStyle === 'arcane' ? arcaneGifUrl : marathonGifUrl);
       } else {
-        gif = currentNormalStyle === 'nothing' ? nothingGifUrl : glitchGifUrl;
+        if (currentNormalStyle === 'nothing') {
+          gif = nothingGifUrl;
+        } else if (currentNormalStyle === 'macos') {
+          gif = macosGifUrl;
+        } else {
+          gif = glitchGifUrl;
+        }
       }
     }
     if (gif) {
@@ -139,6 +155,9 @@ function updateBackgroundMedia() {
     if (currentNormalStyle === 'nothing') {
       targetVideo = nothingVideoUrl;
       targetGif = nothingGifUrl;
+    } else if (currentNormalStyle === 'macos') {
+      targetVideo = macosVideoUrl;
+      targetGif = macosGifUrl;
     } else {
       targetVideo = glitchVideoUrl;
       targetGif = glitchGifUrl;
@@ -200,6 +219,8 @@ function triggerBackgroundGlitch(intensity) {
     var c;
     if (isNothing) {
       c = Math.random() > 0.5 ? 'rgba(255, 255, 255, 0.45)' : 'rgba(215, 25, 32, 0.4)';
+    } else if (!isMarathon && currentNormalStyle === 'macos') {
+      c = Math.random() > 0.5 ? 'rgba(0, 113, 227, 0.45)' : 'rgba(255, 255, 255, 0.45)';
     } else if (isMarathon) {
       c = Math.random() > 0.5 ? 'rgba(223, 255, 0, 0.45)' : 'rgba(255, 59, 0, 0.45)';
     } else {
@@ -529,6 +550,7 @@ function setBackgroundPaused(paused) {
   function getGlitchPalette() {
     if (currentTheme !== 'marathon') {
       if (currentNormalStyle === 'nothing') return GLITCH_COLORS_NOTHING;
+      if (currentNormalStyle === 'macos') return GLITCH_COLORS_MACOS;
       return GLITCH_COLORS_VHS;
     }
     if (currentGamingStyle === 'dedsec') return GLITCH_COLORS_DEDSEC;
@@ -1517,6 +1539,23 @@ function playNothingClickSfx() {
   osc.stop(ctx.currentTime + 0.025);
 }
 
+function playMacClickSfx() {
+  if (!sfxEnabled || bgIsPaused) return;
+  var ctx = getAudioContext();
+  if (!ctx || !sfxMasterGain) return;
+  var osc = ctx.createOscillator();
+  var gain = ctx.createGain();
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(680, ctx.currentTime);
+  osc.frequency.exponentialRampToValueAtTime(140, ctx.currentTime + 0.045);
+  gain.gain.setValueAtTime(0.08, ctx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.045);
+  osc.connect(gain);
+  gain.connect(sfxMasterGain);
+  osc.start();
+  osc.stop(ctx.currentTime + 0.045);
+}
+
 // --- Vinyl Texture for Lo-Fi ---
 function startVinylCrackle() {
   if (vinylSource || !audioCtx || !musicMasterGain) return;
@@ -2020,9 +2059,15 @@ var tabs = document.querySelectorAll('.tab'),
 
 function switchTab(targetTab, isInteractive) {
   if (isInteractive) {
-    if (currentTheme !== 'marathon' && currentNormalStyle === 'nothing') {
-      triggerNothingGlyphFlash();
-      playNothingClickSfx();
+    if (currentTheme !== 'marathon') {
+      if (currentNormalStyle === 'nothing') {
+        triggerNothingGlyphFlash();
+        playNothingClickSfx();
+      } else if (currentNormalStyle === 'macos') {
+        playMacClickSfx();
+      } else {
+        playBlip();
+      }
     } else {
       playBlip();
     }
@@ -2760,9 +2805,9 @@ function setGamingStyle(style, isUserClick) {
   }
 }
 
-// --- Normal Style Switcher (VHS Glitch vs Nothing OS) ---
+// --- Normal Style Switcher (VHS Glitch vs Nothing OS vs macOS) ---
 function setNormalStyle(style, isUserClick) {
-  if (style !== 'nothing' && style !== 'vhs') {
+  if (style !== 'nothing' && style !== 'vhs' && style !== 'macos') {
     style = 'vhs';
   }
   currentNormalStyle = style;
@@ -2781,8 +2826,14 @@ function setNormalStyle(style, isUserClick) {
     if (tab2) tab2.textContent = 'CH 02 PROYECTOS';
     if (tab3) tab3.textContent = 'CH 03 SETUP';
     if (btnTracking) {
-      btnTracking.textContent = style === 'nothing' ? 'TRACKING [NOTHING]' : 'TRACKING [VHS]';
-      btnTracking.classList.toggle('active-track', style === 'nothing');
+      if (style === 'nothing') {
+        btnTracking.textContent = 'TRACKING [NOTHING]';
+      } else if (style === 'macos') {
+        btnTracking.textContent = 'TRACKING [MACOS]';
+      } else {
+        btnTracking.textContent = 'TRACKING [VHS]';
+      }
+      btnTracking.classList.toggle('active-track', style === 'nothing' || style === 'macos');
     }
   }
 
@@ -2807,6 +2858,8 @@ function setNormalStyle(style, isUserClick) {
     if (style === 'nothing') {
       triggerNothingGlyphFlash();
       playNothingClickSfx();
+    } else if (style === 'macos') {
+      playMacClickSfx();
     }
   }
 }

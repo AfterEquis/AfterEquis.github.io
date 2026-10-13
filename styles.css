@@ -839,6 +839,289 @@ body[data-normal-style="vhs"] .normal-style-btn[data-normal-style="vhs"] .style-
   background:#ff3b2f;
 }
 
+/* ========================================================
+   MACOS DARK MODE & VIBRANCY GLASSMORPHISM STYLES
+   ======================================================== */
+body[data-normal-style="macos"]:not([data-theme="marathon"]){
+  --bg:#08090f;
+  --text:#f5f5f7;
+  --muted:#a1a1a6;
+  --red:#ff453a;
+  --blue:#0a84ff;
+  --violet:#bf5af2;
+  --glow:rgba(10,132,255,0.4);
+  --ui:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Helvetica Neue",Helvetica,Arial,sans-serif;
+  --osd:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Mono",Menlo,monospace;
+  background:#06070d;
+}
+
+/* Hide VHS noise and scanlines in macOS mode */
+body[data-normal-style="macos"]:not([data-theme="marathon"]) .scan,
+body[data-normal-style="macos"]:not([data-theme="marathon"]) .track,
+body[data-normal-style="macos"]:not([data-theme="marathon"]) .vhs-lines,
+body[data-normal-style="macos"]:not([data-theme="marathon"]) .vhs-head{
+  display:none!important;
+}
+
+/* macOS Background layers */
+body[data-normal-style="macos"]:not([data-theme="marathon"]) .bg-glitch-layer{
+  background:#06070d;
+  background-image:none;
+}
+body[data-normal-style="macos"]:not([data-theme="marathon"]) .bg-glitch-video{
+  display:block;
+  opacity:0.95;
+  filter:contrast(1.05) brightness(1.02);
+}
+body[data-normal-style="macos"]:not([data-theme="marathon"]) .bg-glitch-fallback{
+  opacity:0.95;
+  filter:contrast(1.05) brightness(1.02);
+}
+body[data-normal-style="macos"]:not([data-theme="marathon"]) .bg-glitch-vignette{
+  background:radial-gradient(ellipse at 50% 50%,rgba(6,7,13,0) 0%,rgba(6,7,13,0.45) 75%,#06070d 100%);
+}
+
+/* macOS Frosted Glass Window Card */
+body[data-normal-style="macos"]:not([data-theme="marathon"]) .card{
+  background:rgba(22,24,32,0.72)!important;
+  backdrop-filter:blur(32px) saturate(190%)!important;
+  -webkit-backdrop-filter:blur(32px) saturate(190%)!important;
+  border:1px solid rgba(255,255,255,0.14)!important;
+  border-radius:20px!important;
+  box-shadow:0 28px 70px rgba(0,0,0,0.65),0 0 0 1px rgba(255,255,255,0.08),inset 0 1px 0 rgba(255,255,255,0.2)!important;
+  transition:transform 0.3s cubic-bezier(0.16,1,0.3,1),box-shadow 0.3s ease;
+}
+body[data-normal-style="macos"]:not([data-theme="marathon"]) .card::before,
+body[data-normal-style="macos"]:not([data-theme="marathon"]) .card::after{
+  display:none!important;
+}
+
+/* macOS Top bar */
+body[data-normal-style="macos"]:not([data-theme="marathon"]) .bar.top{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:12px 20px;
+  border-bottom:1px solid rgba(255,255,255,0.08);
+}
+body[data-normal-style="macos"]:not([data-theme="marathon"]) #btn-play{
+  font-family:var(--ui);
+  font-size:11px;
+  font-weight:600;
+  letter-spacing:0.04em;
+  padding:5px 12px;
+  border-radius:7px;
+  background:rgba(255,255,255,0.06);
+  border:1px solid rgba(255,255,255,0.1);
+  color:#f5f5f7;
+  transition:all 0.2s ease;
+}
+body[data-normal-style="macos"]:not([data-theme="marathon"]) #btn-play:hover{
+  background:rgba(255,255,255,0.14);
+}
+
+/* macOS Segmented Control Tabs */
+body[data-normal-style="macos"]:not([data-theme="marathon"]) .tabs{
+  background:rgba(0,0,0,0.28);
+  padding:3px;
+  border-radius:10px;
+  border:1px solid rgba(255,255,255,0.08);
+  gap:2px;
+}
+body[data-normal-style="macos"]:not([data-theme="marathon"]) .tab{
+  font-family:var(--ui);
+  font-size:11.5px;
+  font-weight:500;
+  letter-spacing:-0.01em;
+  padding:5px 14px;
+  border-radius:7px;
+  color:#a1a1a6;
+  background:transparent;
+  border:1px solid transparent;
+  transition:all 0.2s cubic-bezier(0.16,1,0.3,1);
+}
+body[data-normal-style="macos"]:not([data-theme="marathon"]) .tab:hover{
+  color:#f5f5f7;
+}
+body[data-normal-style="macos"]:not([data-theme="marathon"]) .tab[aria-selected="true"]{
+  background:rgba(255,255,255,0.94)!important;
+  color:#111113!important;
+  font-weight:600;
+  box-shadow:0 2px 8px rgba(0,0,0,0.35);
+  border-color:rgba(255,255,255,0.3);
+}
+
+/* Tracking Button */
+body[data-normal-style="macos"]:not([data-theme="marathon"]) #btn-tracking{
+  font-family:var(--ui);
+  font-size:11px;
+  font-weight:500;
+  padding:5px 12px;
+  border-radius:7px;
+  background:rgba(255,255,255,0.06);
+  border:1px solid rgba(255,255,255,0.1);
+  color:#f5f5f7;
+  transition:all 0.2s ease;
+}
+body[data-normal-style="macos"]:not([data-theme="marathon"]) #btn-tracking:hover{
+  background:rgba(255,255,255,0.14);
+}
+body[data-normal-style="macos"]:not([data-theme="marathon"]) #btn-tracking.active-track{
+  background:rgba(10,132,255,0.22)!important;
+  border-color:#0a84ff!important;
+  color:#64d2ff!important;
+}
+
+/* macOS Subbar & Style pills */
+body[data-normal-style="macos"]:not([data-theme="marathon"]) .normal-subbar{
+  border-bottom:1px solid rgba(255,255,255,0.06);
+  background:rgba(0,0,0,0.16);
+  padding:7px 20px;
+}
+body[data-normal-style="macos"]:not([data-theme="marathon"]) .normal-subbar-title{
+  font-family:var(--ui);
+  font-size:10.5px;
+  font-weight:600;
+  color:#86868b!important;
+  letter-spacing:0.05em;
+  text-shadow:none!important;
+}
+body[data-normal-style="macos"]:not([data-theme="marathon"]) .normal-style-btn{
+  font-family:var(--ui);
+  font-size:11px;
+  font-weight:500;
+  border-radius:6px;
+  background:rgba(255,255,255,0.05);
+  border:1px solid rgba(255,255,255,0.08);
+  color:#a1a1a6;
+  padding:4px 10px;
+  transition:all 0.2s ease;
+}
+body[data-normal-style="macos"]:not([data-theme="marathon"]) .normal-style-btn:hover{
+  background:rgba(255,255,255,0.12);
+  color:#f5f5f7;
+}
+
+/* Active style pill for macOS */
+body[data-normal-style="macos"] .normal-style-btn[data-normal-style="macos"]{
+  background:rgba(255,255,255,0.94);
+  color:#111113;
+  border-color:rgba(255,255,255,0.3);
+  box-shadow:0 2px 10px rgba(0,0,0,0.35);
+  font-weight:600;
+}
+body[data-normal-style="macos"] .normal-style-btn[data-normal-style="macos"] .style-bullet{
+  background:#0a84ff;
+  box-shadow:0 0 6px #0a84ff;
+}
+
+/* Content, Avatar & Typography */
+body[data-normal-style="macos"]:not([data-theme="marathon"]) .avatar{
+  border:2px solid rgba(255,255,255,0.22);
+  box-shadow:0 10px 28px rgba(0,0,0,0.4),inset 0 1px 0 rgba(255,255,255,0.2);
+  border-radius:50%;
+  transition:transform 0.25s cubic-bezier(0.16,1,0.3,1),box-shadow 0.25s ease;
+}
+body[data-normal-style="macos"]:not([data-theme="marathon"]) .avatar:hover{
+  transform:scale(1.04);
+  box-shadow:0 14px 34px rgba(10,132,255,0.35),0 0 0 1px rgba(10,132,255,0.5);
+}
+body[data-normal-style="macos"]:not([data-theme="marathon"]) .glitch.vhs-only{
+  font-family:var(--ui);
+  font-size:32px;
+  font-weight:700;
+  letter-spacing:-0.03em;
+  color:#f5f5f7;
+  text-shadow:none;
+}
+body[data-normal-style="macos"]:not([data-theme="marathon"]) .glitch.vhs-only::before,
+body[data-normal-style="macos"]:not([data-theme="marathon"]) .glitch.vhs-only::after{
+  display:none!important;
+}
+body[data-normal-style="macos"]:not([data-theme="marathon"]) .meta.vhs-only{
+  font-family:var(--ui);
+  color:#a1a1a6;
+  font-size:13.5px;
+  line-height:1.5;
+}
+body[data-normal-style="macos"]:not([data-theme="marathon"]) .tags{
+  font-family:var(--ui);
+  color:#86868b;
+  font-size:11px;
+  letter-spacing:0.02em;
+}
+body[data-normal-style="macos"]:not([data-theme="marathon"]) .btns.vhs-only .btn{
+  font-family:var(--ui);
+  border-radius:50%;
+  width:36px;
+  height:36px;
+  background:rgba(255,255,255,0.08);
+  border:1px solid rgba(255,255,255,0.12);
+  color:#f5f5f7;
+  transition:all 0.2s cubic-bezier(0.16,1,0.3,1);
+}
+body[data-normal-style="macos"]:not([data-theme="marathon"]) .btns.vhs-only .btn:hover{
+  background:rgba(255,255,255,0.18);
+  transform:translateY(-2px);
+  box-shadow:0 4px 12px rgba(0,0,0,0.3);
+}
+
+/* Right Column Panel Items */
+body[data-normal-style="macos"]:not([data-theme="marathon"]) .panel h2{
+  font-family:var(--ui);
+  font-weight:600;
+  letter-spacing:-0.02em;
+  color:#f5f5f7;
+  margin-bottom:12px;
+  text-shadow:none!important;
+}
+body[data-normal-style="macos"]:not([data-theme="marathon"]) .panel p{
+  font-family:var(--ui);
+  color:#d1d1d6;
+  line-height:1.6;
+  font-size:14px;
+}
+body[data-normal-style="macos"]:not([data-theme="marathon"]) .item{
+  background:rgba(255,255,255,0.04);
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:12px;
+  padding:14px;
+  margin-bottom:10px;
+  transition:all 0.25s cubic-bezier(0.16,1,0.3,1);
+}
+body[data-normal-style="macos"]:not([data-theme="marathon"]) .item:hover{
+  background:rgba(255,255,255,0.08);
+  border-color:rgba(255,255,255,0.18);
+  transform:translateY(-2px);
+  box-shadow:0 8px 24px rgba(0,0,0,0.3);
+}
+body[data-normal-style="macos"]:not([data-theme="marathon"]) .item h3{
+  font-family:var(--ui);
+  font-weight:600;
+  letter-spacing:-0.01em;
+  color:#f5f5f7;
+}
+
+/* macOS Status Bar (Bottom bar) */
+body[data-normal-style="macos"]:not([data-theme="marathon"]) .bar.bot{
+  border-top:1px solid rgba(255,255,255,0.06);
+  font-family:var(--osd);
+  font-size:10.5px;
+  color:#86868b;
+  letter-spacing:0.04em;
+  padding:10px 20px;
+  text-shadow:none!important;
+}
+body[data-normal-style="macos"]:not([data-theme="marathon"]) .bar.bot span,
+body[data-normal-style="macos"]:not([data-theme="marathon"]) .bar.bot button{
+  color:#a1a1a6;
+  text-shadow:none!important;
+}
+body[data-normal-style="macos"]:not([data-theme="marathon"]) .bar.bot #osd-clock{
+  color:#f5f5f7!important;
+  text-shadow:none!important;
+}
+
 /* Marathon Style Active Button */
 body[data-gaming-style="marathon"] .gaming-style-btn[data-style="marathon"]{
   background:#dfff00;
