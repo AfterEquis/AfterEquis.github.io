@@ -6,6 +6,8 @@ import arcaneGifUrl from './assets/arcane-bg.gif';
 import arcaneVideoUrl from './assets/arcane-bg.mp4';
 import marathonGifUrl from './assets/marathon-bg.gif';
 import marathonVideoUrl from './assets/marathon-bg.mp4';
+import nothingGifUrl from './assets/nothing-bg.gif';
+import nothingVideoUrl from './assets/nothing-bg.mp4';
 
 // Clickjacking / Framing Protection (permits same-origin & local dev)
 try {
@@ -98,6 +100,14 @@ var GLITCH_COLORS_ARCANE = [
   '#7209b7',
   '#00f59b',
 ];
+var GLITCH_COLORS_NOTHING = [
+  '#ffffff',
+  '#d71920',
+  '#f5f5f7',
+  '#86868b',
+  '#ffffff',
+  '#ff3b2f',
+];
 
 // Dynamic background media handler (Video loops with GIF fallbacks for VHS, DedSec, Arcane, Marathon)
 function showFallbackGif(targetGif) {
@@ -107,7 +117,7 @@ function showFallbackGif(targetGif) {
       if (currentTheme === 'marathon') {
         gif = currentGamingStyle === 'dedsec' ? dedsecGifUrl : (currentGamingStyle === 'arcane' ? arcaneGifUrl : marathonGifUrl);
       } else {
-        gif = currentNormalStyle === 'nothing' ? null : glitchGifUrl;
+        gif = currentNormalStyle === 'nothing' ? nothingGifUrl : glitchGifUrl;
       }
     }
     if (gif) {
@@ -127,8 +137,8 @@ function updateBackgroundMedia() {
 
   if (currentTheme === 'vhs') {
     if (currentNormalStyle === 'nothing') {
-      targetVideo = null;
-      targetGif = null;
+      targetVideo = nothingVideoUrl;
+      targetGif = nothingGifUrl;
     } else {
       targetVideo = glitchVideoUrl;
       targetGif = glitchGifUrl;
@@ -185,16 +195,22 @@ function triggerBackgroundGlitch(intensity) {
   var count = Math.floor(3 + intensity * 5);
   var scanlines = [];
   var isMarathon = currentTheme === 'marathon';
+  var isNothing = !isMarathon && currentNormalStyle === 'nothing';
   for (var i = 0; i < count; i++) {
+    var c;
+    if (isNothing) {
+      c = Math.random() > 0.5 ? 'rgba(255, 255, 255, 0.45)' : 'rgba(215, 25, 32, 0.4)';
+    } else if (isMarathon) {
+      c = Math.random() > 0.5 ? 'rgba(223, 255, 0, 0.45)' : 'rgba(255, 59, 0, 0.45)';
+    } else {
+      c = Math.random() > 0.5 ? 'rgba(255, 0, 85, 0.35)' : 'rgba(0, 229, 255, 0.35)';
+    }
     scanlines.push({
       y: Math.random() * height,
       height: 8 + Math.random() * 38 * intensity,
       shift: (Math.random() * 60 - 30) * intensity,
       speed: 1.2 + Math.random() * 3.2,
-      color:
-        Math.random() > 0.5
-          ? (isMarathon ? 'rgba(223, 255, 0, 0.45)' : 'rgba(255, 0, 85, 0.35)')
-          : (isMarathon ? 'rgba(255, 59, 0, 0.45)' : 'rgba(0, 229, 255, 0.35)'),
+      color: c,
     });
   }
   bgTrackingGlitch = {
@@ -511,7 +527,10 @@ function setBackgroundPaused(paused) {
   window.addEventListener('resize', resizeCanvas, { passive: true });
 
   function getGlitchPalette() {
-    if (currentTheme !== 'marathon') return GLITCH_COLORS_VHS;
+    if (currentTheme !== 'marathon') {
+      if (currentNormalStyle === 'nothing') return GLITCH_COLORS_NOTHING;
+      return GLITCH_COLORS_VHS;
+    }
     if (currentGamingStyle === 'dedsec') return GLITCH_COLORS_DEDSEC;
     if (currentGamingStyle === 'arcane') return GLITCH_COLORS_ARCANE;
     return GLITCH_COLORS_MARATHON;
@@ -1226,218 +1245,18 @@ function setBackgroundPaused(paused) {
   function drawNothingFrame(now, dt) {
     bgCtx.clearRect(0, 0, width, height);
 
-    // 1. Interactive Dot-Matrix Grid
-    var dotSpacing = width < 780 ? 28 : 36;
-    bgCtx.fillStyle = 'rgba(255, 255, 255, 0.18)';
-    for (var x = dotSpacing / 2; x < width; x += dotSpacing) {
-      for (var y = dotSpacing / 2; y < height; y += dotSpacing) {
-        var r = 1.1;
-        var alpha = 0.15;
-        if (marathonMouseActive && marathonMouseX > 0) {
-          var dx = x - marathonMouseX;
-          var dy = y - marathonMouseY;
-          var dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < 120) {
-            var factor = 1 - dist / 120;
-            r += factor * 1.8;
-            alpha += factor * 0.55;
-          }
-        }
-        bgCtx.globalAlpha = alpha;
-        bgCtx.beginPath();
-        bgCtx.arc(x, y, r, 0, Math.PI * 2);
-        bgCtx.fill();
-      }
+    // 1. Ambient Flash Pulse on Interactive Action
+    if (nothingGlyphFlashTimer > 0) {
+      nothingGlyphFlashTimer -= dt;
+      var flashAlpha = Math.min(0.28, (nothingGlyphFlashTimer / 0.55) * 0.28);
+      bgCtx.fillStyle = 'rgba(255, 255, 255, ' + flashAlpha + ')';
+      bgCtx.fillRect(0, 0, width, height);
     }
-    bgCtx.globalAlpha = 1.0;
 
-    // 2. The Iconic Nothing Glyph Interface (Rear Transparent Chassis LEDs)
-    drawNothingGlyphs(now, dt);
-
-    // 3. Interactive Mouse Dot Matrix Halo
+    // 2. Interactive Mouse Dot Matrix Reticle
     if (marathonMouseActive && marathonMouseX > 0 && marathonMouseY > 0) {
       drawNothingMouseReticle(now);
     }
-  }
-
-  function drawNothingGlyphs(now, dt) {
-    bgCtx.save();
-    var cx = width / 2;
-    var cy = height / 2;
-    var scale = Math.min(width / 1150, height / 900, 1.0);
-    if (scale < 0.6) scale = 0.6;
-
-    if (nothingGlyphFlashTimer > 0) {
-      nothingGlyphFlashTimer -= dt;
-    }
-
-    var flashBoost = nothingGlyphFlashTimer > 0 ? (nothingGlyphFlashTimer / 0.55) : 0;
-    var breathe = 0.82 + Math.sin(now * 0.0022) * 0.15 + flashBoost * 0.45;
-
-    function renderGlyphStrip(drawPathFn, customAlpha) {
-      var a = (customAlpha !== undefined ? customAlpha : 1.0) * breathe;
-      a = Math.min(1.0, Math.max(0.1, a));
-
-      // Layer 1: Ambient soft bloom
-      bgCtx.save();
-      bgCtx.shadowColor = 'rgba(255, 255, 255, 0.9)';
-      bgCtx.shadowBlur = 24 * scale + flashBoost * 22;
-      bgCtx.strokeStyle = 'rgba(255, 255, 255, ' + (0.28 * a) + ')';
-      bgCtx.lineWidth = 14 * scale;
-      bgCtx.lineCap = 'round';
-      bgCtx.lineJoin = 'round';
-      drawPathFn();
-      bgCtx.stroke();
-      bgCtx.restore();
-
-      // Layer 2: White diffused core
-      bgCtx.save();
-      bgCtx.shadowColor = '#ffffff';
-      bgCtx.shadowBlur = 10 * scale + flashBoost * 10;
-      bgCtx.strokeStyle = 'rgba(255, 255, 255, ' + (0.85 * a) + ')';
-      bgCtx.lineWidth = 6 * scale;
-      bgCtx.lineCap = 'round';
-      bgCtx.lineJoin = 'round';
-      drawPathFn();
-      bgCtx.stroke();
-      bgCtx.restore();
-
-      // Layer 3: Razor sharp center filament
-      bgCtx.save();
-      bgCtx.strokeStyle = 'rgba(255, 255, 255, ' + (0.98 * a) + ')';
-      bgCtx.lineWidth = 2 * scale;
-      bgCtx.lineCap = 'round';
-      bgCtx.lineJoin = 'round';
-      drawPathFn();
-      bgCtx.stroke();
-      bgCtx.restore();
-    }
-
-    // --- 1. Top Left Camera Module Strip ---
-    var camX = cx - 290 * scale;
-    var camY = cy - 250 * scale;
-    var camW = 120 * scale;
-    var camH = 175 * scale;
-    var camR = 30 * scale;
-
-    renderGlyphStrip(function () {
-      bgCtx.beginPath();
-      if (typeof bgCtx.roundRect === 'function') {
-        bgCtx.roundRect(camX, camY, camW, camH, camR);
-      } else {
-        bgCtx.rect(camX, camY, camW, camH);
-      }
-    }, 0.85);
-
-    // Inner dual camera rings
-    bgCtx.save();
-    bgCtx.strokeStyle = 'rgba(255, 255, 255, ' + (0.45 * breathe) + ')';
-    bgCtx.lineWidth = 2 * scale;
-    bgCtx.beginPath();
-    bgCtx.arc(camX + camW / 2, camY + camH * 0.3, 22 * scale, 0, Math.PI * 2);
-    bgCtx.stroke();
-    bgCtx.beginPath();
-    bgCtx.arc(camX + camW / 2, camY + camH * 0.7, 22 * scale, 0, Math.PI * 2);
-    bgCtx.stroke();
-    bgCtx.restore();
-
-    // --- 2. Top Right Diagonal Slash Strip ---
-    renderGlyphStrip(function () {
-      bgCtx.beginPath();
-      bgCtx.moveTo(cx + 210 * scale, cy - 250 * scale);
-      bgCtx.lineTo(cx + 310 * scale, cy - 150 * scale);
-    }, 0.9);
-
-    // --- 3. Central Wireless Charging Coil (Segmented Circle) ---
-    var coilR = 215 * scale;
-    var coilY = cy - 15 * scale;
-
-    // Segment A: Top Arc (-160 deg to -20 deg)
-    renderGlyphStrip(function () {
-      bgCtx.beginPath();
-      bgCtx.arc(cx, coilY, coilR, -Math.PI * 0.88, -Math.PI * 0.1);
-    }, 0.95);
-
-    // Segment B: Right Arc (15 deg to 75 deg)
-    renderGlyphStrip(function () {
-      bgCtx.beginPath();
-      bgCtx.arc(cx, coilY, coilR, Math.PI * 0.08, Math.PI * 0.42);
-    }, 0.88);
-
-    // Segment C: Bottom-Left Hook Arc (110 deg to 195 deg)
-    renderGlyphStrip(function () {
-      bgCtx.beginPath();
-      bgCtx.arc(cx, coilY, coilR, Math.PI * 0.6, Math.PI * 1.08);
-    }, 0.88);
-
-    // Segment D: Center Vertical Bar
-    renderGlyphStrip(function () {
-      bgCtx.beginPath();
-      bgCtx.moveTo(cx, coilY - 32 * scale);
-      bgCtx.lineTo(cx, coilY + 32 * scale);
-    }, 0.82);
-
-    // --- 4. Bottom Exclamation Mark Glyph (Progress / Battery Meter) ---
-    var exclTop = cy + 245 * scale;
-    var exclBot = cy + 345 * scale;
-
-    renderGlyphStrip(function () {
-      bgCtx.beginPath();
-      bgCtx.moveTo(cx, exclTop);
-      bgCtx.lineTo(cx, exclBot);
-    }, 0.92);
-
-    // Exclamation bottom dot LED
-    renderGlyphStrip(function () {
-      bgCtx.beginPath();
-      bgCtx.arc(cx, exclBot + 24 * scale, 6 * scale, 0, Math.PI * 2);
-    }, 0.95);
-
-    // Animated charging meter upward pulse along the exclamation bar
-    var chargeProgress = (now * 0.0006) % 1.0;
-    var chargeY = exclBot - chargeProgress * (exclBot - exclTop);
-    bgCtx.save();
-    bgCtx.fillStyle = '#ffffff';
-    bgCtx.shadowColor = '#ffffff';
-    bgCtx.shadowBlur = 14 * scale;
-    bgCtx.beginPath();
-    bgCtx.arc(cx, chargeY, 4 * scale, 0, Math.PI * 2);
-    bgCtx.fill();
-    bgCtx.restore();
-
-    // --- 5. Red Recording LED Dot (● REC) ---
-    var recX = cx + 180 * scale;
-    var recY = cy - 200 * scale;
-    var recPulse = 0.55 + Math.sin(now * 0.0035) * 0.45;
-    bgCtx.save();
-    bgCtx.fillStyle = '#d71920';
-    bgCtx.shadowColor = '#d71920';
-    bgCtx.shadowBlur = (14 + recPulse * 10) * scale;
-    bgCtx.globalAlpha = 0.7 + recPulse * 0.3;
-    bgCtx.beginPath();
-    bgCtx.arc(recX, recY, 5.5 * scale, 0, Math.PI * 2);
-    bgCtx.fill();
-    bgCtx.restore();
-
-    // Red REC tiny label next to dot
-    bgCtx.save();
-    bgCtx.font = 'bold ' + Math.max(9, Math.floor(10 * scale)) + 'px Doto, monospace';
-    bgCtx.fillStyle = '#d71920';
-    bgCtx.globalAlpha = 0.85;
-    bgCtx.fillText('● REC', recX + 10 * scale, recY + 3 * scale);
-    bgCtx.restore();
-
-    // --- 6. Hardware Micro-Typography on Canvas ---
-    if (width > 680) {
-      bgCtx.save();
-      bgCtx.font = '10px Doto, monospace';
-      bgCtx.fillStyle = 'rgba(255, 255, 255, 0.4)';
-      bgCtx.fillText('NOTHING (R) // MODEL: NT-AFTERX', cx - 290 * scale, cy + 220 * scale);
-      bgCtx.fillText('GLYPH INTERFACE ACTIVE · 45W', cx + 110 * scale, cy + 220 * scale);
-      bgCtx.restore();
-    }
-
-    bgCtx.restore();
   }
 
   function drawNothingMouseReticle(now) {
@@ -1492,7 +1311,7 @@ function setBackgroundPaused(paused) {
     }
 
     // Tracking tear / Horizontal slice displacement
-    if (bgTrackingGlitch.active && !(currentTheme !== 'marathon' && currentNormalStyle === 'nothing')) {
+    if (bgTrackingGlitch.active) {
       bgTrackingGlitch.timer -= dt;
       if (bgTrackingGlitch.timer <= 0) {
         bgTrackingGlitch.active = false;
@@ -2209,13 +2028,11 @@ function switchTab(targetTab, isInteractive) {
     }
     var isReduced = matchMedia('(prefers-reduced-motion:reduce)').matches;
     if (!isReduced) {
-      if (!(currentTheme !== 'marathon' && currentNormalStyle === 'nothing')) {
-        tear();
-        document.body.classList.add('zap');
-        setTimeout(function () {
-          document.body.classList.remove('zap');
-        }, 280);
-      }
+      tear();
+      document.body.classList.add('zap');
+      setTimeout(function () {
+        document.body.classList.remove('zap');
+      }, 280);
     }
   }
   tabs.forEach(function (x) {
@@ -2974,13 +2791,22 @@ function setNormalStyle(style, isUserClick) {
     updateSfxButton();
   }
 
+  if (typeof refreshGlitchPalette === 'function') {
+    refreshGlitchPalette();
+  }
+
   if (isUserClick) {
+    tear();
+    triggerBackgroundGlitch(1.0);
+    playGlitchSfx();
+    document.body.classList.add('zap');
+    setTimeout(function () {
+      document.body.classList.remove('zap');
+    }, 280);
+
     if (style === 'nothing') {
       triggerNothingGlyphFlash();
       playNothingClickSfx();
-    } else {
-      triggerBackgroundGlitch(1.0);
-      playGlitchSfx();
     }
   }
 }
