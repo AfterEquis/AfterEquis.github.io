@@ -670,12 +670,12 @@ body[data-normal-style="nothing"]:not([data-theme="marathon"]) .bg-glitch-layer{
 }
 body[data-normal-style="nothing"]:not([data-theme="marathon"]) .bg-glitch-video{
   display:block;
-  opacity:0.78;
-  filter:contrast(1.18) brightness(0.92);
+  opacity:0.86;
+  filter:contrast(1.25) brightness(0.95);
 }
 body[data-normal-style="nothing"]:not([data-theme="marathon"]) .bg-glitch-fallback{
-  opacity:0.78;
-  filter:contrast(1.18) brightness(0.92);
+  opacity:0.86;
+  filter:contrast(1.25) brightness(0.95);
 }
 body[data-normal-style="nothing"]:not([data-theme="marathon"]) .bg-glitch-vignette{
   background:radial-gradient(ellipse at 50% 50%,rgba(3,3,5,0.1) 0%,rgba(3,3,5,0.65) 65%,#030305 100%);
