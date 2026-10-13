@@ -2822,9 +2822,9 @@ function applyTheme(theme, isUserClick) {
   currentTheme = theme;
   document.body.setAttribute('data-theme', theme);
 
-  if (tab1) tab1.textContent = theme === 'marathon' ? 'CH 01 RUNNER' : (currentNormalStyle === 'nothing' ? '(01) SOBRE MÍ' : 'CH 01 SOBRE MÍ');
-  if (tab2) tab2.textContent = theme === 'marathon' ? 'CH 02 TRANSMISIONES' : (currentNormalStyle === 'nothing' ? '(02) PROYECTOS' : 'CH 02 PROYECTOS');
-  if (tab3) tab3.textContent = theme === 'marathon' ? 'CH 03 JUEGOS' : (currentNormalStyle === 'nothing' ? '(03) SETUP' : 'CH 03 SETUP');
+  if (tab1) tab1.textContent = theme === 'marathon' ? 'CH 01 RUNNER' : 'CH 01 SOBRE MÍ';
+  if (tab2) tab2.textContent = theme === 'marathon' ? 'CH 02 TRANSMISIONES' : 'CH 02 PROYECTOS';
+  if (tab3) tab3.textContent = theme === 'marathon' ? 'CH 03 JUEGOS' : 'CH 03 SETUP';
 
   if (btnTracking) {
     if (theme === 'marathon') {
@@ -2964,22 +2964,12 @@ function setNormalStyle(style, isUserClick) {
   });
 
   if (currentTheme !== 'marathon') {
-    if (style === 'nothing') {
-      if (tab1) tab1.textContent = '(01) SOBRE MÍ';
-      if (tab2) tab2.textContent = '(02) PROYECTOS';
-      if (tab3) tab3.textContent = '(03) SETUP';
-      if (btnTracking) {
-        btnTracking.textContent = 'TRACKING [NOTHING]';
-        btnTracking.classList.toggle('active-track', true);
-      }
-    } else {
-      if (tab1) tab1.textContent = 'CH 01 SOBRE MÍ';
-      if (tab2) tab2.textContent = 'CH 02 PROYECTOS';
-      if (tab3) tab3.textContent = 'CH 03 SETUP';
-      if (btnTracking) {
-        btnTracking.textContent = 'TRACKING [VHS]';
-        btnTracking.classList.toggle('active-track', false);
-      }
+    if (tab1) tab1.textContent = 'CH 01 SOBRE MÍ';
+    if (tab2) tab2.textContent = 'CH 02 PROYECTOS';
+    if (tab3) tab3.textContent = 'CH 03 SETUP';
+    if (btnTracking) {
+      btnTracking.textContent = style === 'nothing' ? 'TRACKING [NOTHING]' : 'TRACKING [VHS]';
+      btnTracking.classList.toggle('active-track', style === 'nothing');
     }
   }
 

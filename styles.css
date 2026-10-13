@@ -659,15 +659,6 @@ body[data-theme="marathon"] .normal-subbar{
 /* ========================================================
    NOTHING OS & GLYPH INTERFACE REAL STYLES (Nothing Tech)
    ======================================================== */
-.nothing-only{display:none!important}
-
-body[data-normal-style="nothing"]:not([data-theme="marathon"]) .nothing-only.nothing-tags{
-  display:flex!important;
-}
-body[data-normal-style="nothing"]:not([data-theme="marathon"]) .nothing-only.nothing-widgets{
-  display:grid!important;
-}
-
 body[data-normal-style="nothing"]:not([data-theme="marathon"]){
   --bg:#030305;
   --text:#f5f5f7;
@@ -747,36 +738,6 @@ body[data-normal-style="nothing"]:not([data-theme="marathon"]) .meta.vhs-only{
   color:#a1a1a6!important;
 }
 
-/* Nothing Tech Badges */
-.nothing-tags{
-  display:flex;
-  gap:8px;
-  flex-wrap:wrap;
-  margin-top:6px;
-  justify-content:center;
-}
-.nothing-pill{
-  font-family:'Doto',monospace;
-  font-size:11px;
-  font-weight:700;
-  letter-spacing:.08em;
-  padding:3px 9px;
-  border-radius:999px;
-  background:rgba(255,255,255,0.06);
-  border:1px solid rgba(255,255,255,0.18);
-  color:#e5e5e5;
-  display:inline-flex;
-  align-items:center;
-}
-.pill-dot{
-  display:inline-block;
-  width:6px;
-  height:6px;
-  border-radius:50%;
-  background:#d71920;
-  margin-right:6px;
-  box-shadow:0 0 6px #d71920;
-}
 
 /* Nothing Avatar with Glowing Glyph Ring */
 body[data-normal-style="nothing"]:not([data-theme="marathon"]) .avatar{
@@ -819,47 +780,6 @@ body[data-normal-style="nothing"]:not([data-theme="marathon"]) .tab[aria-selecte
   box-shadow:0 0 18px rgba(255,255,255,0.65)!important;
 }
 
-/* Nothing OS Widgets Grid in Sobre Mí */
-.nothing-widgets{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
-  gap:10px;
-  margin-top:16px;
-}
-.nothing-widget{
-  display:flex;
-  flex-direction:column;
-  gap:4px;
-  padding:12px 14px;
-  border-radius:14px;
-  background:rgba(255,255,255,0.04);
-  border:1px solid rgba(255,255,255,0.14);
-  box-shadow:inset 0 0 14px rgba(255,255,255,0.02);
-}
-.nw-label{
-  font-family:'Doto',monospace;
-  font-size:11px;
-  font-weight:700;
-  color:#86868b;
-  letter-spacing:.08em;
-}
-.nw-val{
-  font-family:'Doto',monospace;
-  font-size:13px;
-  font-weight:700;
-  color:#ffffff;
-  display:flex;
-  align-items:center;
-  gap:6px;
-}
-.nw-rec-dot{
-  width:7px;
-  height:7px;
-  border-radius:50%;
-  background:#d71920;
-  box-shadow:0 0 8px #d71920;
-  animation:nothing-rec-pulse 1.8s infinite;
-}
 
 /* Nothing OS Transparent Hardware Items & Setup Blocks */
 body[data-normal-style="nothing"]:not([data-theme="marathon"]) .item{
