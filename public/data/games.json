@@ -12,16 +12,16 @@
     "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/359550/header.jpg"
   },
   {
-    "appid": 2807960,
-    "name": "Battlefield™ 6",
-    "hours": 4.3,
-    "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/2807960/header.jpg"
-  },
-  {
     "appid": 730,
     "name": "Counter-Strike 2",
     "hours": 4.3,
     "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/730/header.jpg"
+  },
+  {
+    "appid": 2807960,
+    "name": "Battlefield™ 6",
+    "hours": 2.5,
+    "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/2807960/header.jpg"
   },
   {
     "appid": 960090,
