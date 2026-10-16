@@ -14,7 +14,7 @@
   {
     "appid": 730,
     "name": "Counter-Strike 2",
-    "hours": 4.3,
+    "hours": 3.3,
     "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/730/header.jpg"
   },
   {
@@ -30,9 +30,9 @@
     "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/470220/header.jpg"
   },
   {
-    "appid": 460920,
-    "name": "Steep",
-    "hours": 0.3,
-    "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/460920/header.jpg"
+    "appid": 1118310,
+    "name": "RetroArch",
+    "hours": 0.2,
+    "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/1118310/header.jpg"
   }
 ]
