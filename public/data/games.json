@@ -6,16 +6,16 @@
     "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/1808500/header.jpg"
   },
   {
-    "appid": 359550,
-    "name": "Tom Clancy's Rainbow Six Siege",
-    "hours": 6.2,
-    "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/359550/header.jpg"
-  },
-  {
     "appid": 730,
     "name": "Counter-Strike 2",
     "hours": 3.3,
     "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/730/header.jpg"
+  },
+  {
+    "appid": 359550,
+    "name": "Tom Clancy's Rainbow Six Siege",
+    "hours": 3,
+    "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/359550/header.jpg"
   },
   {
     "appid": 447040,
@@ -30,9 +30,9 @@
     "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/960090/header.jpg"
   },
   {
-    "appid": 470220,
-    "name": "UNO",
-    "hours": 0.6,
-    "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/470220/header.jpg"
+    "appid": 4001890,
+    "name": "How to Fish",
+    "hours": 0.2,
+    "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/4001890/header.jpg"
   }
 ]
