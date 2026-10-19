@@ -6,12 +6,6 @@
     "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/1808500/header.jpg"
   },
   {
-    "appid": 730,
-    "name": "Counter-Strike 2",
-    "hours": 3.3,
-    "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/730/header.jpg"
-  },
-  {
     "appid": 359550,
     "name": "Tom Clancy's Rainbow Six Siege",
     "hours": 3,
@@ -22,6 +16,12 @@
     "name": "Watch_Dogs 2",
     "hours": 2.7,
     "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/447040/header.jpg"
+  },
+  {
+    "appid": 730,
+    "name": "Counter-Strike 2",
+    "hours": 2,
+    "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/730/header.jpg"
   },
   {
     "appid": 960090,
