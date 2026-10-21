@@ -24,15 +24,15 @@
     "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/960090/header.jpg"
   },
   {
+    "appid": 2073850,
+    "name": "THE FINALS",
+    "hours": 0.7,
+    "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/2073850/header.jpg"
+  },
+  {
     "appid": 4954910,
     "name": "Scam With Your Friends",
     "hours": 0.7,
     "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/4954910/header.jpg"
-  },
-  {
-    "appid": 4001890,
-    "name": "How to Fish",
-    "hours": 0.2,
-    "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/4001890/header.jpg"
   }
 ]
