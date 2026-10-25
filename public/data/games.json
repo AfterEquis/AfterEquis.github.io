@@ -1,15 +1,15 @@
 [
   {
-    "appid": 1808500,
-    "name": "ARC Raiders",
-    "hours": 10,
-    "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/1808500/header.jpg"
-  },
-  {
     "appid": 359550,
     "name": "Tom Clancy's Rainbow Six Siege",
-    "hours": 6.6,
+    "hours": 8.1,
     "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/359550/header.jpg"
+  },
+  {
+    "appid": 1808500,
+    "name": "ARC Raiders",
+    "hours": 7.8,
+    "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/1808500/header.jpg"
   },
   {
     "appid": 447040,
@@ -24,15 +24,15 @@
     "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/960090/header.jpg"
   },
   {
+    "appid": 1237950,
+    "name": "STAR WARS™ Battlefront™ II",
+    "hours": 1.3,
+    "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/1237950/header.jpg"
+  },
+  {
     "appid": 2073850,
     "name": "THE FINALS",
     "hours": 1.1,
     "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/2073850/header.jpg"
-  },
-  {
-    "appid": 4954910,
-    "name": "Scam With Your Friends",
-    "hours": 0.7,
-    "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/4954910/header.jpg"
   }
 ]
