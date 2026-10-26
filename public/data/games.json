@@ -6,12 +6,6 @@
     "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/359550/header.jpg"
   },
   {
-    "appid": 1808500,
-    "name": "ARC Raiders",
-    "hours": 3.5,
-    "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/1808500/header.jpg"
-  },
-  {
     "appid": 447040,
     "name": "Watch_Dogs 2",
     "hours": 2.7,
@@ -34,5 +28,11 @@
     "name": "THE FINALS",
     "hours": 1.1,
     "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/2073850/header.jpg"
+  },
+  {
+    "appid": 1808500,
+    "name": "ARC Raiders",
+    "hours": 1,
+    "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/1808500/header.jpg"
   }
 ]
