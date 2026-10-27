@@ -12,16 +12,16 @@
     "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/447040/header.jpg"
   },
   {
+    "appid": 1237950,
+    "name": "STAR WARS™ Battlefront™ II",
+    "hours": 1.6,
+    "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/1237950/header.jpg"
+  },
+  {
     "appid": 960090,
     "name": "Bloons TD 6",
     "hours": 1.4,
     "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/960090/header.jpg"
-  },
-  {
-    "appid": 1237950,
-    "name": "STAR WARS™ Battlefront™ II",
-    "hours": 1.3,
-    "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/1237950/header.jpg"
   },
   {
     "appid": 2073850,
