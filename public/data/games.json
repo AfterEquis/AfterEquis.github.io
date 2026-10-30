@@ -12,12 +12,6 @@
     "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/4705510/header.jpg"
   },
   {
-    "appid": 447040,
-    "name": "Watch_Dogs 2",
-    "hours": 2.7,
-    "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/447040/header.jpg"
-  },
-  {
     "appid": 1237950,
     "name": "STAR WARS™ Battlefront™ II",
     "hours": 2.4,
@@ -34,5 +28,11 @@
     "name": "ARC Raiders",
     "hours": 1,
     "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/1808500/header.jpg"
+  },
+  {
+    "appid": 447040,
+    "name": "Watch_Dogs 2",
+    "hours": 0.8,
+    "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/447040/header.jpg"
   }
 ]
