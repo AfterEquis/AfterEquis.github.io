@@ -1,15 +1,15 @@
 [
   {
+    "appid": 4705510,
+    "name": "Happy Wheels",
+    "hours": 9.3,
+    "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/4705510/header.jpg"
+  },
+  {
     "appid": 359550,
     "name": "Tom Clancy's Rainbow Six Siege",
     "hours": 8.1,
     "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/359550/header.jpg"
-  },
-  {
-    "appid": 4705510,
-    "name": "Happy Wheels",
-    "hours": 4.8,
-    "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/4705510/header.jpg"
   },
   {
     "appid": 1091500,
