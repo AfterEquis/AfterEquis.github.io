@@ -2,7 +2,7 @@
   {
     "appid": 4705510,
     "name": "Happy Wheels",
-    "hours": 9.7,
+    "hours": 11.6,
     "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/4705510/header.jpg"
   },
   {
@@ -12,27 +12,21 @@
     "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/359550/header.jpg"
   },
   {
+    "appid": 1237950,
+    "name": "STAR WARS™ Battlefront™ II",
+    "hours": 6.7,
+    "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/1237950/header.jpg"
+  },
+  {
     "appid": 1091500,
     "name": "Cyberpunk 2077",
     "hours": 2.6,
     "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/1091500/header.jpg"
   },
   {
-    "appid": 1237950,
-    "name": "STAR WARS™ Battlefront™ II",
-    "hours": 2.4,
-    "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/1237950/header.jpg"
-  },
-  {
     "appid": 2073850,
     "name": "THE FINALS",
-    "hours": 1.1,
+    "hours": 0.3,
     "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/2073850/header.jpg"
-  },
-  {
-    "appid": 1808500,
-    "name": "ARC Raiders",
-    "hours": 1,
-    "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/1808500/header.jpg"
   }
 ]
