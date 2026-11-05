@@ -8,7 +8,7 @@
   {
     "appid": 359550,
     "name": "Tom Clancy's Rainbow Six Siege",
-    "hours": 8.1,
+    "hours": 7.6,
     "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/359550/header.jpg"
   },
   {
@@ -22,11 +22,5 @@
     "name": "Cyberpunk 2077",
     "hours": 2.6,
     "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/1091500/header.jpg"
-  },
-  {
-    "appid": 2073850,
-    "name": "THE FINALS",
-    "hours": 0.3,
-    "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/2073850/header.jpg"
   }
 ]
