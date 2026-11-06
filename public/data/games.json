@@ -6,21 +6,27 @@
     "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/4705510/header.jpg"
   },
   {
-    "appid": 359550,
-    "name": "Tom Clancy's Rainbow Six Siege",
-    "hours": 7.6,
-    "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/359550/header.jpg"
-  },
-  {
     "appid": 1237950,
     "name": "STAR WARS™ Battlefront™ II",
     "hours": 6.7,
     "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/1237950/header.jpg"
   },
   {
+    "appid": 359550,
+    "name": "Tom Clancy's Rainbow Six Siege",
+    "hours": 6,
+    "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/359550/header.jpg"
+  },
+  {
     "appid": 1091500,
     "name": "Cyberpunk 2077",
     "hours": 2.6,
     "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/1091500/header.jpg"
+  },
+  {
+    "appid": 2483190,
+    "name": "Forza Horizon 6",
+    "hours": 0.6,
+    "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/2483190/header.jpg"
   }
 ]
