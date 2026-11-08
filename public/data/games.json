@@ -8,14 +8,8 @@
   {
     "appid": 1237950,
     "name": "STAR WARS™ Battlefront™ II",
-    "hours": 5.9,
+    "hours": 5.3,
     "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/1237950/header.jpg"
-  },
-  {
-    "appid": 359550,
-    "name": "Tom Clancy's Rainbow Six Siege",
-    "hours": 3.1,
-    "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/359550/header.jpg"
   },
   {
     "appid": 1091500,
@@ -24,15 +18,21 @@
     "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/1091500/header.jpg"
   },
   {
+    "appid": 730,
+    "name": "Counter-Strike 2",
+    "hours": 2.5,
+    "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/730/header.jpg"
+  },
+  {
+    "appid": 359550,
+    "name": "Tom Clancy's Rainbow Six Siege",
+    "hours": 0.9,
+    "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/359550/header.jpg"
+  },
+  {
     "appid": 2483190,
     "name": "Forza Horizon 6",
     "hours": 0.6,
     "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/2483190/header.jpg"
-  },
-  {
-    "appid": 730,
-    "name": "Counter-Strike 2",
-    "hours": 0.1,
-    "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/730/header.jpg"
   }
 ]
