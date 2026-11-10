@@ -6,28 +6,28 @@
     "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/4705510/header.jpg"
   },
   {
+    "appid": 2807960,
+    "name": "Battlefield™ 6",
+    "hours": 11.2,
+    "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/2807960/header.jpg"
+  },
+  {
     "appid": 1237950,
     "name": "STAR WARS™ Battlefront™ II",
     "hours": 5.3,
     "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/1237950/header.jpg"
   },
   {
-    "appid": 2807960,
-    "name": "Battlefield™ 6",
-    "hours": 3.8,
-    "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/2807960/header.jpg"
-  },
-  {
-    "appid": 1091500,
-    "name": "Cyberpunk 2077",
-    "hours": 2.6,
-    "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/1091500/header.jpg"
-  },
-  {
     "appid": 730,
     "name": "Counter-Strike 2",
     "hours": 2.5,
     "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/730/header.jpg"
+  },
+  {
+    "appid": 1091500,
+    "name": "Cyberpunk 2077",
+    "hours": 2.1,
+    "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/1091500/header.jpg"
   },
   {
     "appid": 359550,
