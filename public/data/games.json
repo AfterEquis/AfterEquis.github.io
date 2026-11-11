@@ -1,26 +1,26 @@
 [
   {
-    "appid": 4705510,
-    "name": "Happy Wheels",
-    "hours": 11.8,
-    "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/4705510/header.jpg"
-  },
-  {
     "appid": 2807960,
     "name": "Battlefield™ 6",
-    "hours": 11.2,
+    "hours": 14.1,
     "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/2807960/header.jpg"
+  },
+  {
+    "appid": 4705510,
+    "name": "Happy Wheels",
+    "hours": 11.3,
+    "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/4705510/header.jpg"
   },
   {
     "appid": 359550,
     "name": "Tom Clancy's Rainbow Six Siege",
-    "hours": 6,
+    "hours": 8.6,
     "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/359550/header.jpg"
   },
   {
     "appid": 1237950,
     "name": "STAR WARS™ Battlefront™ II",
-    "hours": 5,
+    "hours": 4.3,
     "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/1237950/header.jpg"
   },
   {
