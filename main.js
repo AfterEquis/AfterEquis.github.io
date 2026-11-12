@@ -3236,4 +3236,13 @@ if (avatarBox) {
   });
 }
 
+// Force inclusion of functions attached only via event listeners (prevents tree-shaking)
+window.__AFTERX_KEEP__ = {
+  toggleVhsPlayback: toggleVhsPlayback,
+  openFavoritesMenu: openFavoritesMenu,
+  startAlbumPreview: startAlbumPreview,
+  stopAlbumPreview: stopAlbumPreview,
+  loadYouTubeIframeApi: loadYouTubeIframeApi,
+};
+
 

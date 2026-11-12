@@ -5,6 +5,14 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     assetsDir: 'assets',
+    minify: 'esbuild',
+    esbuildOptions: {
+      keepNames: true,
+      pure: [],
+    },
+    rollupOptions: {
+      treeshake: false,
+    },
   },
   server: {
     port: 5173,
