@@ -2647,21 +2647,217 @@ loadSteamGames();
 
 // --- Interactive VHS Controls ---
 var btnPlay = document.getElementById('btn-play');
+var playClickTimer = null;
+function toggleVhsPlayback() {
+  var willPause = !bgIsPaused;
+  setBackgroundPaused(willPause);
+  document.body.classList.toggle('paused', willPause);
+  btnPlay.textContent = willPause ? '⏸ PAUSE' : '▶ PLAY';
+  btnPlay.classList.toggle('flashing', willPause);
+  if (willPause) {
+    pauseMusic();
+  } else {
+    resumeMusic();
+    playToggleSfx();
+  }
+}
 if (btnPlay) {
   btnPlay.addEventListener('click', function () {
-    var willPause = !bgIsPaused;
-    setBackgroundPaused(willPause);
-    document.body.classList.toggle('paused', willPause);
-    btnPlay.textContent = willPause ? '⏸ PAUSE' : '▶ PLAY';
-    btnPlay.classList.toggle('flashing', willPause);
-    if (willPause) {
-      pauseMusic();
-    } else {
-      resumeMusic();
-      playToggleSfx();
-    }
+    // Deja una pequeña ventana para que el doble clic abra Favoritos sin
+    // alternar dos veces la reproducción.
+    window.clearTimeout(playClickTimer);
+    playClickTimer = window.setTimeout(toggleVhsPlayback, 320);
   });
 }
+
+// --- Álbumes de YouTube Music y previews al pasar el cursor ---
+var favoritesMenu = document.getElementById('spotify-menu');
+var favoritesOverlay = document.getElementById('spotify-menu-overlay');
+var favoritesClose = document.getElementById('spotify-menu-close');
+var ytPreviewPlayer = null;
+var activePreviewCard = null;
+var activePreviewMount = null;
+var ytApiPromise = null;
+
+// Las imágenes de portada siguen viniendo del oEmbed de Spotify; los enlaces
+// de cada tarjeta pueden abrir YouTube Music sin afectar a esta carga.
+document.querySelectorAll('.spotify-album-card[data-album-id]').forEach(function (card) {
+  var image = card.querySelector('.spotify-cover img');
+  if (!image) return;
+  var spotifyUrl = 'https://open.spotify.com/album/' + encodeURIComponent(card.dataset.albumId);
+  var endpoint = 'https://open.spotify.com/oembed?url=' + encodeURIComponent(spotifyUrl);
+  fetch(endpoint)
+    .then(function (response) {
+      if (!response.ok) throw new Error('Spotify oEmbed respondió ' + response.status);
+      return response.json();
+    })
+    .then(function (data) {
+      if (data.thumbnail_url) image.src = data.thumbnail_url;
+      else image.remove();
+    })
+    .catch(function (error) {
+      console.warn('No se pudo cargar la portada de ' + card.dataset.albumName + ':', error);
+      image.remove();
+    });
+});
+
+function loadYouTubeIframeApi() {
+  if (window.YT && window.YT.Player) return Promise.resolve(window.YT);
+  if (ytApiPromise) return ytApiPromise;
+  ytApiPromise = new Promise(function (resolve) {
+    var previousReady = window.onYouTubeIframeAPIReady;
+    window.onYouTubeIframeAPIReady = function () {
+      if (typeof previousReady === 'function') previousReady();
+      resolve(window.YT);
+    };
+    var script = document.createElement('script');
+    script.src = 'https://www.youtube.com/iframe_api';
+    script.async = true;
+    document.head.appendChild(script);
+  });
+  return ytApiPromise;
+}
+
+function stopAlbumPreview() {
+  if (ytPreviewPlayer) {
+    try { ytPreviewPlayer.destroy(); } catch (_) { /* player may already be gone */ }
+  }
+  ytPreviewPlayer = null;
+  if (activePreviewCard) {
+    activePreviewCard.classList.remove('preview-playing');
+  }
+  if (activePreviewMount) activePreviewMount.remove();
+  activePreviewMount = null;
+  activePreviewCard = null;
+}
+
+function startAlbumPreview(card) {
+  var videoId = card.dataset.ytVideo;
+  if (!videoId || activePreviewCard === card) return;
+  stopAlbumPreview();
+  activePreviewCard = card;
+  var cover = card.querySelector(".spotify-cover");
+  if (!cover) return;
+  var mount = document.createElement('span');
+  mount.className = 'youtube-preview';
+  mount.setAttribute('aria-label', 'Vista previa de YouTube');
+  cover.appendChild(mount);
+  activePreviewMount = mount;
+  card.classList.add('preview-playing');
+
+  loadYouTubeIframeApi().then(function (YT) {
+    if (activePreviewCard !== card || !mount.isConnected) return;
+    var playerHost = document.createElement('span');
+    playerHost.className = 'youtube-preview-player';
+    mount.appendChild(playerHost);
+    ytPreviewPlayer = new YT.Player(playerHost, {
+      width: '100%',
+      height: '100%',
+      videoId: videoId,
+      playerVars: {
+        controls: 0,
+        disablekb: 1,
+        playsinline: 1,
+        rel: 0,
+        start: 0,
+        origin: window.location.origin
+      },
+      events: {
+        onReady: function (event) {
+          if (activePreviewCard !== card) return;
+          var player = event.target;
+          var duration = player.getDuration();
+          if (duration > 0) {
+            player.seekTo(duration / 2, true);
+          } else {
+            var attempts = 0;
+            var waitDuration = window.setInterval(function () {
+              if (activePreviewCard !== card || player !== ytPreviewPlayer || attempts++ > 20) {
+                window.clearInterval(waitDuration);
+                return;
+              }
+              var d = player.getDuration();
+              if (d > 0) {
+                window.clearInterval(waitDuration);
+                player.seekTo(d / 2, true);
+              }
+            }, 250);
+          }
+        },
+        onStateChange: function (event) {
+          if (event.data !== YT.PlayerState.PLAYING || activePreviewCard !== card) return;
+          var player = event.target;
+          var duration = player.getDuration();
+          if (duration > 0) {
+            var current = player.getCurrentTime();
+            if (current < duration / 2 - 1) {
+              player.seekTo(duration / 2, true);
+            }
+          }
+        },
+        onAutoplayBlocked: function () {
+          if (activePreviewCard !== card || mount.querySelector('.youtube-preview-activate')) return;
+          var activate = document.createElement('button');
+          activate.type = 'button';
+          activate.className = 'youtube-preview-activate';
+          activate.textContent = '▶ Activar audio';
+          activate.addEventListener('click', function (clickEvent) {
+            clickEvent.preventDefault();
+            clickEvent.stopPropagation();
+            if (ytPreviewPlayer) ytPreviewPlayer.playVideo();
+            activate.remove();
+          });
+          mount.appendChild(activate);
+        },
+        onError: function (event) {
+          if (activePreviewCard !== card) return;
+          console.warn('YouTube error:', event.data);
+          if (ytPreviewPlayer) {
+            try { ytPreviewPlayer.destroy(); } catch (_) { }
+            ytPreviewPlayer = null;
+          }
+          mount.replaceChildren();
+          var fallback = document.createElement('a');
+          fallback.className = 'youtube-preview-error';
+          fallback.href = card.href;
+          fallback.target = '_blank';
+          fallback.rel = 'noopener noreferrer';
+          fallback.textContent = 'No se pudo cargar. Abrir en YouTube ↗';
+          fallback.addEventListener('click', function (clickEvent) { clickEvent.stopPropagation(); });
+          mount.appendChild(fallback);
+        }
+      }
+    });
+  }).catch(function (error) {
+    console.warn('No se pudo iniciar la vista previa de YouTube:', error);
+    stopAlbumPreview();
+  });
+}
+function openFavoritesMenu() {
+  if (!favoritesMenu || !favoritesOverlay) return;
+  window.clearTimeout(playClickTimer);
+  favoritesMenu.classList.add('active');
+  favoritesOverlay.classList.add('active');
+  favoritesMenu.setAttribute('aria-hidden', 'false');
+  favoritesOverlay.setAttribute('aria-hidden', 'false');
+  favoritesMenu.focus();
+}
+function closeFavoritesMenu() {
+  if (!favoritesMenu || !favoritesOverlay) return;
+  favoritesMenu.classList.remove('active');
+  favoritesOverlay.classList.remove('active');
+  favoritesMenu.setAttribute('aria-hidden', 'true');
+  favoritesOverlay.setAttribute('aria-hidden', 'true');
+  if (btnPlay) btnPlay.focus();
+}
+if (btnPlay) btnPlay.addEventListener('dblclick', openFavoritesMenu);
+if (favoritesClose) favoritesClose.addEventListener('click', closeFavoritesMenu);
+if (favoritesOverlay) favoritesOverlay.addEventListener('click', closeFavoritesMenu);
+document.addEventListener('keydown', function (event) {
+  if (event.key === 'Escape' && favoritesMenu && favoritesMenu.classList.contains('active')) {
+    closeFavoritesMenu();
+  }
+});
 
 // --- Theme Switcher (VHS Glitch vs Marathon Gaming) via TRACKING ---
 var btnTracking = document.getElementById('btn-tracking');

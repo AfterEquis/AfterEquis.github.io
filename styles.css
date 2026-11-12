@@ -346,6 +346,33 @@ body.paused .card::after{background:repeating-linear-gradient(0deg,rgba(0,0,0,.3
   }
 }
 
+/* Spotify favorites dialog */
+.spotify-menu-overlay{position:fixed;inset:0;z-index:20;background:rgba(0,0,0,.72);backdrop-filter:blur(5px);opacity:0;visibility:hidden;transition:opacity .2s,visibility .2s}
+.spotify-menu-overlay.active{opacity:1;visibility:visible}
+.spotify-menu{position:fixed;z-index:21;top:50%;left:50%;transform:translate(-50%,-46%) scale(.97);width:min(920px,calc(100vw - 32px));max-height:min(88vh,900px);overflow:auto;padding:20px;background:linear-gradient(145deg,rgba(255,255,255,.13),rgba(255,255,255,.04)),rgba(8,10,22,.97);border:1px solid rgba(255,255,255,.22);border-radius:20px;box-shadow:0 24px 80px rgba(0,0,0,.65),0 0 28px rgba(47,75,255,.2);backdrop-filter:blur(18px);opacity:0;visibility:hidden;transition:opacity .2s,visibility .2s,transform .2s}
+.spotify-menu.active{opacity:1;visibility:visible;transform:translate(-50%,-50%) scale(1)}
+.spotify-menu-header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid rgba(255,255,255,.14)}
+.spotify-menu-header h2{margin:0;font-size:25px}
+.spotify-menu-close{border:0;background:transparent;color:var(--muted);font:inherit;font-size:20px;cursor:pointer;padding:5px 8px}
+.spotify-menu-content{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));gap:14px}
+.spotify-album-card{display:flex;min-width:0;min-height:290px;flex-direction:column;align-items:center;justify-content:flex-start;gap:4px;padding:14px 12px 10px;border:1px solid rgba(255,255,255,.08);border-radius:20px;background:#242424;color:#fff;text-align:center;text-decoration:none;transition:background .18s,transform .18s,box-shadow .18s}
+.spotify-album-card:hover{background:#2d2d2d;transform:translateY(-3px);box-shadow:0 10px 24px rgba(0,0,0,.28)}
+.spotify-cover{position:relative;display:block;width:68%;aspect-ratio:1;flex:none;overflow:hidden;margin:0 auto 7px;border-radius:10px;background:linear-gradient(135deg,#34343a,#202026)}
+.spotify-cover img{display:block;width:100%;height:100%;object-fit:cover}
+.youtube-preview{position:absolute;inset:0;z-index:2;display:block;overflow:hidden;background:#000;border-radius:10px}
+.youtube-preview-player,.youtube-preview-player iframe{display:block;width:100%;height:100%;border:0;pointer-events:none;border-radius:10px}
+.youtube-preview::after{position:absolute;right:7px;bottom:7px;padding:4px 7px;border-radius:5px;background:rgba(0,0,0,.72);color:#fff;content:"▶ VISTA PREVIA";font:10px var(--ui);letter-spacing:.05em;pointer-events:none}
+.youtube-preview-activate{position:absolute;z-index:3;inset:auto 8px 30px;width:calc(100% - 16px);padding:8px 5px;border:1px solid rgba(255,255,255,.6);border-radius:7px;background:rgba(0,0,0,.82);color:#fff;font:600 11px var(--ui);cursor:pointer;pointer-events:auto}
+.youtube-preview-error{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:24px;background:#151515;color:#fff;font:600 14px/1.4 var(--ui);text-align:center;text-decoration:none;pointer-events:auto}
+.youtube-preview-error:hover{background:#242424}
+.spotify-card-artist{max-width:100%;color:#f5f5f5;font-family:var(--ui);font-size:clamp(24px,3vw,38px);font-weight:750;letter-spacing:-.055em;line-height:1.02;overflow-wrap:anywhere}
+.spotify-card-title{max-width:100%;color:#f5f5f5;font-family:var(--ui);font-size:14px;font-weight:500;line-height:1.2;overflow-wrap:anywhere}
+.spotify-card-meta{max-width:100%;margin-top:2px;color:#85858b;font-family:var(--ui);font-size:10px;line-height:1.2;white-space:normal}
+.spotify-album-card.long-title .spotify-card-title{font-size:11px;line-height:1.15}
+@media(max-width:520px){.spotify-menu{padding:16px}.spotify-menu-header h2{font-size:22px}.spotify-menu-content{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.spotify-album-card{min-height:245px;padding:11px 8px 9px;border-radius:16px}.spotify-cover{width:72%}.spotify-card-artist{font-size:clamp(20px,5vw,28px)}.spotify-card-title{font-size:13px}.spotify-card-meta{font-size:9px}}
+@media(max-width:380px){.spotify-menu-content{grid-template-columns:minmax(0,1fr)}.spotify-album-card{min-height:290px}.spotify-cover{width:68%}}
+@media(prefers-reduced-motion:reduce){.spotify-menu,.spotify-menu-overlay{transition:none}}
+
 @media(max-width:620px){
   .bar.top{
     display:flex;

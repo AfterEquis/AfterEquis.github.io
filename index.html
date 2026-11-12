@@ -6,7 +6,7 @@
 <title>AfterX</title>
 <meta name="description" content="Estudiante de informática y creador de contenido en español.">
 <meta name="theme-color" content="#05060a">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https://*.ytimg.com https://cdn.cloudflare.steamstatic.com https://steamcdn-a.akamaihd.net https://avatars.githubusercontent.com; connect-src 'self' https://api.github.com; media-src 'self' blob: data:; font-src 'self' data: https://fonts.gstatic.com; object-src 'none'; base-uri 'self'; form-action 'none';">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.youtube.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https://*.ytimg.com https://cdn.cloudflare.steamstatic.com https://steamcdn-a.akamaihd.net https://avatars.githubusercontent.com https://*.scdn.co https://*.spotifycdn.com; connect-src 'self' https://api.github.com https://open.spotify.com; frame-src https://www.youtube.com https://www.youtube-nocookie.com; media-src 'self' blob: data:; font-src 'self' data: https://fonts.gstatic.com; object-src 'none'; base-uri 'self'; form-action 'none';">
 <meta http-equiv="X-Content-Type-Options" content="nosniff">
 <meta http-equiv="Permissions-Policy" content="camera=(), microphone=(), geolocation=(), payment=(), usb=()">
 <meta name="referrer" content="strict-origin-when-cross-origin">
@@ -196,6 +196,37 @@
   <span class="osd" id="t">TIME 0:00:00</span>
  </div>
 </main>
+
+<div class="spotify-menu-overlay" id="spotify-menu-overlay" aria-hidden="true"></div>
+<section class="spotify-menu" id="spotify-menu" role="dialog" aria-modal="true" aria-labelledby="spotify-menu-title" aria-hidden="true" tabindex="-1">
+ <div class="spotify-menu-header">
+  <h2 class="osd" id="spotify-menu-title">ÁLBUMES FAVORITOS</h2>
+  <button class="osd spotify-menu-close" id="spotify-menu-close" type="button" aria-label="Cerrar álbumes favoritos">[X]</button>
+ </div>
+ <div class="spotify-menu-content">
+  <a class="spotify-album-card" href="https://music.youtube.com/playlist?list=OLAK5uy_kpKeDL3PhG6FEEI-4BSQoF9zm1FPH7I7o" target="_blank" rel="noopener noreferrer" data-yt-video="iQgRB1jDT8I" data-album-id="79TuXcubVSnQDvvvzEbIY2" data-album-name="OMAKASE" data-album-artist="Álvaro Díaz">
+   <span class="spotify-cover"><img alt="Portada de OMAKASE" loading="lazy"></span><span class="spotify-card-artist">Álvaro Díaz</span><span class="spotify-card-title">OMAKASE</span><span class="spotify-card-meta">ÁLBUM · YOUTUBE MUSIC</span>
+  </a>
+  <a class="spotify-album-card" href="https://music.youtube.com/playlist?list=OLAK5uy_nizuDf-0xvgT7o2-Gl8l9FFn2J-iCeFTY" target="_blank" rel="noopener noreferrer" data-yt-video="NnOT0vrJEUs" data-album-id="1Lhv9Fe2KRk0NW3I14HsVY" data-album-name="USB" data-album-artist="Fred again..">
+   <span class="spotify-cover"><img alt="Portada de USB" loading="lazy"></span><span class="spotify-card-artist">again..</span><span class="spotify-card-title">USB</span><span class="spotify-card-meta">ÁLBUM · YOUTUBE MUSIC</span>
+  </a>
+  <a class="spotify-album-card" href="https://music.youtube.com/playlist?list=OLAK5uy_nZlOAV4XGvPrhPvTqPU9yFlgCGwkwbNNQ" target="_blank" rel="noopener noreferrer" data-yt-video="iQgRB1jDT8I" data-album-id="7kfPf285KnlWUTbqaB1jnI" data-album-name="SAYONARA" data-album-artist="Álvaro Díaz">
+   <span class="spotify-cover"><img alt="Portada de SAYONARA" loading="lazy"></span><span class="spotify-card-artist">Álvaro Díaz</span><span class="spotify-card-title">SAYONARA</span><span class="spotify-card-meta">ÁLBUM · YOUTUBE MUSIC</span>
+  </a>
+  <a class="spotify-album-card" href="https://music.youtube.com/playlist?list=OLAK5uy_mcw5IPhZ2e22iTi69blxhDwOudLVPGV2E" target="_blank" rel="noopener noreferrer" data-yt-video="HF6vVKpat9c" data-album-id="6W88MgHDPkCPL64IIH3jir" data-album-name="SORDO DE UN PIE" data-album-artist="Lucho RK">
+   <span class="spotify-cover"><img alt="Portada de SORDO DE UN PIE" loading="lazy"></span><span class="spotify-card-artist">Lucho RK</span><span class="spotify-card-title">SORDO DE UN PIE</span><span class="spotify-card-meta">ÁLBUM · YOUTUBE MUSIC</span>
+  </a>
+  <a class="spotify-album-card" href="https://music.youtube.com/playlist?list=OLAK5uy_mToRkioXxqfyyPlLpO9CTqGQRoOU7zutU" target="_blank" rel="noopener noreferrer" data-yt-video="NnOT0vrJEUs" data-album-id="4we3WMZMCvKmk6jfGe6t4t" data-album-name="Emociones" data-album-artist="Jay Wheeler">
+   <span class="spotify-cover"><img alt="Portada de Emociones" loading="lazy"></span><span class="spotify-card-artist">Jay Wheeler</span><span class="spotify-card-title">Emociones</span><span class="spotify-card-meta">ÁLBUM · YOUTUBE MUSIC</span>
+  </a>
+  <a class="spotify-album-card" href="https://music.youtube.com/playlist?list=OLAK5uy_nkrHtlhhDKURIi6QdfzQ_-0F9gPWt1fKk" target="_blank" rel="noopener noreferrer" data-yt-video="DglJFXLk598" data-album-id="2X6WyzpxY70eUn3lnewB7d" data-album-name="DATA" data-album-artist="Tainy">
+   <span class="spotify-cover"><img alt="Portada de DATA" loading="lazy"></span><span class="spotify-card-artist">Tainy</span><span class="spotify-card-title">DATA</span><span class="spotify-card-meta">ÁLBUM · YOUTUBE MUSIC</span>
+  </a>
+  <a class="spotify-album-card long-title" href="https://music.youtube.com/playlist?list=OLAK5uy_m5JItFvDSNF8UdoEKgzTNZYIjH4LdYhRk" target="_blank" rel="noopener noreferrer" data-yt-video="jRxDUsGmwuc" data-album-id="7pijRxgRaBirPz6wDaJIp9" data-album-name="FELIZ CUMPLEAÑOS FERXXO TE PIRATEAMOS EL ÁLBUM" data-album-artist="Feid">
+   <span class="spotify-cover"><img alt="Portada de FELIZ CUMPLEAÑOS FERXXO TE PIRATEAMOS EL ÁLBUM" loading="lazy"></span><span class="spotify-card-artist">Feid</span><span class="spotify-card-title">FELIZ CUMPLEAÑOS FERXXO TE PIRATEAMOS EL ÁLBUM</span><span class="spotify-card-meta">ÁLBUM · YOUTUBE MUSIC</span>
+  </a>
+ </div>
+</section>
 
 <script type="module" src="./main.js"></script>
 </body>
