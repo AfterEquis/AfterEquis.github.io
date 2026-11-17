@@ -18,16 +18,16 @@
     "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/4705510/header.jpg"
   },
   {
+    "appid": 730,
+    "name": "Counter-Strike 2",
+    "hours": 5.9,
+    "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/730/header.jpg"
+  },
+  {
     "appid": 1237950,
     "name": "STAR WARS™ Battlefront™ II",
     "hours": 4.3,
     "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/1237950/header.jpg"
-  },
-  {
-    "appid": 730,
-    "name": "Counter-Strike 2",
-    "hours": 2.5,
-    "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/730/header.jpg"
   },
   {
     "appid": 2483190,
