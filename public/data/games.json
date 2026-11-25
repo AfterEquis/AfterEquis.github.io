@@ -1,15 +1,15 @@
 [
   {
-    "appid": 359550,
-    "name": "Tom Clancy's Rainbow Six Siege",
-    "hours": 9.8,
-    "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/359550/header.jpg"
-  },
-  {
     "appid": 2807960,
     "name": "Battlefield™ 6",
     "hours": 7.5,
     "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/2807960/header.jpg"
+  },
+  {
+    "appid": 359550,
+    "name": "Tom Clancy's Rainbow Six Siege",
+    "hours": 4.7,
+    "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/359550/header.jpg"
   },
   {
     "appid": 730,
@@ -18,21 +18,21 @@
     "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/730/header.jpg"
   },
   {
-    "appid": 2483190,
-    "name": "Forza Horizon 6",
-    "hours": 2.7,
-    "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/2483190/header.jpg"
-  },
-  {
     "appid": 4705510,
     "name": "Happy Wheels",
     "hours": 2.2,
     "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/4705510/header.jpg"
   },
   {
-    "appid": 960090,
-    "name": "Bloons TD 6",
-    "hours": 0.7,
-    "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/960090/header.jpg"
+    "appid": 2483190,
+    "name": "Forza Horizon 6",
+    "hours": 2.2,
+    "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/2483190/header.jpg"
+  },
+  {
+    "appid": 4954910,
+    "name": "Scam With Your Friends",
+    "hours": 0.3,
+    "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/4954910/header.jpg"
   }
 ]
